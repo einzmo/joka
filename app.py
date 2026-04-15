@@ -635,6 +635,38 @@ def resend_verification_code():
     return redirect(url_for('verify_email_code'))
 
 
+@app.route('/resend-verification-logged-in')
+@login_required
+def resend_verification_logged_in():
+    """Resend verification code for logged-in user who is not verified"""
+    if current_user.email_verified:
+        flash('Your email is already verified.', 'info')
+        return redirect(url_for('dashboard'))
+    
+    # Generate new 6-digit code
+    code = generate_reset_code()
+    
+    # Delete any existing unused verification codes for this user
+    EmailVerification.query.filter_by(user_id=current_user.id, used=False).delete()
+    
+    # Store new code
+    verification = EmailVerification(
+        user_id=current_user.id,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=15)
+    )
+    db.session.add(verification)
+    db.session.commit()
+    
+    # Send code via email
+    send_verification_code(current_user, code)
+    
+    # Store user_id in session for verification step
+    session['verify_user_id'] = current_user.id
+    
+    flash('A new verification code has been sent to your email.', 'info')
+    return redirect(url_for('verify_email_code'))
+
 @app.route('/test-email-send')
 def test_email_send():
     """Test email sending - remove after testing"""

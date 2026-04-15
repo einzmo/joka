@@ -656,7 +656,7 @@
 
                             <!-- Resend link -->
                             <div class="resend-link">
-                                <a href="{{ url_for('resend_verification_code') }}">
+                                <a href="{{ url_for('resend_verification_logged_in') if current_user.is_authenticated else url_for('resend_verification_code') }}">
                                     <i class="bi bi-arrow-repeat"></i>
                                     Resend code
                                 </a>
