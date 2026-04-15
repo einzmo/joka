@@ -11,3 +11,6 @@ gunicorn==21.2.0
 cloudinary==1.36.0
 flask-limiter==3.5.0
 paychangu
+reportlab==4.2.2
+psycopg2-binary==2.9.9
+flask-migrate==4.1.0
