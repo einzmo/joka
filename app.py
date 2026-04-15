@@ -23,6 +23,7 @@ from models import db, User, Subject, Lesson, Payment, EmailVerification, Passwo
 from forms import LoginForm, RegistrationForm, PaymentForm, RequestResetForm, ResetPasswordForm
 from paychangu import PayChangu
 from email_utils import send_verification_email, send_welcome_email, send_payment_confirmation_email, test_smtp_connection, send_password_reset_code, send_verification_code
+
 def generate_reset_code():
     """Generate 6-digit numeric code"""
     return f"{random.randint(100000, 999999)}"
