@@ -74,6 +74,15 @@ def confirm_token(token, expiration=3600):
 
 def send_email_sendgrid(recipient, subject, html_content):
     """Send email using SendGrid API (works on Render free tier)"""
+    
+    # Mock mode for testing - just log emails
+    if os.getenv('EMAIL_MOCK_MODE') == 'True':
+        print(f"\n📧 [MOCK MODE] Email would be sent to: {recipient}")
+        print(f"   Subject: {subject}")
+        print(f"   Content preview: {html_content[:100]}...\n")
+        logger.info(f"MOCK: Would send email to {recipient}")
+        return True
+    
     if not HAS_SENDGRID:
         logger.warning("SendGrid not available, using mock mode")
         print(f"\n📧 [MOCK] Would send email to: {recipient}")
@@ -85,19 +94,23 @@ def send_email_sendgrid(recipient, subject, html_content):
         api_key = os.getenv('SENDGRID_API_KEY')
         if not api_key:
             logger.error("SENDGRID_API_KEY not set in environment variables")
+            print("❌ SENDGRID_API_KEY not set")
             return False
         
-        from_email = current_app.config.get('MAIL_DEFAULT_SENDER', 'myMSCE <noreply@mymsce.com>')
+        from_email = current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@mymsce.com')
         
-        message = Mail(
-            from_email=from_email,
-            to_emails=recipient,
-            subject=subject,
-            html_content=html_content
-        )
+        # Use the correct SendGrid v6 API syntax with request body
+        import json
+        
+        data = {
+            "personalizations": [{"to": [{"email": recipient}]}],
+            "from": {"email": from_email},
+            "subject": subject,
+            "content": [{"type": "text/html", "value": html_content}]
+        }
         
         sg = SendGridAPIClient(api_key)
-        response = sg.send(message)
+        response = sg.client.mail.send.post(request_body=data)
         
         if response.status_code in [200, 202]:
             logger.info(f"✅ Email sent to {recipient} via SendGrid")
@@ -105,6 +118,7 @@ def send_email_sendgrid(recipient, subject, html_content):
             return True
         else:
             logger.error(f"SendGrid returned status {response.status_code}: {response.body}")
+            print(f"❌ SendGrid returned status {response.status_code}")
             return False
             
     except Exception as e:
@@ -381,6 +395,9 @@ def send_payment_confirmation_email(user, payment):
 
 def test_smtp_connection():
     """Test email connection (now uses SendGrid)"""
+    if os.getenv('EMAIL_MOCK_MODE') == 'True':
+        return True, "EMAIL_MOCK_MODE is enabled - emails are being logged but not sent"
+    
     if HAS_SENDGRID:
         api_key = os.getenv('SENDGRID_API_KEY')
         if api_key:
