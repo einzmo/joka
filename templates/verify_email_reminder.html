@@ -2,38 +2,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
     <title>Verify Your Email - myMSCE</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #EFF6FF;
             min-height: 100vh;
+            color: #0F172A;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
+        }
+
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== PAGE LOADER - CENTERED DOTS ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #EFF6FF;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .page-loader.hidden { opacity: 0; visibility: hidden; }
+
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
+        }
+
+        /* ===== MAIN CARD ===== */
+        .verify-container {
+            max-width: 520px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .verify-card {
-            max-width: 500px;
-            width: 100%;
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
-            text-align: center;
-            animation: fadeInUp 0.5s ease;
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(20px);
+            border-radius: 36px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
         }
 
         @keyframes fadeInUp {
@@ -41,174 +112,488 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .email-icon {
+        .card-accent {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #2563EB, #16A34A);
+        }
+
+        .card-content {
+            padding: 40px 32px;
+        }
+
+        @media (max-width: 480px) {
+            .card-content { padding: 32px 24px; }
+        }
+
+        /* ===== ICON ===== */
+        .icon-wrapper {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .envelope-icon {
             width: 80px;
             height: 80px;
-            background: #e0f2fe;
+            background: rgba(37, 99, 235, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 24px;
+            margin: 0 auto;
+            border: 2px solid var(--border-light);
+            animation: pulseIcon 2s ease-in-out infinite;
         }
 
-        .email-icon i {
-            font-size: 40px;
-            color: #0284c7;
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); }
         }
 
+        .envelope-icon i {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+        }
+
+        /* ===== TYPOGRAPHY ===== */
         h1 {
-            color: #1e293b;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
             margin-bottom: 12px;
+            letter-spacing: -0.5px;
         }
 
-        p {
-            color: #64748b;
-            margin-bottom: 24px;
-            line-height: 1.6;
+        .highlight {
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .email-highlight {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 24px;
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        /* ===== EMAIL DISPLAY ===== */
+        .email-display {
+            background: rgba(37, 99, 235, 0.06);
+            border-radius: 16px;
+            padding: 14px 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 1px solid var(--border-light);
             word-break: break-all;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 14px 28px;
-            border-radius: 40px;
+        .email-display i {
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+        }
+
+        .email-display span {
+            color: var(--text-primary);
             font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            margin: 8px;
-            border: none;
-            cursor: pointer;
+            font-size: 0.9rem;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #64748b;
-            border: 2px solid #e2e8f0;
-        }
-
-        .btn-outline:hover {
-            border-color: #667eea;
-            color: #1e293b;
-        }
-
+        /* ===== WARNING BOX ===== */
         .warning-box {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 16px;
-            border-radius: 12px;
-            text-align: left;
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid var(--accent-orange);
+            border-radius: 16px;
+            padding: 16px 20px;
             margin: 24px 0;
         }
 
         .warning-box i {
-            color: #ffc107;
+            color: var(--accent-orange);
+            font-size: 1.1rem;
             margin-right: 8px;
         }
 
+        .warning-box strong {
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
         .warning-box p {
-            margin-bottom: 0;
-            color: #856404;
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        /* ===== BUTTONS ===== */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary {
+            background: var(--accent-orange);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-primary:active {
+            background: var(--accent-dark);
+        }
+
+        .btn-secondary {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:active {
+            background: rgba(37, 99, 235, 0.2);
         }
 
         @media (max-width: 480px) {
-            .verify-card { padding: 30px 20px; }
-            .btn { width: 100%; margin: 8px 0; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; }
         }
+
+        /* ===== FOOTER NOTE ===== */
+        .footer-note {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-tertiary);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .footer-note i {
+            color: var(--primary-blue);
+        }
+
+        /* ===== SKELETON ===== */
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .skeleton-accent {
+            height: 4px;
+            background: rgba(37, 99, 235, 0.15);
+        }
+
+        .skeleton-content {
+            padding: 40px 32px;
+        }
+
+        .skeleton-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50%;
+            margin: 0 auto 24px;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .skeleton-line.title {
+            width: 60%;
+            height: 32px;
+            margin: 0 auto 12px;
+        }
+
+        .skeleton-line.subtitle {
+            width: 70%;
+            height: 20px;
+            margin: 0 auto 20px;
+        }
+
+        .skeleton-email {
+            height: 56px;
+            background: rgba(37, 99, 235, 0.06);
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+
+        .skeleton-buttons {
+            display: flex;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .skeleton-btn {
+            flex: 1;
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50px;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
+            padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.error { border-left-color: #DC2626; }
+        .toast.success { border-left-color: #16A34A; }
+        .toast.warning { border-left-color: #F59E0B; }
+
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <div class="verify-card">
-        <div class="email-icon">
-            <i class="bi bi-envelope-fill"></i>
+    <!-- PAGE LOADER - CENTERED DOTS -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
-
-        <h1>Verify Your Email</h1>
-
-        <p>We've sent a verification link to:</p>
-        <div class="email-highlight">{{ current_user.email }}</div>
-
-        <div class="warning-box">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <strong>Your email is not verified yet.</strong>
-            <p>You need to verify your email before you can access all features.</p>
-        </div>
-
-        <p>Click the link in the email to verify your account. If you didn't receive it:</p>
-
-        <div>
-            <a href="{{ url_for('resend_verification') }}" class="btn btn-primary">
-                <i class="bi bi-envelope"></i> Resend Verification Email
-            </a>
-
-            <a href="{{ url_for('logout') }}" class="btn btn-outline">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </a>
-        </div>
-
-        <p style="margin-top: 24px; font-size: 14px;">
-            <i class="bi bi-info-circle"></i>
-            Check your spam folder if you don't see the email.
-        </p>
     </div>
 
-    <!-- Toast container for notifications -->
-    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="verify-container" id="mainContent">
+        <!-- Skeleton Card -->
+        <div class="skeleton-card" id="skeletonCard">
+            <div class="skeleton-accent shimmer"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-line title shimmer"></div>
+                <div class="skeleton-line subtitle shimmer"></div>
+                <div class="skeleton-email shimmer"></div>
+                <div class="skeleton-buttons">
+                    <div class="skeleton-btn shimmer"></div>
+                    <div class="skeleton-btn shimmer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real Content -->
+        <div class="verify-card" id="realCard" style="display: none;">
+            <div class="card-accent"></div>
+            <div class="card-content">
+                <div class="icon-wrapper">
+                    <div class="envelope-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                </div>
+
+                <h1>Verify Your <span class="highlight">Email</span></h1>
+                <p class="subtitle">We've sent a verification code to:</p>
+
+                <div class="email-display">
+                    <i class="bi bi-envelope"></i>
+                    <span>{{ current_user.email if current_user.is_authenticated else session.get('pending_email', 'your email') }}</span>
+                </div>
+
+                <div class="warning-box">
+                    <div>
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Email not verified yet.</strong>
+                    </div>
+                    <p>You need to verify your email before you can access all features. Check your inbox and spam folder for the 6-digit code.</p>
+                </div>
+
+                <div class="button-group">
+                    <a href="{{ url_for('resend_verification_logged_in') if current_user.is_authenticated else url_for('resend_verification_code') }}" class="btn btn-primary" id="resendBtn">
+                        <i class="bi bi-arrow-repeat"></i> Resend Code
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+
+                <div class="footer-note">
+                    <i class="bi bi-info-circle"></i>
+                    Didn't receive the code? Check your spam folder or click "Resend Code".
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        function showToast(message, type = 'info', duration = 3000) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.style.background = '#1e293b';
-            toast.style.color = 'white';
-            toast.style.padding = '12px 20px';
-            toast.style.borderRadius = '40px';
-            toast.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.3)';
-            toast.style.display = 'flex';
-            toast.style.alignItems = 'center';
-            toast.style.gap = '12px';
-            toast.style.marginBottom = '8px';
-            toast.style.animation = 'slideIn 0.3s ease';
-            toast.style.borderLeft = `4px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#fbbf24'}`;
+        let resendCooldown = false;
+        let cooldownTimer = null;
 
-            let icon = type === 'success' ? 'check-circle-fill' : type === 'error' ? 'exclamation-circle-fill' : 'info-circle';
-            toast.innerHTML = `<i class="bi bi-${icon}"></i><div>${message}</div>`;
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            if (container.children.length >= 3) {
+                container.children[0].remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'check-circle-fill' :
+                      type === 'error' ? 'exclamation-circle-fill' :
+                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
+
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <span>${escapeHtml(message)}</span>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), duration);
+
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, duration);
         }
 
-        // Show flashed messages
-        document.addEventListener('DOMContentLoaded', function() {
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        showToast("{{ message|safe }}", "{{ category }}");
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonCard');
+                const real = document.getElementById('realCard');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
         });
+
+        // Resend button with cooldown
+        const resendBtn = document.getElementById('resendBtn');
+        if (resendBtn) {
+            resendBtn.addEventListener('click', function(e) {
+                if (resendCooldown) {
+                    e.preventDefault();
+                    showToast('Please wait 30 seconds before requesting another code', 'warning');
+                    return;
+                }
+
+                resendCooldown = true;
+                let seconds = 30;
+                
+                const originalText = resendBtn.innerHTML;
+                resendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Wait 30s';
+                resendBtn.style.opacity = '0.7';
+                resendBtn.style.pointerEvents = 'none';
+                
+                cooldownTimer = setInterval(() => {
+                    seconds--;
+                    if (seconds <= 0) {
+                        clearInterval(cooldownTimer);
+                        resendCooldown = false;
+                        resendBtn.innerHTML = originalText;
+                        resendBtn.style.opacity = '1';
+                        resendBtn.style.pointerEvents = 'auto';
+                    } else {
+                        resendBtn.innerHTML = `<i class="bi bi-hourglass-split"></i> Wait ${seconds}s`;
+                    }
+                }, 1000);
+            });
+        }
+
+        // Flash messages as toasts
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => {
+                        showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
+                    }, {{ loop.index0 * 200 + 1200 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </script>
-    <style>@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }</style>
 </body>
 </html>
