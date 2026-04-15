@@ -1,4 +1,4 @@
-<!-- templates/payment_failed.html - GOLD ON NAVY WITH GLASS MORPHISM -->
+<!-- templates/payment_failed.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +14,6 @@
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
         * {
             margin: 0;
             padding: 0;
@@ -24,230 +23,235 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a2b4c;
+            background: #EFF6FF;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            padding: 20px;
-            line-height: 1.5;
+            padding: 24px;
+            color: #0F172A;
         }
 
-        /* Subtle grain texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.15;
+        /* ===== COLOR SYSTEM (Matching Dashboard) ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --primary-glass: rgba(37, 99, 235, 0.12);
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --error-light: #FEE2E2;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER ===== */
+        /* ===== PAGE LOADER (Matching Dashboard) ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: #1a2b4c;
+            background: #EFF6FF;
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .glass-loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
+            background: rgba(37, 99, 235, 0.08);
+            backdrop-filter: blur(10px);
+            animation: pulseGlow 2s ease-in-out infinite;
         }
+        
+        .glass-loader::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .glass-loader::after {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            background: #EFF6FF;
+            border-radius: 50%;
+        }
+        
+        .glass-loader .inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.03) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(255, 255, 255, 0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
         }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-line {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-        .skeleton-line.w20 { width: 20%; }
-        .skeleton-line.w30 { width: 30%; }
-        .skeleton-line.w40 { width: 40%; }
-        .skeleton-line.w50 { width: 50%; }
-        .skeleton-line.w60 { width: 60%; }
-        .skeleton-line.w70 { width: 70%; }
-        .skeleton-line.w80 { width: 80%; }
-        .skeleton-line.w90 { width: 90%; }
 
         /* ===== MAIN CONTAINER ===== */
-        .app {
-            max-width: 480px;
+        .container {
+            max-width: 520px;
             width: 100%;
             margin: 0 auto;
         }
 
-        /* ===== FAILED CARD - GLASS MORPHISM ===== */
-        .glass-card {
-            background: rgba(30, 58, 95, 0.3);
+        /* ===== FAILED CARD ===== */
+        .failed-card {
+            background: var(--card-bg-glass);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 40px 24px;
-            text-align: center;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            position: relative;
+            border-radius: 36px;
+            border: 1px solid rgba(220, 38, 38, 0.25);
             overflow: hidden;
-            animation: fadeInUp 0.6s ease;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+            position: relative;
         }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(239, 68, 68, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        .card-accent {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #DC2626, #F87171);
         }
-
-        .glass-card::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            left: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(251, 191, 36, 0.03) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        .card-content {
+            padding: 40px 32px;
         }
-
+        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        @media (max-width: 480px) {
+            .card-content { padding: 32px 24px; }
+        }
 
         /* ===== ERROR ICON ===== */
         .icon-container {
-            position: relative;
-            z-index: 2;
             margin-bottom: 28px;
+            text-align: center;
         }
-
-        .icon-circle {
-            width: 120px;
-            height: 120px;
-            background: rgba(239, 68, 68, 0.1);
-            backdrop-filter: blur(4px);
-            border-radius: 60px;
+        
+        .error-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
-            border: 2px solid rgba(239, 68, 68, 0.3);
+            border: 2px solid rgba(220, 38, 38, 0.3);
             animation: softPulse 2s infinite;
         }
-
-        .icon-circle i {
-            font-size: 4rem;
-            color: #ef4444;
-            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.3));
+        
+        .error-icon i {
+            font-size: 3.5rem;
+            color: #DC2626;
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.3));
         }
-
+        
         @keyframes softPulse {
             0%, 100% {
                 transform: scale(1);
-                border-color: rgba(239, 68, 68, 0.3);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2);
+                border-color: rgba(220, 38, 38, 0.3);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2);
             }
             50% {
                 transform: scale(1.03);
-                border-color: rgba(239, 68, 68, 0.6);
-                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+                border-color: rgba(220, 38, 38, 0.6);
+                box-shadow: 0 0 0 15px rgba(220, 38, 38, 0);
             }
+        }
+        
+        @media (max-width: 480px) {
+            .error-icon { width: 80px; height: 80px; }
+            .error-icon i { font-size: 2.8rem; }
         }
 
         /* ===== TYPOGRAPHY ===== */
         h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ef4444, #f87171);
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #DC2626, #F87171);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
-            position: relative;
-            z-index: 2;
         }
-
+        
         .lead {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
             margin-bottom: 28px;
             line-height: 1.6;
-            position: relative;
-            z-index: 2;
         }
 
         /* ===== INFO BOX ===== */
         .info-box {
-            background: rgba(239, 68, 68, 0.05);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-left: 4px solid #fbbf24;
-            border-radius: 20px;
+            background: rgba(220, 38, 38, 0.06);
+            border-radius: 24px;
             padding: 20px;
             margin-bottom: 32px;
             display: flex;
-            align-items: center;
-            gap: 16px;
-            text-align: left;
-            position: relative;
-            z-index: 2;
+            align-items: flex-start;
+            gap: 14px;
+            border: 1px solid rgba(220, 38, 38, 0.15);
+            border-left: 4px solid #F59E0B;
         }
-
+        
         .info-box i {
-            font-size: 1.5rem;
-            color: #fbbf24;
+            font-size: 1.3rem;
+            color: #F59E0B;
             flex-shrink: 0;
+            margin-top: 2px;
         }
-
+        
         .info-box p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
             line-height: 1.6;
             margin: 0;
         }
-
+        
         .info-box strong {
-            color: #fbbf24;
+            color: #16A34A;
             font-weight: 600;
         }
 
@@ -256,73 +260,151 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            position: relative;
-            z-index: 2;
+            margin-bottom: 24px;
         }
-
+        
         .btn {
+            width: 100%;
             padding: 16px 24px;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-            text-decoration: none;
-            border: none;
+            gap: 10px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
         }
+        
         .btn:active { transform: scale(0.98); }
-
+        
         .btn-primary {
-            background: #fbbf24;
-            color: #1a2b4c;
+            background: #F59E0B;
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
-        .btn-primary:hover { background: #f59e0b; }
+        
+        .btn-primary:active { background: #D97706; }
         .btn-primary i { transition: transform 0.2s; }
         .btn-primary:active i { transform: translateX(4px); }
-
+        
         .btn-secondary {
-            background: transparent;
-            color: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563EB;
+            border: 1px solid rgba(37, 99, 235, 0.25);
         }
-        .btn-secondary:hover {
-            border-color: #fbbf24;
-            background: rgba(251, 191, 36, 0.05);
-            color: white;
+        
+        .btn-secondary:active {
+            background: rgba(37, 99, 235, 0.15);
+        }
+        
+        .btn-secondary i {
+            transition: transform 0.2s;
+        }
+        
+        .btn-secondary:active i {
+            transform: translateX(-4px);
         }
 
         /* ===== SUPPORT LINK ===== */
         .support-link {
-            margin-top: 24px;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.85rem;
-            position: relative;
-            z-index: 2;
+            text-align: center;
+            margin-top: 8px;
         }
-
+        
         .support-link a {
-            color: #fbbf24;
+            color: #2563EB;
             text-decoration: none;
-            font-weight: 600;
-            transition: opacity 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 40px;
+            transition: all 0.2s;
         }
-        .support-link a:active { opacity: 0.7; }
+        
+        .support-link a:active {
+            background: rgba(37, 99, 235, 0.08);
+        }
+        
+        .support-link a i {
+            font-size: 0.9rem;
+        }
 
-        /* ===== DECORATIVE DOTS ===== */
-        .dots-pattern {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            opacity: 0.1;
-            font-size: 2rem;
-            color: #ef4444;
-            letter-spacing: 8px;
-            pointer-events: none;
-            z-index: 1;
+        /* ===== SKELETON CARD ===== */
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+        
+        .skeleton-accent {
+            height: 4px;
+            background: rgba(220, 38, 38, 0.2);
+        }
+        
+        .skeleton-content {
+            padding: 40px 32px;
+        }
+        
+        .skeleton-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(220, 38, 38, 0.08);
+            border-radius: 50%;
+            margin: 0 auto 28px;
+        }
+        
+        .skeleton-line {
+            height: 16px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            width: 50%;
+            height: 36px;
+            margin: 0 auto 12px;
+        }
+        
+        .skeleton-line.subtitle {
+            width: 65%;
+            height: 20px;
+            margin: 0 auto 28px;
+        }
+        
+        .skeleton-info {
+            background: rgba(220, 38, 38, 0.04);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .skeleton-button {
+            width: 100%;
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50px;
+            margin-bottom: 12px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* ===== TOAST NOTIFICATIONS ===== */
@@ -338,69 +420,57 @@
             pointer-events: none;
             padding: 0 16px;
         }
-
+        
         .toast {
-            background: rgba(26, 43, 76, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-left: 4px solid #fbbf24;
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
             padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
             display: flex;
             align-items: center;
             gap: 12px;
-            color: white;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
             animation: toastIn 0.3s ease;
             pointer-events: auto;
-            margin-bottom: 8px;
-            max-width: 380px;
-            width: 100%;
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
         }
-
-        .toast i { color: #fbbf24; }
+        
+        .toast.error { border-left-color: #DC2626; }
+        .toast.success { border-left-color: #16A34A; }
+        .toast.warning { border-left-color: #F59E0B; }
+        
         .toast button {
-            background: none;
+            background: transparent;
             border: none;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
+            color: rgba(255,255,255,0.5);
             margin-left: auto;
-            font-size: 1.1rem;
+            cursor: pointer;
+            font-size: 1rem;
         }
-
+        
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== SKELETON CARD ===== */
-        .skeleton-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 40px 24px;
-            max-width: 480px;
-            width: 100%;
-            border: 1px solid rgba(239, 68, 68, 0.1);
-        }
-
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            .glass-card { padding: 30px 20px; }
-            h1 { font-size: 2rem; }
-            .lead { font-size: 1rem; }
-            .icon-circle { width: 100px; height: 100px; }
-            .icon-circle i { font-size: 3rem; }
-            .info-box { padding: 16px; }
+            .card-content { padding: 32px 24px; }
+            h1 { font-size: 1.6rem; }
+            .lead { font-size: 0.9rem; }
         }
 
         /* ===== SAFE AREAS ===== */
         @supports (padding: max(0px)) {
             body {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-top: max(20px, env(safe-area-inset-top));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+                padding-top: max(24px, env(safe-area-inset-top));
+                padding-bottom: max(24px, env(safe-area-inset-bottom));
             }
         }
     </style>
@@ -408,56 +478,60 @@
 <body>
     <!-- Page Loader -->
     <div class="page-loader" id="pageLoader">
-        <div class="spinner"></div>
+        <div class="glass-loader">
+            <div class="inner">M</div>
+        </div>
     </div>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- Main Content -->
-    <div class="app" id="mainContent">
+    <div class="container" id="mainContent">
         <!-- Skeleton Card (shown initially) -->
         <div class="skeleton-card" id="skeletonCard">
-            <div style="display: flex; justify-content: center; margin-bottom: 28px;">
-                <div class="skeleton" style="width: 120px; height: 120px; border-radius: 60px;"></div>
-            </div>
-            <div class="skeleton-line w50" style="height: 40px; margin: 0 auto 12px;"></div>
-            <div class="skeleton-line w70" style="height: 20px; margin: 0 auto 28px;"></div>
-            <div style="background: rgba(0,0,0,0.2); border-radius: 20px; padding: 20px; margin-bottom: 32px;">
-                <div style="display: flex; gap: 12px;">
-                    <div class="skeleton" style="width: 40px; height: 40px; border-radius: 20px;"></div>
-                    <div class="skeleton-line w80" style="height: 40px;"></div>
+            <div class="skeleton-accent shimmer"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-line title shimmer"></div>
+                <div class="skeleton-line subtitle shimmer"></div>
+                <div class="skeleton-info shimmer">
+                    <div style="display: flex; gap: 14px;">
+                        <div class="skeleton-line" style="width: 40px; height: 40px; border-radius: 20px;"></div>
+                        <div class="skeleton-line" style="flex: 1; height: 40px;"></div>
+                    </div>
                 </div>
+                <div class="skeleton-button shimmer"></div>
+                <div class="skeleton-button shimmer"></div>
+                <div class="skeleton-line" style="width: 40%; height: 16px; margin: 16px auto 0;"></div>
             </div>
-            <div class="skeleton-line w100" style="height: 50px; margin-bottom: 12px;"></div>
-            <div class="skeleton-line w100" style="height: 50px;"></div>
-            <div class="skeleton-line w40" style="height: 20px; margin: 24px auto 0;"></div>
         </div>
 
         <!-- Real Content (hidden initially) -->
-        <div class="glass-card" id="realCard" style="display: none;">
-            <!-- Icon -->
-            <div class="icon-container">
-                <div class="icon-circle">
-                    <i class="bi bi-x-circle-fill"></i>
+        <div class="failed-card" id="realCard" style="display: none;">
+            <div class="card-accent"></div>
+            <div class="card-content">
+                <!-- Error Icon -->
+                <div class="icon-container">
+                    <div class="error-icon">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Content -->
-            <div class="content">
+                <!-- Title -->
                 <h1>Payment Failed</h1>
                 <p class="lead">There was an issue processing your payment.</p>
 
-                <!-- Info Box -->
+                <!-- Info Box - Reassuring Message -->
                 <div class="info-box">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <i class="bi bi-shield-check"></i>
                     <p>
                         <strong>Don't worry!</strong> Your account has not been charged.
                         Please try again or contact support if the problem persists.
                     </p>
                 </div>
 
-                <!-- Actions -->
+                <!-- Action Buttons -->
                 <div class="actions">
                     <a href="{{ url_for('pricing') }}" class="btn btn-primary">
                         <i class="bi bi-arrow-repeat"></i>
@@ -469,14 +543,14 @@
                     </a>
                 </div>
 
-                <!-- Support -->
+                <!-- Support Link -->
                 <div class="support-link">
-                    Need help? <a href="#" onclick="showToast('Contact support at support@mymsce.com', 'info'); return false;">Contact Support</a>
+                    <a href="#" onclick="showToast('Contact support: support@mymsce.com', 'info'); return false;">
+                        <i class="bi bi-headset"></i>
+                        Need help? Contact Support
+                    </a>
                 </div>
             </div>
-
-            <!-- Decorative dots -->
-            <div class="dots-pattern">......</div>
         </div>
     </div>
 
@@ -486,16 +560,15 @@
             const container = document.getElementById('toastContainer');
             if (!container) return;
 
-            // Limit to 3 toasts
             if (container.children.length >= 3) {
                 container.children[0].remove();
             }
 
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle' :
-                      type === 'error' ? 'exclamation-circle' :
-                      type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'check-circle-fill' :
+                      type === 'error' ? 'exclamation-triangle-fill' :
+                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
 
             toast.innerHTML = `
                 <i class="bi bi-${icon}"></i>
@@ -509,18 +582,21 @@
             }, duration);
         }
 
-        // ===== PAGE LOAD SIMULATION =====
-        window.addEventListener('load', function() {
-            // Hide loader after 600ms
+        // ===== PAGE LOAD SIMULATION (Matching Dashboard Timing) =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loader after 800ms
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 800);
 
             // Show skeleton for 800ms, then real content
             setTimeout(() => {
-                document.getElementById('skeletonCard').style.display = 'none';
-                document.getElementById('realCard').style.display = 'block';
-            }, 800);
+                const skeleton = document.getElementById('skeletonCard');
+                const real = document.getElementById('realCard');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 1000);
 
             // Show any flashed messages
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -528,29 +604,32 @@
                     {% for category, message in messages %}
                         setTimeout(() => {
                             showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1000 }});
+                        }, {{ (loop.index0 * 200) + 1200 }});
                     {% endfor %}
                 {% endif %}
             {% endwith %}
         });
 
-        // ===== AUTO-REDIRECT TIMER (commented out by default) =====
+        // ===== AUTO-REDIRECT TIMER (commented out - preserved for future use) =====
+        // Uncomment this block to enable auto-redirect after 10 seconds
         /*
         let secondsLeft = 10;
-        const timerElement = document.createElement('div');
-        timerElement.style.marginTop = '16px';
-        timerElement.style.fontSize = '0.8rem';
-        timerElement.style.color = 'rgba(255, 255, 255, 0.4)';
-        timerElement.style.position = 'relative';
-        timerElement.style.zIndex = '2';
-        timerElement.innerHTML = `Redirecting to pricing in ${secondsLeft} seconds...`;
+        const timerContainer = document.createElement('div');
+        timerContainer.style.marginTop = '16px';
+        timerContainer.style.textAlign = 'center';
+        timerContainer.style.fontSize = '0.75rem';
+        timerContainer.style.color = 'var(--text-tertiary)';
+        timerContainer.style.position = 'relative';
+        timerContainer.style.zIndex = '2';
+        timerContainer.innerHTML = `Redirecting to pricing in ${secondsLeft} seconds...`;
 
-        document.querySelector('.actions').after(timerElement);
+        const actionsDiv = document.querySelector('.actions');
+        if (actionsDiv) actionsDiv.after(timerContainer);
 
         const timerInterval = setInterval(() => {
             secondsLeft--;
-            if (secondsLeft >= 0) {
-                timerElement.innerHTML = `Redirecting to pricing in ${secondsLeft} seconds...`;
+            if (secondsLeft >= 0 && timerContainer) {
+                timerContainer.innerHTML = `Redirecting to pricing in ${secondsLeft} seconds...`;
             }
             if (secondsLeft < 0) {
                 clearInterval(timerInterval);
@@ -558,12 +637,6 @@
             }
         }, 1000);
         */
-
-        // ===== PREVENT DEFAULT ON SUPPORT LINK =====
-        document.querySelector('.support-link a')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            showToast('Contact support at support@mymsce.com', 'info');
-        });
     </script>
 </body>
 </html>

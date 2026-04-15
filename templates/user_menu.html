@@ -1,19 +1,14 @@
-<!-- templates/user_menu.html - STANDALONE USER MENU WITH DARK THEME -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>My Account - myMSCE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>Account Hub - myMSCE</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
         * {
@@ -23,543 +18,806 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --card-bg-solid: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: var(--bg-main);
             min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
         }
 
-        /* Main container */
-        .app {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 24px 20px;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        .back-btn {
-            width: 48px;
-            height: 48px;
-            background: #1e293b;
-            border-radius: 30px;
+        /* ===== PAGE LOADER - PERFECTLY CENTERED DOTS (CONSISTENT) ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-main);
+            z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fbbf24;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(251, 191, 36, 0.1);
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            backdrop-filter: blur(2px);
+        }
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
 
-        .back-btn:hover {
-            background: #fbbf24;
-            color: #0f172a;
-            transform: translateX(-4px);
+        .dots-loader {
+            display: flex;
+            gap: clamp(10px, 5vw, 16px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 60px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
         }
 
-        .back-btn:active {
-            transform: scale(0.95);
-        }
-
-        .page-header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
-            margin: 0;
-        }
-
-        /* Profile Card */
-        .profile-card {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .profile-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+        .dot {
+            width: clamp(12px, 4vw, 18px);
+            height: clamp(12px, 4vw, 18px);
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite alternate;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        .profile-content {
-            position: relative;
-            z-index: 2;
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.5; }
+            to { transform: translateY(-24px); opacity: 1; }
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--primary-blue);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff, #E0F2FE);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .menu-btn:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.3); }
+        .menu-btn i { font-size: 1.4rem; color: white; }
+
+        /* ===== SLIDE MENU (MODERN) ===== */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: min(280px, 75vw);
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(24px);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            box-shadow: 8px 0 32px rgba(0, 0, 0, 0.12);
+            padding: 24px 0;
+            border-right: 1px solid rgba(37, 99, 235, 0.15);
+        }
+        .slide-menu.open { left: 0; }
+        .menu-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease;
+        }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+        .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); margin-bottom: 20px; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .menu-avatar { width: 52px; height: 52px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; color: white; box-shadow: 0 6px 12px rgba(37,99,235,0.2); }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+        .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+        .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 14px; border-radius: 40px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        .menu-section { padding: 0 16px; margin-bottom: 24px; }
+        .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; padding-left: 8px; }
+        .menu-item { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 16px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); transform: translateX(4px); }
+        .menu-item i { width: 22px; font-size: 1.2rem; color: #94A3B8; }
+        .menu-item:hover i { color: var(--primary-blue); }
+        .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.06); margin: 16px 20px; }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px 56px;
+        }
+        @media (max-width: 640px) {
+            .main-content { padding: 20px 16px 40px; }
         }
 
+        /* ===== BACK BUTTON ===== */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-light);
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            transition: all 0.2s;
+        }
+        .back-link:active { transform: scale(0.96); background: rgba(37, 99, 235, 0.1); }
+
+        /* ===== PROFILE CARD (ENHANCED) ===== */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            border-radius: 36px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s;
+        }
+        .card-accent {
+            height: 5px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green), var(--accent-orange));
+        }
+        .card-content { padding: 28px; }
+        @media (max-width: 500px) { .card-content { padding: 22px; } }
+        
+        .profile-layout {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
         .profile-avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #fbbf24, #2563eb);
+            width: 88px;
+            height: 88px;
+            background: linear-gradient(145deg, var(--primary-blue), #0EA5E9);
             border-radius: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            box-shadow: 0 12px 24px -8px rgba(37,99,235,0.3);
         }
-
-        .profile-avatar i {
-            font-size: 3rem;
-            color: white;
+        .profile-avatar i { font-size: 2.8rem; color: white; }
+        .profile-info { flex: 1; }
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
         }
-
-        .profile-info {
-            flex: 1;
-        }
-
-        .profile-info h2 {
-            color: white;
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .profile-info .email {
-            color: #94a3b8;
-            font-size: 0.9rem;
+        .profile-email {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+            background: rgba(37,99,235,0.05);
+            padding: 4px 12px;
+            border-radius: 40px;
+            width: fit-content;
         }
-
-        .profile-info .email i {
-            color: #fbbf24;
-        }
-
+        .profile-email i { color: var(--primary-blue); }
         .plan-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
-
         .plan-badge.active {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            background: rgba(22, 163, 74, 0.12);
+            color: var(--secondary-green);
+            border: 1px solid rgba(22, 163, 74, 0.3);
         }
-
         .plan-badge.inactive {
-            background: rgba(100, 116, 139, 0.1);
-            color: #94a3b8;
-            border: 1px solid rgba(100, 116, 139, 0.2);
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-orange);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .member-since {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+        .member-since i { color: var(--primary-blue); }
+        @media (max-width: 550px) {
+            .profile-layout { flex-direction: column; text-align: center; }
+            .profile-avatar { margin: 0 auto; }
+            .profile-email { margin-left: auto; margin-right: auto; }
+            .plan-badge { margin: 0 auto; }
         }
 
-        /* Menu Grid */
+        /* ===== SECTION HEADER ===== */
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin: 32px 0 20px;
+        }
+        .section-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header h3 i { color: var(--primary-blue); font-size: 1.2rem; }
+
+        /* ===== MENU GRID (MODERN CARDS) ===== */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 18px;
         }
-
-        @media (max-width: 480px) {
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        @media (max-width: 500px) {
+            .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
         }
-
-        .menu-item {
-            background: #1e293b;
-            border-radius: 20px;
+        .menu-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
             padding: 20px 12px;
             text-align: center;
             text-decoration: none;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(251, 191, 36, 0.1);
+            border: 1px solid var(--border-light);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             display: block;
         }
-
-        .menu-item:hover {
+        .menu-card:active {
+            transform: scale(0.96);
+            background: rgba(255,255,255,0.7);
+        }
+        .menu-card:hover {
             transform: translateY(-4px);
-            border-color: #fbbf24;
-            box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5);
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow-md);
         }
-
-        .menu-item:active {
-            transform: scale(0.98);
-        }
-
         .menu-icon {
             width: 56px;
             height: 56px;
-            border-radius: 18px;
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
+            margin: 0 auto 14px;
+            transition: transform 0.2s;
         }
-
-        .menu-icon.primary { background: rgba(59, 130, 246, 0.1); }
-        .menu-icon.success { background: rgba(16, 185, 129, 0.1); }
-        .menu-icon.warning { background: rgba(245, 158, 11, 0.1); }
-        .menu-icon.info { background: rgba(6, 182, 212, 0.1); }
+        .menu-card:hover .menu-icon { transform: scale(1.05); }
+        .menu-icon.primary { background: rgba(37, 99, 235, 0.12); }
+        .menu-icon.success { background: rgba(22, 163, 74, 0.12); }
+        .menu-icon.warning { background: rgba(245, 158, 11, 0.12); }
+        .menu-icon.info { background: rgba(6, 182, 212, 0.12); }
         .menu-icon.secondary { background: rgba(100, 116, 139, 0.1); }
-        .menu-icon.danger { background: rgba(239, 68, 68, 0.1); }
-
-        .menu-icon i {
-            font-size: 2rem;
-        }
-
-        .menu-icon.primary i { color: #3b82f6; }
-        .menu-icon.success i { color: #10b981; }
-        .menu-icon.warning i { color: #f59e0b; }
-        .menu-icon.info i { color: #06b6d4; }
-        .menu-icon.secondary i { color: #94a3b8; }
-        .menu-icon.danger i { color: #ef4444; }
-
-        .menu-item h6 {
-            color: white;
-            font-size: 0.95rem;
-            font-weight: 600;
+        .menu-icon.danger { background: rgba(220, 38, 38, 0.1); }
+        .menu-icon i { font-size: 1.8rem; }
+        .menu-icon.primary i { color: var(--primary-blue); }
+        .menu-icon.success i { color: var(--secondary-green); }
+        .menu-icon.warning i { color: var(--accent-orange); }
+        .menu-icon.info i { color: #06B6D4; }
+        .menu-icon.secondary i { color: #94A3B8; }
+        .menu-icon.danger i { color: var(--error-red); }
+        .menu-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
             margin-bottom: 4px;
         }
-
-        .menu-item small {
-            color: #64748b;
-            font-size: 0.7rem;
+        .menu-card p {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
         }
 
-        /* Section Title */
-        .section-title {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
-        }
-
-        /* Admin Grid */
+        /* ===== ADMIN GRID ===== */
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 14px;
         }
-
-        @media (max-width: 480px) {
-            .admin-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .admin-item {
-            background: #1e293b;
-            border-radius: 16px;
+        .admin-card {
+            background: rgba(37, 99, 235, 0.06);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
             padding: 16px 12px;
             text-align: center;
             text-decoration: none;
+            border: 1px solid rgba(37, 99, 235, 0.15);
             transition: all 0.2s ease;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            display: block;
         }
+        .admin-card:active { transform: scale(0.96); background: rgba(37, 99, 235, 0.12); }
+        .admin-card i { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+        .admin-card span { font-size: 0.7rem; font-weight: 600; color: var(--text-primary); }
+        .admin-card.primary i { color: var(--primary-blue); }
+        .admin-card.success i { color: var(--secondary-green); }
+        .admin-card.warning i { color: var(--accent-orange); }
+        .admin-card.info i { color: #06B6D4; }
 
-        .admin-item:hover {
-            background: rgba(251, 191, 36, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .admin-item i {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-        }
-
-        .admin-item span {
-            color: white;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: block;
-        }
-
-        .admin-item.primary i { color: #3b82f6; }
-        .admin-item.success i { color: #10b981; }
-        .admin-item.warning i { color: #f59e0b; }
-        .admin-item.info i { color: #06b6d4; }
-
-        /* Logout Button */
+        /* ===== LOGOUT BUTTON ===== */
         .logout-btn {
-            background: transparent;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 16px;
+            width: 100%;
+            background: rgba(220, 38, 38, 0.08);
+            border: 1px solid rgba(220, 38, 38, 0.25);
+            border-radius: 60px;
             padding: 16px 24px;
-            color: #ef4444;
-            font-weight: 600;
+            color: var(--error-red);
+            font-weight: 700;
             font-size: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            width: 100%;
+            gap: 12px;
             transition: all 0.2s ease;
-            text-decoration: none;
-            margin-top: 24px;
+            cursor: pointer;
+            margin-top: 48px;
+            backdrop-filter: blur(4px);
         }
-
-        .logout-btn:hover {
-            background: #ef4444;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.3);
-        }
-
         .logout-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
+            background: rgba(220, 38, 38, 0.15);
+        }
+        .logout-btn i { font-size: 1.2rem; }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px 56px;
+        }
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 36px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+        .skeleton-accent { height: 5px; background: rgba(37, 99, 235, 0.15); }
+        .skeleton-content { padding: 28px; }
+        .skeleton-profile-layout { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+        .skeleton-avatar { width: 88px; height: 88px; background: rgba(37, 99, 235, 0.1); border-radius: 30px; }
+        .skeleton-info { flex: 1; }
+        .skeleton-line {
+            height: 14px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .skeleton-line.name { width: 60%; height: 28px; }
+        .skeleton-line.email { width: 75%; }
+        .skeleton-line.badge { width: 40%; height: 32px; margin-top: 6px; }
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-top: 20px;
+        }
+        .skeleton-menu-card {
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 28px;
+            padding: 20px 12px;
+            text-align: center;
+        }
+        .skeleton-menu-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 22px;
+            margin: 0 auto 12px;
+        }
+        .skeleton-menu-title {
+            width: 60%;
+            height: 14px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 8px;
+            margin: 8px auto 4px;
+        }
+        .skeleton-menu-sub {
+            width: 40%;
+            height: 10px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 6px;
+            margin: 0 auto;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
-        /* Toast */
+        /* ===== TOAST NOTIFICATIONS ===== */
         .toast-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: max(16px, env(safe-area-inset-top));
+            left: 0;
+            right: 0;
             z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
             pointer-events: none;
+            padding: 0 16px;
         }
-
         .toast {
-            background: #1e293b;
-            color: white;
+            background: #1E293B;
+            border-left: 4px solid var(--primary-blue);
             padding: 14px 20px;
-            border-radius: 30px;
-            box-shadow: 0 15px 30px -8px rgba(0,0,0,0.5);
+            border-radius: 20px;
+            color: white;
             display: flex;
             align-items: center;
             gap: 12px;
-            min-width: 280px;
-            max-width: 380px;
-            animation: slideIn 0.3s ease;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 360px;
+            animation: toastIn 0.25s ease;
             pointer-events: auto;
-            border-left: 4px solid #fbbf24;
-            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 500;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-lg);
+        }
+        .toast.error { border-left-color: var(--error-red); }
+        .toast.success { border-left-color: var(--secondary-green); }
+        .toast.warning { border-left-color: var(--accent-orange); }
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-
-        /* Responsive */
-        @media (max-width: 380px) {
-            .profile-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .profile-avatar {
-                margin: 0 auto;
-            }
-        }
-
-        /* Safe areas */
+        /* Scrollbar & utilities */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
         @supports (padding: max(0px)) {
-            .app {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-top: max(24px, env(safe-area-inset-top));
-                padding-bottom: max(24px, env(safe-area-inset-bottom));
-            }
+            .main-content { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
-        <div class="page-header">
-            <a href="javascript:history.back()" class="back-btn">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <h1>My Account</h1>
+    <!-- PAGE LOADER - CENTERED DOTS (CONSISTENT WITH OTHER PAGES) -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
+    </div>
 
-        <!-- Profile Card -->
-        <div class="profile-card">
-            <div class="profile-content">
-                <div class="profile-avatar">
-                    <i class="bi bi-person-circle"></i>
-                </div>
-                <div class="profile-info">
-                    <h2>{{ user.username }}</h2>
-                    <div class="email">
-                        <i class="bi bi-envelope-fill"></i>
-                        {{ user.email }}
-                    </div>
-                    {% if user.is_active_subscriber %}
-                        <span class="plan-badge active">
-                            <i class="bi bi-star-fill"></i>
-                            {{ user.subscription_form|upper }} Plan - {{ user.subscription_type|title }}
-                        </span>
-                    {% else %}
-                        <span class="plan-badge inactive">
-                            <i class="bi bi-star"></i>
-                            No Active Plan
-                        </span>
-                    {% endif %}
+    <!-- Menu Overlay & Slide Menu -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ user.username[0]|upper if user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ user.username if user else 'User' }}</h4>
+                    <p>{{ user.email if user else '' }}</p>
                 </div>
             </div>
+            <div class="menu-plan-badge" id="menuPlan">
+                {% if user.is_active_subscriber %}
+                <i class="bi bi-star-fill"></i> {{ user.subscription_form|upper }} {{ user.subscription_type|title }}
+                {% else %}
+                <i class="bi bi-gift-fill"></i> Free Plan
+                {% endif %}
+            </div>
         </div>
-
-        <!-- Main Menu Grid -->
-        <div class="menu-grid">
-            <!-- Profile -->
-            <a href="{{ url_for('profile') }}" class="menu-item">
-                <div class="menu-icon primary">
-                    <i class="bi bi-person"></i>
-                </div>
-                <h6>My Profile</h6>
-                <small>View & edit</small>
-            </a>
-
-            <!-- My Lessons -->
-            <a href="{{ url_for('dashboard') }}" class="menu-item">
-                <div class="menu-icon success">
-                    <i class="bi bi-play-circle"></i>
-                </div>
-                <h6>My Lessons</h6>
-                <small>Continue learning</small>
-            </a>
-
-            <!-- Subscription -->
-            <a href="{{ url_for('pricing') }}" class="menu-item">
-                <div class="menu-icon warning">
-                    <i class="bi bi-star"></i>
-                </div>
-                <h6>Subscription</h6>
-                <small>Manage plan</small>
-            </a>
-
-            <!-- Payments -->
-            <a href="{{ url_for('profile') }}#payments" class="menu-item">
-                <div class="menu-icon info">
-                    <i class="bi bi-credit-card"></i>
-                </div>
-                <h6>Payments</h6>
-                <small>Transaction history</small>
-            </a>
-
-            <!-- Settings -->
-            <a href="#" class="menu-item" onclick="showToast('Settings coming soon!', 'info'); return false;">
-                <div class="menu-icon secondary">
-                    <i class="bi bi-gear"></i>
-                </div>
-                <h6>Settings</h6>
-                <small>Account settings</small>
-            </a>
-
-            <!-- Help -->
-            <a href="#" class="menu-item" onclick="showToast('Help & support coming soon!', 'info'); return false;">
-                <div class="menu-icon danger">
-                    <i class="bi bi-question-circle"></i>
-                </div>
-                <h6>Help</h6>
-                <small>Support & FAQs</small>
-            </a>
+        <div class="menu-section">
+            <div class="menu-section-title">Menu</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('pricing') }}" class="menu-item"><i class="bi bi-tag-fill"></i><span>Pricing</span></a>
+            <a href="{{ url_for('profile') }}" class="menu-item"><i class="bi bi-person-fill"></i><span>Profile</span></a>
+            <a href="{{ url_for('user_menu') }}" class="menu-item"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
         </div>
-
-        <!-- Admin Section -->
-        {% if user.is_admin %}
-        <div class="section-title">Administration</div>
-        <div class="admin-grid">
-            <a href="{{ url_for('admin_dashboard') }}" class="admin-item primary">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ url_for('admin_subjects') }}" class="admin-item success">
-                <i class="bi bi-book"></i>
-                <span>Subjects</span>
-            </a>
-            <a href="{{ url_for('admin_lessons') }}" class="admin-item warning">
-                <i class="bi bi-camera-reel"></i>
-                <span>Lessons</span>
-            </a>
-            <a href="{{ url_for('admin_users') }}" class="admin-item info">
-                <i class="bi bi-people"></i>
-                <span>Users</span>
-            </a>
+        <div class="menu-divider"></div>
+        <div class="menu-section">
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+            </form>
         </div>
-        {% endif %}
-
-        <!-- Logout Button -->
-        <form method="POST" action="{{ url_for('logout') }}" style="display: contents;">
-            <button type="submit" class="logout-btn">
-                <i class="bi bi-box-arrow-right"></i>
-                Sign Out
-            </button>
-        </form>
     </div>
 
     <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
+        </div>
+    </div>
+
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <a href="{{ url_for('dashboard') }}" class="back-link">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="card-accent"></div>
+                <div class="card-content">
+                    <div class="profile-layout">
+                        <div class="profile-avatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h2 class="profile-name">{{ user.username }}</h2>
+                            <div class="profile-email">
+                                <i class="bi bi-envelope-fill"></i>
+                                <span>{{ user.email }}</span>
+                            </div>
+                            {% if user.is_active_subscriber %}
+                            <div class="plan-badge active">
+                                <i class="bi bi-star-fill"></i>
+                                {{ user.subscription_form|upper }} • {{ user.subscription_type|title }}
+                            </div>
+                            {% else %}
+                            <div class="plan-badge inactive">
+                                <i class="bi bi-star"></i>
+                                Free Plan
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="member-since">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        Member since {{ user.created_at.strftime('%B %Y') if user.created_at else '2025' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Menu -->
+            <div class="section-header">
+                <h3><i class="bi bi-grid-3x3-gap-fill"></i> Account Hub</h3>
+            </div>
+            <div class="menu-grid">
+                <a href="{{ url_for('profile') }}" class="menu-card">
+                    <div class="menu-icon primary"><i class="bi bi-person"></i></div>
+                    <h4>My Profile</h4>
+                    <p>View & edit details</p>
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="menu-card">
+                    <div class="menu-icon success"><i class="bi bi-play-circle"></i></div>
+                    <h4>My Lessons</h4>
+                    <p>Continue learning</p>
+                </a>
+                <a href="{{ url_for('pricing') }}" class="menu-card">
+                    <div class="menu-icon warning"><i class="bi bi-star"></i></div>
+                    <h4>Subscription</h4>
+                    <p>Manage your plan</p>
+                </a>
+                <a href="{{ url_for('profile') }}#payments" class="menu-card">
+                    <div class="menu-icon info"><i class="bi bi-credit-card"></i></div>
+                    <h4>Payments</h4>
+                    <p>Transaction history</p>
+                </a>
+                <a href="#" class="menu-card" onclick="showToast('Settings coming soon!', 'info'); return false;">
+                    <div class="menu-icon secondary"><i class="bi bi-gear"></i></div>
+                    <h4>Settings</h4>
+                    <p>Preferences</p>
+                </a>
+                <a href="#" class="menu-card" onclick="showToast('Help & support coming soon!', 'info'); return false;">
+                    <div class="menu-icon danger"><i class="bi bi-question-circle"></i></div>
+                    <h4>Help</h4>
+                    <p>Support & FAQs</p>
+                </a>
+            </div>
+
+            <!-- Admin Section -->
+            {% if user.is_admin %}
+            <div class="section-header">
+                <h3><i class="bi bi-shield-lock-fill"></i> Administration</h3>
+            </div>
+            <div class="admin-grid">
+                <a href="{{ url_for('admin_dashboard') }}" class="admin-card primary">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('admin_subjects') }}" class="admin-card success">
+                    <i class="bi bi-book"></i>
+                    <span>Subjects</span>
+                </a>
+                <a href="{{ url_for('admin_lessons') }}" class="admin-card warning">
+                    <i class="bi bi-camera-reel"></i>
+                    <span>Lessons</span>
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="admin-card info">
+                    <i class="bi bi-people"></i>
+                    <span>Users</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Logout Button -->
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="logout-btn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Sign Out
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Skeleton Container -->
+    <div class="skeleton-container" id="skeletonContainer">
+        <div class="skeleton-card shimmer">
+            <div class="skeleton-accent shimmer"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-profile-layout">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-info">
+                        <div class="skeleton-line name shimmer"></div>
+                        <div class="skeleton-line email shimmer"></div>
+                        <div class="skeleton-line badge shimmer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="skeleton-grid">
+            <div class="skeleton-menu-card shimmer">
+                <div class="skeleton-menu-icon shimmer"></div>
+                <div class="skeleton-menu-title shimmer"></div>
+                <div class="skeleton-menu-sub shimmer"></div>
+            </div>
+            <div class="skeleton-menu-card shimmer">
+                <div class="skeleton-menu-icon shimmer"></div>
+                <div class="skeleton-menu-title shimmer"></div>
+                <div class="skeleton-menu-sub shimmer"></div>
+            </div>
+            <div class="skeleton-menu-card shimmer">
+                <div class="skeleton-menu-icon shimmer"></div>
+                <div class="skeleton-menu-title shimmer"></div>
+                <div class="skeleton-menu-sub shimmer"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Toast notification function
-        function showToast(message, type = 'info', duration = 5000) {
+        // Toast notification
+        function showToast(message, type = 'info', duration = 4500) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-
-            let icon = 'info-circle';
-            if (type === 'success') icon = 'check-circle-fill';
-            else if (type === 'error') icon = 'exclamation-circle-fill';
-            else if (type === 'warning') icon = 'exclamation-triangle-fill';
-
-            toast.innerHTML = `
-                <i class="bi bi-${icon}" style="color: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#fbbf24'};"></i>
-                <div style="flex: 1;">${message}</div>
-                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">✕</button>
-            `;
-
+            const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
-
             setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease forwards';
-                setTimeout(() => toast.remove(), 300);
+                if (toast.parentElement) toast.remove();
             }, duration);
         }
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-        // Show flashed messages
-        document.addEventListener('DOMContentLoaded', function() {
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation (consistent timing)
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContainer');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 700);
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1100);
         });
+
+        // Flash messages from server
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>

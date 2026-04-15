@@ -198,30 +198,54 @@ class PayChangu:
         return None
 
     def verify_payment(self, charge_id):
-        """
-        Verify payment using charge ID
-        Endpoint: GET /mobile-money/payments/{chargeId}/verify
-        """
+        """Verify payment status instantly with PayChangu"""
         url = f"{self.base_url}/mobile-money/payments/{charge_id}/verify"
-        logger.info(f"Verifying payment at: {url}")
-
+        
         try:
             response = requests.get(
                 url,
-                headers=self.get_headers(),  # Also uses headers with ngrok bypass
+                headers=self.get_headers(),
                 timeout=30
             )
-
+            
             if response.status_code == 200:
-                return response.json()
+                data = response.json()
+                logger.info(f"Verification response: {data}")
+                
+                # Check if payment is successful
+                if data.get('status') == 'success':
+                    payment_data = data.get('data', {})
+                    payment_status = payment_data.get('status')
+                    
+                    if payment_status == 'success' or payment_status == 'completed':
+                        return {
+                            'success': True,
+                            'completed': True,
+                            'data': payment_data
+                        }
+                    else:
+                        return {
+                            'success': True,
+                            'completed': False,
+                            'status': payment_status,
+                            'data': payment_data
+                        }
+                else:
+                    return {
+                        'success': False,
+                        'completed': False,
+                        'message': data.get('message', 'Verification failed')
+                    }
             else:
                 return {
-                    "status": "error",
-                    "message": f"Verification failed: {response.text}"
+                    'success': False,
+                    'completed': False,
+                    'message': f"HTTP {response.status_code}"
                 }
         except Exception as e:
             logger.error(f"Verification error: {str(e)}")
             return {
-                "status": "error",
-                "message": f"Verification error: {str(e)}"
+                'success': False,
+                'completed': False,
+                'message': str(e)
             }

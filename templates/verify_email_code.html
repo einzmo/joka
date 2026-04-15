@@ -1,0 +1,774 @@
+<!-- templates/verify_email_code.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>Verify Email - myMSCE</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #EFF6FF;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: #0F172A;
+        }
+
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== PAGE LOADER ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #EFF6FF;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .glass-loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.08);
+            backdrop-filter: blur(10px);
+            animation: pulseGlow 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .glass-loader::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .glass-loader::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            background: #EFF6FF;
+            border-radius: 50%;
+        }
+        
+        .glass-loader .inner {
+            position: relative;
+            z-index: 2;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* ===== BACK BUTTON ===== */
+        .back-btn {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2563EB;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            padding: 10px 18px;
+            border-radius: 40px;
+            background: rgba(37, 99, 235, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            transition: all 0.2s;
+            z-index: 20;
+        }
+
+        .back-btn:hover {
+            background: rgba(37, 99, 235, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .back-btn:active {
+            transform: scale(0.97) translateX(-4px);
+        }
+
+        @media (max-width: 550px) {
+            .back-btn {
+                top: 16px;
+                left: 16px;
+                padding: 8px 14px;
+            }
+            .back-btn span { display: none; }
+            .back-btn i { margin: 0; }
+        }
+
+        /* ===== VERIFY CARD ===== */
+        .verify-card {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(20px);
+            border-radius: 36px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+        }
+        
+        .card-accent {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #2563EB, #16A34A);
+        }
+        
+        .card-content {
+            padding: 40px 32px;
+            text-align: center;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 480px) {
+            .card-content { padding: 32px 24px; }
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 2px solid rgba(37, 99, 235, 0.3);
+            animation: softPulse 2s infinite;
+        }
+
+        @keyframes softPulse {
+            0%, 100% { transform: scale(1); border-color: rgba(37, 99, 235, 0.3); }
+            50% { transform: scale(1.05); border-color: #2563EB; }
+        }
+
+        .icon-circle i {
+            font-size: 2.5rem;
+            color: #2563EB;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .header .highlight {
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .header strong {
+            color: #2563EB;
+            font-weight: 700;
+        }
+
+        /* ===== INFO BOX ===== */
+        .info-box {
+            background: rgba(37, 99, 235, 0.06);
+            border-left: 4px solid #2563EB;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .info-box i {
+            color: #2563EB;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .info-box p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* ===== CODE INPUT ===== */
+        .code-input-group {
+            margin-bottom: 28px;
+        }
+        
+        .code-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        
+        .code-label i {
+            color: #2563EB;
+            font-size: 0.9rem;
+        }
+        
+        .code-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        .code-input {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-light);
+            border-radius: 60px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 8px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: 'Inter', monospace;
+        }
+        
+        .code-input:focus {
+            outline: none;
+            border-color: #2563EB;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .code-input::placeholder {
+            color: var(--text-tertiary);
+            opacity: 0.4;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .error-message {
+            color: #DC2626;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .error-message i {
+            font-size: 0.8rem;
+        }
+
+        /* ===== VERIFY BUTTON ===== */
+        .btn-verify {
+            width: 100%;
+            padding: 16px 24px;
+            background: #F59E0B;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-verify:hover {
+            background: #D97706;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+        
+        .btn-verify:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn-verify.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .btn-verify.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        /* ===== RESEND LINK ===== */
+        .resend-link {
+            text-align: center;
+        }
+        
+        .resend-link a {
+            color: #2563EB;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .resend-link a:hover {
+            background: rgba(37, 99, 235, 0.08);
+        }
+        
+        .resend-link a:active {
+            opacity: 0.8;
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+        
+        .skeleton-accent {
+            height: 4px;
+            background: rgba(37, 99, 235, 0.15);
+        }
+        
+        .skeleton-content {
+            padding: 40px 32px;
+            text-align: center;
+        }
+        
+        .skeleton-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 40px;
+            margin: 0 auto 20px;
+        }
+        
+        .skeleton-line {
+            height: 14px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            width: 50%;
+            height: 32px;
+            margin: 0 auto 12px;
+        }
+        
+        .skeleton-line.subtitle {
+            width: 60%;
+            height: 20px;
+            margin: 0 auto 24px;
+        }
+        
+        .skeleton-code-input {
+            width: 100%;
+            height: 72px;
+            background: rgba(37, 99, 235, 0.06);
+            border-radius: 60px;
+            margin-bottom: 28px;
+        }
+        
+        .skeleton-button {
+            width: 100%;
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+        
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
+            padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toast.error { border-left-color: #DC2626; }
+        .toast.success { border-left-color: #16A34A; }
+        .toast.warning { border-left-color: #F59E0B; }
+        
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .card-content { padding: 32px 24px; }
+            .header h1 { font-size: 1.5rem; }
+            .code-input { font-size: 1.4rem; letter-spacing: 6px; }
+        }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+                padding-top: max(24px, env(safe-area-inset-top));
+                padding-bottom: max(24px, env(safe-area-inset-bottom));
+            }
+            .toast-container {
+                top: max(20px, env(safe-area-inset-top));
+            }
+            .back-btn {
+                top: max(24px, env(safe-area-inset-top));
+                left: max(24px, env(safe-area-inset-left));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="glass-loader">
+            <div class="inner">M</div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="container">
+        <!-- Back button -->
+        <a href="{{ url_for('login') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Login</span>
+        </a>
+
+        <!-- Main Content with Skeleton -->
+        <div id="mainContent">
+            <!-- Skeleton Content (shown initially) -->
+            <div id="skeletonContent">
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-icon shimmer"></div>
+                        <div class="skeleton-line title shimmer"></div>
+                        <div class="skeleton-line subtitle shimmer"></div>
+                        <div class="skeleton-code-input shimmer"></div>
+                        <div class="skeleton-button shimmer"></div>
+                        <div class="skeleton-line" style="width: 40%; height: 16px; margin: 0 auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real Content (hidden initially) -->
+            <div id="realContent" style="display: none;">
+                <div class="verify-card">
+                    <div class="card-accent"></div>
+                    <div class="card-content">
+                        <!-- Header -->
+                        <div class="header">
+                            <div class="icon-circle">
+                                <i class="bi bi-envelope-paper-fill"></i>
+                            </div>
+                            <h1>Verify Your <span class="highlight">Email</span></h1>
+                            <p>We sent a 6-digit code to <strong>{{ email }}</strong></p>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="info-box">
+                            <i class="bi bi-info-circle"></i>
+                            <p>Please check your inbox and spam folder for the verification code. The code expires in 10 minutes.</p>
+                        </div>
+
+                        <!-- Form -->
+                        <form method="POST" id="verifyForm">
+                            <!-- Code input -->
+                            <div class="code-input-group">
+                                <div class="code-label">
+                                    <i class="bi bi-key-fill"></i>
+                                    Verification Code
+                                </div>
+                                <div class="code-input-wrapper">
+                                    <input type="text" 
+                                           name="code" 
+                                           class="code-input" 
+                                           placeholder="000000" 
+                                           maxlength="6" 
+                                           pattern="[0-9]{6}" 
+                                           required 
+                                           autofocus
+                                           id="codeInput">
+                                </div>
+                                <div id="codeError" class="error-message" style="display: none;">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span>Please enter a valid 6-digit code</span>
+                                </div>
+                            </div>
+
+                            <!-- Verify button -->
+                            <button type="submit" class="btn-verify" id="submitBtn">
+                                <span>VERIFY EMAIL</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+
+                            <!-- Resend link -->
+                            <div class="resend-link">
+                                <a href="{{ url_for('resend_verification_code') }}">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    Resend code
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== TOAST FUNCTION =====
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            if (container.children.length >= 3) {
+                container.children[0].remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'check-circle-fill' :
+                      type === 'error' ? 'exclamation-triangle-fill' :
+                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
+
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, duration);
+        }
+
+        // ===== PAGE LOADER & SKELETON =====
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('pageLoader').classList.add('hidden');
+            }, 800);
+
+            setTimeout(() => {
+                document.getElementById('skeletonContent').style.display = 'none';
+                document.getElementById('realContent').style.display = 'block';
+            }, 1000);
+        });
+
+        // ===== FLASH MESSAGES =====
+        document.addEventListener('DOMContentLoaded', function() {
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        setTimeout(() => {
+                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
+                        }, {{ (loop.index0 * 200) + 1200 }});
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+
+        // ===== CODE INPUT VALIDATION =====
+        const codeInput = document.getElementById('codeInput');
+        const codeError = document.getElementById('codeError');
+
+        if (codeInput) {
+            // Auto-format: only allow numbers
+            codeInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+                
+                // Hide error when typing
+                if (codeError && this.value.length === 6) {
+                    codeError.style.display = 'none';
+                }
+            });
+
+            // Validate on blur
+            codeInput.addEventListener('blur', function() {
+                if (codeError && this.value.length > 0 && this.value.length !== 6) {
+                    codeError.style.display = 'flex';
+                } else if (codeError) {
+                    codeError.style.display = 'none';
+                }
+            });
+        }
+
+        // ===== FORM SUBMISSION =====
+        const form = document.getElementById('verifyForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function(e) {
+                const codeValue = codeInput ? codeInput.value : '';
+                
+                if (codeValue.length !== 6) {
+                    e.preventDefault();
+                    if (codeError) {
+                        codeError.style.display = 'flex';
+                        codeError.querySelector('span').textContent = 'Please enter a valid 6-digit code';
+                    }
+                    showToast('Please enter the 6-digit verification code', 'warning');
+                    return;
+                }
+                
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> VERIFYING...';
+            });
+        }
+    </script>
+</body>
+</html>

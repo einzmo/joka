@@ -1,4 +1,4 @@
-<!-- templates/admin/users.html - POLISHED GOLD-ON-NAVY WITH GLASS MORPHISM -->
+<!-- templates/admin/users.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,14 +7,13 @@
     <title>Manage Users - myMSCE Admin</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
         * {
             margin: 0;
             padding: 0;
@@ -24,28 +23,32 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a2b4c; /* Light navy base */
-            color: rgba(255, 255, 255, 0.9);
+            background: #EFF6FF;
+            color: #0F172A;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            line-height: 1.5;
+            overflow-x: hidden;
         }
 
-        /* Subtle grain texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.15;
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
         /* ===== PAGE LOADER ===== */
@@ -55,223 +58,125 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: #1a2b4c;
+            background: #EFF6FF;
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.03) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(255, 255, 255, 0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-line {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-
-        .skeleton-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 28px;
-            padding: 20px;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-        }
-
-        .skeleton-avatar {
+        
+        .glass-loader {
+            position: relative;
             width: 80px;
             height: 80px;
-            border-radius: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            margin: 0 auto 12px;
-        }
-
-        /* ===== MAIN CONTAINER ===== */
-        .app {
-            max-width: 450px;
-            width: 100%;
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 40px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            position: relative;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* ===== HEADER ===== */
-        .navy-header {
-            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.08);
             backdrop-filter: blur(10px);
-            padding: 20px 24px;
+            animation: pulseGlow 2s ease-in-out infinite;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+        }
+        
+        .glass-loader::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .glass-loader::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            background: #EFF6FF;
+            border-radius: 50%;
+        }
+        
+        .glass-loader .inner {
             position: relative;
-            border-bottom: 2px solid rgba(251, 191, 36, 0.3);
-            animation: slideDown 0.5s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .navy-header h1 {
-            color: white;
-            font-size: 1.8rem;
+            z-index: 2;
+            font-size: 1.2rem;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            margin: 0;
-        }
-
-        .navy-header h1 span {
-            color: #fbbf24;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background: linear-gradient(135deg, #2563EB, #16A34A);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        }
 
-        /* ===== HAMBURGER MENU ===== */
-        .menu-icon {
-            width: 44px;
-            height: 44px;
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #2563EB;
+            padding: 14px 24px;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 6px;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 12px;
             transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
+        
+        .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .menu-btn i { font-size: 1.3rem; color: white; }
 
-        .menu-icon:hover {
-            background: rgba(251, 191, 36, 0.1);
-            border-color: #fbbf24;
-        }
-
-        .menu-icon span {
-            width: 100%;
-            height: 3px;
-            background: #fbbf24;
-            border-radius: 3px;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-        }
-
-        .menu-icon.open span:nth-child(1) {
-            transform: rotate(45deg) translate(8px, 8px);
-        }
-
-        .menu-icon.open span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .menu-icon.open span:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -7px);
-        }
-
-        /* ===== SLIDE-OUT MENU ===== */
+        /* ===== SLIDE MENU ===== */
         .slide-menu {
             position: fixed;
             top: 0;
-            left: -300px;
+            left: -280px;
             width: 280px;
             height: 100vh;
-            background: rgba(26, 43, 76, 0.98);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(20px);
-            z-index: 1002;
-            transition: left 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
-            box-shadow: 2px 0 30px rgba(0,0,0,0.4);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
             padding: 24px 0;
-            overflow-y: auto;
-            border-right: 2px solid rgba(251, 191, 36, 0.3);
+            border-right: 1px solid rgba(37, 99, 235, 0.1);
         }
 
-        .slide-menu.open {
-            left: 0;
-        }
-
-        .menu-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .menu-header h3 {
-            color: white;
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-        }
-
-        .menu-header p {
-            color: #fbbf24;
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-        }
-
-        .menu-item i {
-            width: 24px;
-            color: #fbbf24;
-            font-size: 1.2rem;
-        }
-
-        .menu-item:hover {
-            background: rgba(251, 191, 36, 0.1);
-            border-left-color: #fbbf24;
-            color: white;
-        }
-
-        .menu-item.active {
-            background: rgba(251, 191, 36, 0.15);
-            border-left-color: #fbbf24;
-            color: #fbbf24;
-        }
+        .slide-menu.open { left: 0; }
 
         .menu-overlay {
             position: fixed;
@@ -279,286 +184,333 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
-            z-index: 1001;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 999;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease;
         }
 
-        .menu-overlay.active {
-            opacity: 1;
-            visibility: visible;
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #2563EB, #16A34A); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: #0F172A; }
+        .menu-user-info p { font-size: 0.7rem; color: #64748B; }
+        .menu-plan-badge { background: #DBEAFE; color: #2563EB; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        
+        .menu-section { padding: 0 20px; margin-bottom: 24px; }
+        .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #475569; text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .menu-item:hover, .menu-item:active { background: #DBEAFE; color: #2563EB; }
+        .menu-item i { width: 22px; color: #94A3B8; }
+        .menu-item:hover i { color: #2563EB; }
+        .menu-item.active { background: #DBEAFE; color: #2563EB; }
+        .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px 60px;
         }
 
-        /* ===== CONTENT ===== */
-        .content {
-            padding: 24px 20px;
+        @media (max-width: 768px) {
+            .main-content { padding: 24px 20px 40px; }
         }
 
-        /* ===== STATS CARDS ===== */
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            margin-bottom: 28px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+        
+        .page-header .highlight {
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* ===== STATS GRID ===== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-            animation: fadeInUp 0.5s ease 0.1s both;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        @media (max-width: 992px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
-
+        @media (max-width: 500px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+        
         .stat-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
             border-radius: 24px;
-            padding: 20px 16px;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            transition: all 0.2s;
+            padding: 20px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
         }
-
+        
         .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: #fbbf24;
+            transform: translateY(-3px);
+            border-color: #2563EB;
+            box-shadow: var(--shadow-md);
         }
-
+        
+        .stat-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
         .stat-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(251, 191, 36, 0.1);
+            width: 52px;
+            height: 52px;
+            background: rgba(37, 99, 235, 0.1);
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
+            flex-shrink: 0;
         }
-
+        
         .stat-icon i {
-            font-size: 1.8rem;
-            color: #fbbf24;
+            font-size: 1.6rem;
+            color: #2563EB;
         }
-
+        
         .stat-info h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 2px;
-            color: white;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 4px;
         }
-
+        
         .stat-info p {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin: 0;
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
+            font-weight: 500;
         }
 
         /* ===== FILTERS CARD ===== */
         .filters-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
             border-radius: 28px;
             padding: 20px;
-            margin-bottom: 24px;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            animation: fadeInUp 0.5s ease 0.15s both;
+            margin-bottom: 28px;
+            border: 1px solid var(--border-light);
         }
-
+        
         .search-wrapper {
             position: relative;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
-
+        
         .search-icon {
             position: absolute;
-            left: 16px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #fbbf24;
+            color: #2563EB;
             z-index: 2;
         }
-
+        
         .search-input {
             width: 100%;
             padding: 14px 16px 14px 48px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            border-radius: 40px;
-            color: white;
-            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-light);
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
             transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
-
+        
         .search-input:focus {
             outline: none;
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+            border-color: #2563EB;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-
+        
         .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--text-tertiary);
+            opacity: 0.5;
         }
-
+        
         .filter-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-
+        
         .filter-select {
             flex: 1;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-light);
+            border-radius: 50px;
             padding: 12px 16px;
-            color: white;
-            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-size: 0.85rem;
             cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
+            font-family: 'Inter', sans-serif;
         }
-
+        
         .filter-select:focus {
             outline: none;
-            border-color: #fbbf24;
+            border-color: #2563EB;
         }
-
+        
         .btn-reset {
-            background: rgba(251, 191, 36, 0.1);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 40px;
-            padding: 12px 20px;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563EB;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 50px;
+            padding: 12px 24px;
             font-weight: 600;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            white-space: nowrap;
         }
-
-        .btn-reset:hover {
-            background: #fbbf24;
-            color: #1a2b4c;
-            transform: translateY(-2px);
+        
+        .btn-reset:active {
+            transform: scale(0.97);
+            background: rgba(37, 99, 235, 0.2);
         }
 
         /* ===== USERS GRID ===== */
         .users-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-            animation: fadeInUp 0.5s ease 0.2s both;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
         }
-
+        
         .user-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 28px;
-            padding: 20px 12px;
-            text-align: center;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-            position: relative;
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
             cursor: pointer;
-            animation: cardFade 0.5s ease;
+            animation: fadeInUp 0.4s ease;
+            animation-fill-mode: both;
         }
-
-        @keyframes cardFade {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
+        
         .user-card:hover {
-            transform: translateY(-6px);
-            border-color: #fbbf24;
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+            transform: translateY(-4px);
+            border-color: #2563EB;
+            box-shadow: var(--shadow-md);
         }
-
+        
         .user-avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #fbbf24, #2563eb);
-            border-radius: 40px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 2.2rem;
+            margin: 0 auto 16px;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: #1a2b4c;
-            border: 2px solid rgba(251, 191, 36, 0.3);
-            transition: all 0.3s;
-        }
-
-        .user-card:hover .user-avatar {
-            transform: scale(1.05);
-            border-color: #fbbf24;
-        }
-
-        .user-name {
             color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .user-name {
+            text-align: center;
             font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .admin-badge {
-            display: inline-block;
-            background: #fbbf24;
-            color: #1a2b4c;
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 30px;
-            margin-bottom: 8px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .user-detail-item {
+            color: var(--text-primary);
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.85rem;
-            margin-bottom: 6px;
         }
-
-        .user-detail-item i {
+        
+        .admin-badge-icon {
+            color: #F59E0B;
             font-size: 0.9rem;
-            color: #fbbf24;
         }
-
+        
+        .user-details {
+            margin: 12px 0;
+        }
+        
+        .user-detail-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .user-detail-item i {
+            color: #2563EB;
+            font-size: 0.85rem;
+        }
+        
+        .verified-badge {
+            color: #16A34A;
+        }
+        
+        .pending-badge {
+            color: #F59E0B;
+        }
+        
         .subscription-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 5px 14px;
             border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
-            margin-top: 8px;
+            margin-top: 12px;
+            text-align: center;
+            width: 100%;
         }
-
+        
         .badge-subscribed {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(22, 163, 74, 0.12);
+            color: #16A34A;
+            border: 1px solid rgba(22, 163, 74, 0.3);
         }
-
+        
         .badge-free {
-            background: rgba(100, 116, 139, 0.15);
-            color: #94a3b8;
+            background: rgba(100, 116, 139, 0.12);
+            color: #64748B;
             border: 1px solid rgba(100, 116, 139, 0.3);
         }
 
@@ -568,148 +520,221 @@
             align-items: center;
             justify-content: center;
             gap: 20px;
-            margin: 24px 0;
-            animation: fadeInUp 0.5s ease 0.25s both;
+            margin: 28px 0;
         }
-
+        
         .page-arrow {
             width: 44px;
             height: 44px;
-            border-radius: 22px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.3rem;
+            color: #2563EB;
+            font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.2s;
         }
-
-        .page-arrow:hover {
-            background: #fbbf24;
-            color: #1a2b4c;
-            border-color: #fbbf24;
-            transform: translateY(-2px);
+        
+        .page-arrow:active {
+            transform: scale(0.95);
+            background: rgba(37, 99, 235, 0.2);
+        }
+        
+        .page-arrow.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        
+        .page-info {
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
         }
 
-        .page-dots {
+        /* ===== BOTTOM NAVIGATION ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
             display: flex;
-            gap: 8px;
-        }
-
-        .page-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
-        }
-
-        .page-dot.active {
-            width: 24px;
-            background: #fbbf24;
-        }
-
-        /* ===== FLOATING NAV ===== */
-        .floating-nav {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 40px;
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
             justify-content: space-around;
-            margin-top: 24px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            animation: fadeInUp 0.5s ease 0.3s both;
+            align-items: center;
+            padding: 10px 24px 24px;
+            border-top: 1px solid var(--border-light);
+            z-index: 100;
         }
-
+        
         .nav-icon {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 40px;
             transition: all 0.2s;
-            cursor: pointer;
         }
-
-        .nav-icon:hover {
-            color: #fbbf24;
-            transform: translateY(-2px);
+        
+        .nav-icon i {
+            font-size: 1.3rem;
         }
-
+        
         .nav-icon.active {
-            color: #fbbf24;
+            color: #2563EB;
+            background: rgba(37, 99, 235, 0.1);
+        }
+        
+        .nav-icon:active {
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 480px) {
+            .bottom-nav { padding: 8px 16px 20px; }
+            .nav-icon span { font-size: 0.6rem; }
         }
 
         /* ===== TABLE FOOTER ===== */
         .table-footer {
             text-align: center;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.9rem;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(251, 191, 36, 0.1);
-            animation: fadeInUp 0.5s ease 0.35s both;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-light);
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
         }
-
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        
         .legend-dot {
             display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 4px;
-            margin-right: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
         }
-        .dot-subscribed { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
-        .dot-free { background: #94a3b8; }
+        
+        .dot-subscribed { background: #16A34A; }
+        .dot-free { background: #64748B; }
 
         /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
-            background: rgba(0, 0, 0, 0.2);
+            padding: 60px 32px;
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
             border-radius: 28px;
-            margin: 20px 0;
-            border: 1px solid rgba(251, 191, 36, 0.1);
+            border: 1px solid var(--border-light);
         }
-
+        
         .empty-state i {
-            font-size: 4rem;
-            color: rgba(255, 255, 255, 0.1);
+            font-size: 3.5rem;
+            color: #93C5FD;
             margin-bottom: 16px;
         }
-
+        
         .empty-state h3 {
-            color: white;
             font-size: 1.3rem;
+            color: var(--text-primary);
             margin-bottom: 8px;
         }
-
+        
         .empty-state p {
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--text-secondary);
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        
+        .skeleton-stat-card {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 24px;
+            padding: 20px;
+        }
+        
+        .skeleton-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line {
+            height: 16px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .skeleton-users {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .skeleton-user-card {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 24px;
+            padding: 24px;
+        }
+        
+        .skeleton-avatar {
+            width: 70px;
+            height: 70px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 20px;
+            margin: 0 auto 16px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== TOAST ===== */
         .toast-container {
             position: fixed;
             top: 20px;
             left: 0;
             right: 0;
-            z-index: 99999;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             pointer-events: none;
             padding: 0 16px;
         }
-
+        
         .toast {
-            background: rgba(26, 43, 76, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-left: 4px solid #fbbf24;
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
             padding: 14px 20px;
-            border-radius: 60px;
+            border-radius: 16px;
             color: white;
             display: flex;
             align-items: center;
@@ -718,114 +743,97 @@
             width: 100%;
             max-width: 380px;
             animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
         }
-
-        .toast i { color: #fbbf24; }
+        
         .toast button {
-            background: none;
+            background: transparent;
             border: none;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255,255,255,0.5);
             margin-left: auto;
             cursor: pointer;
+            font-size: 1rem;
         }
-
+        
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 380px) {
-            .users-grid { gap: 12px; }
-            .user-avatar { width: 70px; height: 70px; font-size: 2rem; }
-            .user-name { font-size: 1rem; }
-            .filter-actions { flex-direction: column; }
-        }
-
-        /* ===== SAFE AREAS ===== */
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-top: max(20px, env(safe-area-inset-top));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
-            }
-            .toast-container {
-                top: max(20px, env(safe-area-inset-top));
-            }
-            .slide-menu {
-                padding-top: max(24px, env(safe-area-inset-top));
-                padding-bottom: max(24px, env(safe-area-inset-bottom));
-            }
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
     </style>
 </head>
 <body>
     <!-- Page Loader -->
     <div class="page-loader" id="pageLoader">
-        <div class="spinner"></div>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <!-- Slide-out Menu -->
-    <div class="slide-menu" id="slideMenu">
-        <div class="menu-header">
-            <h3>Admin Menu</h3>
-            <p>myMSCE Control Panel</p>
-        </div>
-
-        <a href="{{ url_for('admin_dashboard') }}" class="menu-item">
-            <i class="bi bi-speedometer2"></i>
-            Dashboard
-        </a>
-        <a href="{{ url_for('admin_users') }}" class="menu-item active">
-            <i class="bi bi-people"></i>
-            Users
-        </a>
-        <a href="{{ url_for('admin_subjects') }}" class="menu-item">
-            <i class="bi bi-book"></i>
-            Subjects
-        </a>
-        <a href="{{ url_for('admin_lessons') }}" class="menu-item">
-            <i class="bi bi-play-circle"></i>
-            Lessons
-        </a>
-        <a href="{{ url_for('admin_payments') }}" class="menu-item">
-            <i class="bi bi-credit-card"></i>
-            Payments
-        </a>
-        <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item">
-            <i class="bi bi-gift"></i>
-            Samples
-        </a>
-
-        <div style="margin-top: 20px; padding: 20px;">
-            <form method="POST" action="{{ url_for('logout') }}">
-                <button type="submit" class="menu-item" style="width: 100%; border: none; background: none; cursor: pointer;">
-                    <i class="bi bi-box-arrow-right"></i>
-                    Logout
-                </button>
-            </form>
+        <div class="glass-loader">
+            <div class="inner">M</div>
         </div>
     </div>
 
     <!-- Menu Overlay -->
     <div class="menu-overlay" id="menuOverlay"></div>
 
-    <div class="app">
-        <!-- Header -->
-        <div class="navy-header">
-            <h1>my<span>MSCE</span></h1>
-            <div class="menu-icon" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
+                    <p>Administrator</p>
+                </div>
             </div>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
         </div>
 
-        <div class="content">
+        <div class="menu-section">
+            <div class="menu-section-title">Main</div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item active"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Account</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
+        </div>
+    </div>
+
+    <!-- Real Content (hidden initially) -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Manage <span class="highlight">Users</span></h1>
+                <p>View and manage all registered users</p>
+            </div>
+
             <!-- Stats Cards -->
             {% set total_users = users|length %}
             {% set subscribed = users|selectattr('is_active_subscriber')|list|length %}
@@ -834,39 +842,39 @@
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-people-fill"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>{{ total_users }}</h3>
-                        <p>Total Users</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>{{ subscribed }}</h3>
-                        <p>Subscribed</p>
+                    <div class="stat-content">
+                        <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                        <div class="stat-info">
+                            <h3>{{ total_users }}</h3>
+                            <p>Total Users</p>
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-envelope-check"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>{{ verified }}</h3>
-                        <p>Verified</p>
+                    <div class="stat-content">
+                        <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+                        <div class="stat-info">
+                            <h3>{{ subscribed }}</h3>
+                            <p>Subscribed</p>
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-shield-fill"></i>
+                    <div class="stat-content">
+                        <div class="stat-icon"><i class="bi bi-envelope-check-fill"></i></div>
+                        <div class="stat-info">
+                            <h3>{{ verified }}</h3>
+                            <p>Verified</p>
+                        </div>
                     </div>
-                    <div class="stat-info">
-                        <h3>{{ admins }}</h3>
-                        <p>Admins</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                        <div class="stat-info">
+                            <h3>{{ admins }}</h3>
+                            <p>Admins</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -875,17 +883,16 @@
             <div class="filters-card">
                 <div class="search-wrapper">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="text" class="search-input" id="userSearch" placeholder="Search users...">
+                    <input type="text" class="search-input" id="userSearch" placeholder="Search by name or email...">
                 </div>
                 <div class="filter-actions">
                     <select class="filter-select" id="subscriptionFilter">
                         <option value="all">All Users</option>
-                        <option value="subscribed">Subscribed</option>
-                        <option value="free">Free</option>
+                        <option value="subscribed">Subscribed Only</option>
+                        <option value="free">Free Users</option>
                     </select>
                     <button class="btn-reset" onclick="resetFilters()">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                        Reset
+                        <i class="bi bi-arrow-repeat"></i> Reset
                     </button>
                 </div>
             </div>
@@ -899,44 +906,47 @@
                      data-email="{{ user.email|lower }}"
                      data-subscription="{% if user.is_active_subscriber %}subscribed{% else %}free{% endif %}"
                      onclick="window.location.href='{{ url_for('admin_user_detail', user_id=user.id) }}'">
-
                     <div class="user-avatar">
                         {{ user.username[0]|upper }}
                     </div>
-
                     <div class="user-name">
                         {{ user.username }}
                         {% if user.is_admin %}
-                        <i class="bi bi-shield-fill-check" style="color: #fbbf24;"></i>
+                        <i class="bi bi-shield-fill-check admin-badge-icon"></i>
                         {% endif %}
                     </div>
-
-                    <div class="user-detail-item">
-                        <i class="bi bi-telephone"></i>
-                        <span>{{ user.phone or 'No phone' }}</span>
+                    <div class="user-details">
+                        <div class="user-detail-item">
+                            <i class="bi bi-envelope"></i>
+                            <span>{{ user.email[:25] }}{% if user.email|length > 25 %}...{% endif %}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <i class="bi bi-telephone"></i>
+                            <span>{{ user.phone or 'No phone' }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <i class="bi bi-calendar"></i>
+                            <span>Joined {{ user.created_at.strftime('%b %Y') if user.created_at else 'N/A' }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>
+                                {% if user.email_verified %}
+                                    <span class="verified-badge"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                {% else %}
+                                    <span class="pending-badge"><i class="bi bi-hourglass-split"></i> Pending</span>
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
-
-                    <div class="user-detail-item">
-                        <i class="bi bi-envelope"></i>
-                        <span>
-                            {% if user.email_verified %}
-                                <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
-                            {% else %}
-                                <i class="bi bi-hourglass" style="color: #fbbf24;"></i>
-                            {% endif %}
-                        </span>
-                    </div>
-
                     <div>
                         {% if user.is_active_subscriber %}
                             <span class="subscription-badge badge-subscribed">
-                                <i class="bi bi-star-fill me-1"></i>
-                                {{ user.subscription_form }} - {{ user.subscription_type }}
+                                <i class="bi bi-star-fill"></i> {{ user.subscription_form|upper }} - {{ user.subscription_type|title }}
                             </span>
                         {% else %}
                             <span class="subscription-badge badge-free">
-                                <i class="bi bi-star me-1"></i>
-                                Free
+                                <i class="bi bi-star"></i> Free Plan
                             </span>
                         {% endif %}
                     </div>
@@ -951,36 +961,14 @@
             </div>
             {% endif %}
 
-            <!-- Pagination -->
-            <div class="pagination">
-                <div class="page-arrow">
-                    <i class="bi bi-chevron-left"></i>
-                </div>
-                <div class="page-dots">
-                    <span class="page-dot active"></span>
-                    <span class="page-dot"></span>
-                    <span class="page-dot"></span>
-                </div>
-                <div class="page-arrow">
-                    <i class="bi bi-chevron-right"></i>
-                </div>
-            </div>
-
-            <!-- Floating Navigation -->
-            <div class="floating-nav">
-                <i class="bi bi-person-fill nav-icon active" onclick="window.location.href='{{ url_for('admin_users') }}'"></i>
-                <i class="bi bi-grid nav-icon" onclick="window.location.href='{{ url_for('admin_dashboard') }}'"></i>
-                <i class="bi bi-gear nav-icon" onclick="window.location.href='{{ url_for('user_menu') }}'"></i>
-            </div>
-
             <!-- Footer -->
             <div class="table-footer">
                 <div>
                     <i class="bi bi-info-circle me-1"></i>
                     Showing <span id="visibleCount">{{ users|length }}</span> of {{ users|length }} users
                 </div>
-                <div style="margin-top: 8px;">
-                    <span class="me-3">
+                <div class="legend">
+                    <span>
                         <span class="legend-dot dot-subscribed"></span>
                         Subscribed
                     </span>
@@ -993,136 +981,147 @@
         </div>
     </div>
 
+    <!-- Skeleton Container (visible initially) -->
+    <div id="skeletonContent">
+        <div class="main-content">
+            <div class="skeleton-stats">
+                <div class="skeleton-stat-card shimmer">
+                    <div class="skeleton-icon shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; height: 28px;"></div>
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                </div>
+                <div class="skeleton-stat-card shimmer">
+                    <div class="skeleton-icon shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; height: 28px;"></div>
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                </div>
+                <div class="skeleton-stat-card shimmer">
+                    <div class="skeleton-icon shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; height: 28px;"></div>
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                </div>
+                <div class="skeleton-stat-card shimmer">
+                    <div class="skeleton-icon shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; height: 28px;"></div>
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                </div>
+            </div>
+            <div class="skeleton-users">
+                <div class="skeleton-user-card shimmer">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; margin: 8px auto;"></div>
+                    <div class="skeleton-line" style="width: 80%; margin: 8px auto;"></div>
+                    <div class="skeleton-line" style="width: 50%; margin: 8px auto;"></div>
+                </div>
+                <div class="skeleton-user-card shimmer">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; margin: 8px auto;"></div>
+                    <div class="skeleton-line" style="width: 80%; margin: 8px auto;"></div>
+                    <div class="skeleton-line" style="width: 50%; margin: 8px auto;"></div>
+                </div>
+                <div class="skeleton-user-card shimmer">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-line" style="width: 60%; margin: 8px auto;"></div>
+                    <div class="skeleton-line" style="width: 80%; margin: 8px auto;"></div>
+                    <div class="skeleton-line" style="width: 50%; margin: 8px auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ===== TOAST FUNCTION =====
+        // Toast function
         function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
-            if (container.children.length >= 3) {
-                container.children[0].remove();
-            }
-
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle' :
-                      type === 'error' ? 'exclamation-circle' :
-                      type === 'warning' ? 'exclamation-triangle' : 'info-circle';
-
-            toast.innerHTML = `
-                <i class="bi bi-${icon}"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.remove()">✕</button>
-            `;
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}-fill"></i><span>${message}</span><button onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentElement) toast.remove();
-            }, duration);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
         }
 
-        // ===== PAGE LOADER =====
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
-        });
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
 
-        // ===== MENU FUNCTIONALITY =====
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation
         document.addEventListener('DOMContentLoaded', function() {
-            const menu = document.getElementById('slideMenu');
-            const overlay = document.getElementById('menuOverlay');
-            const menuToggle = document.getElementById('menuToggle');
-
-            function openMenu() {
-                menu.classList.add('open');
-                overlay.classList.add('active');
-                menuToggle.classList.add('open');
-            }
-
-            function closeMenu() {
-                menu.classList.remove('open');
-                overlay.classList.remove('active');
-                menuToggle.classList.remove('open');
-            }
-
-            menuToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (menu.classList.contains('open')) {
-                    closeMenu();
-                } else {
-                    openMenu();
-                }
-            });
-
-            overlay.addEventListener('click', closeMenu);
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && menu.classList.contains('open')) {
-                    closeMenu();
-                }
-            });
-
-            // ===== SEARCH AND FILTER =====
-            const searchInput = document.getElementById('userSearch');
-            const subscriptionFilter = document.getElementById('subscriptionFilter');
-            const cards = document.querySelectorAll('.user-card');
-            const visibleCount = document.getElementById('visibleCount');
-
-            function filterUsers() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const subscription = subscriptionFilter.value;
-
-                let visible = 0;
-
-                cards.forEach(card => {
-                    const name = card.dataset.name;
-                    const email = card.dataset.email;
-                    const cardSubscription = card.dataset.subscription;
-
-                    const matchesSearch = searchTerm === '' ||
-                                         name.includes(searchTerm) ||
-                                         email.includes(searchTerm);
-                    const matchesSubscription = subscription === 'all' || cardSubscription === subscription;
-
-                    if (matchesSearch && matchesSubscription) {
-                        card.style.display = '';
-                        visible++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                visibleCount.textContent = visible;
-            }
-
-            searchInput.addEventListener('input', filterUsers);
-            subscriptionFilter.addEventListener('change', filterUsers);
-
-            // ===== FLASH MESSAGES =====
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ loop.index0 * 200 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
         });
 
-        // ===== RESET FILTERS =====
-        function resetFilters() {
-            document.getElementById('userSearch').value = '';
-            document.getElementById('subscriptionFilter').value = 'all';
+        // Search and filter functionality
+        const searchInput = document.getElementById('userSearch');
+        const subscriptionFilter = document.getElementById('subscriptionFilter');
+        const cards = document.querySelectorAll('.user-card');
+        const visibleCount = document.getElementById('visibleCount');
 
-            const event = new Event('change');
-            document.getElementById('subscriptionFilter').dispatchEvent(event);
-            const searchEvent = new Event('input');
-            document.getElementById('userSearch').dispatchEvent(searchEvent);
+        function filterUsers() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const subscription = subscriptionFilter.value;
 
-            showToast('Filters reset', 'info');
+            let visible = 0;
+
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                const email = card.dataset.email;
+                const cardSubscription = card.dataset.subscription;
+
+                const matchesSearch = searchTerm === '' ||
+                                     name.includes(searchTerm) ||
+                                     email.includes(searchTerm);
+                const matchesSubscription = subscription === 'all' || cardSubscription === subscription;
+
+                if (matchesSearch && matchesSubscription) {
+                    card.style.display = '';
+                    visible++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount) visibleCount.textContent = visible;
         }
+
+        if (searchInput) searchInput.addEventListener('input', filterUsers);
+        if (subscriptionFilter) subscriptionFilter.addEventListener('change', filterUsers);
+
+        // Reset filters function
+        window.resetFilters = function() {
+            if (searchInput) searchInput.value = '';
+            if (subscriptionFilter) subscriptionFilter.value = 'all';
+            filterUsers();
+            showToast('Filters reset', 'info');
+        };
+
+        // Flash messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>

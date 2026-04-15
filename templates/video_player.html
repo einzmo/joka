@@ -1,0 +1,264 @@
+<!-- templates/video_player.html - COMPLETE PREMIUM VERSION -->
+{% extends "base.html" %}
+{% block title %}{{ lesson.title }} - myMSCE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-sep">/</span>
+<a href="{{ url_for('view_subject', subject_id=lesson.subject_id) }}" class="breadcrumb-item">{{ lesson.subject.name }}</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ lesson.title }}</span>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+<style>
+    .video-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .video-js {
+        width: 100%;
+        border-radius: 24px;
+        overflow: hidden;
+    }
+    .video-js .vjs-control-bar {
+        background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4));
+    }
+    .video-js .vjs-play-progress { background-color: #fbbf24; }
+    .video-js .vjs-volume-level { background-color: #fbbf24; }
+    
+    .lesson-info-card {
+        background: rgba(30,58,95,0.3);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 24px;
+        margin-top: 20px;
+        border: 1px solid rgba(251,191,36,0.15);
+    }
+    
+    .progress-section {
+        background: rgba(0,0,0,0.2);
+        border-radius: 16px;
+        padding: 16px;
+        margin-top: 20px;
+    }
+    
+    .progress-bar-container {
+        background: rgba(255,255,255,0.1);
+        border-radius: 30px;
+        height: 8px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        width: {{ progress_percent }}%;
+        height: 100%;
+        border-radius: 30px;
+        transition: width 0.3s;
+    }
+    
+    .nav-buttons {
+        display: flex;
+        gap: 16px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+    
+    .nav-btn {
+        flex: 1;
+        padding: 14px 24px;
+        background: rgba(251,191,36,0.1);
+        border: 1px solid rgba(251,191,36,0.3);
+        border-radius: 50px;
+        color: #fbbf24;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+        background: #fbbf24;
+        color: #1a2b4c;
+        transform: translateY(-2px);
+    }
+    
+    .nav-btn.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    
+    .speed-control {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 40px;
+        padding: 8px 16px;
+        z-index: 50;
+    }
+    
+    .speed-control select {
+        background: transparent;
+        border: 1px solid #fbbf24;
+        color: #fbbf24;
+        border-radius: 30px;
+        padding: 6px 12px;
+        cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+        .nav-buttons { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="video-container">
+        <div class="video-wrapper">
+            <video id="main-video" class="video-js vjs-theme-city" controls preload="auto" width="100%" height="auto"
+                   data-setup='{"controls": true, "autoplay": false, "preload": "auto", "playbackRates": [0.5, 0.75, 1, 1.25, 1.5, 2]}'>
+                <source src="{{ video_url }}" type="video/mp4">
+                <p class="vjs-no-js">To view this video please enable JavaScript</p>
+            </video>
+        </div>
+        
+        <div class="lesson-info-card">
+            <h1 style="font-size: 1.8rem; margin-bottom: 12px;">{{ lesson.title }}</h1>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;">
+                <div><i class="bi bi-clock text-gold"></i> {{ lesson.duration }} minutes</div>
+                <div><i class="bi bi-eye text-gold"></i> {{ lesson.access_count or 0 }} views</div>
+                <div><i class="bi bi-shield-lock text-gold"></i> Private & Secure</div>
+            </div>
+            <div>{{ lesson.description or 'No description available.' }}</div>
+            
+            <div class="progress-section">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Your Progress</span>
+                    <span id="progressPercent">{{ progress_percent }}%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="completionBadge" style="margin-top: 12px; text-align: center; {% if not completed %}display: none;{% endif %}">
+                    <span style="background: rgba(16,185,129,0.2); color: #10b981; padding: 8px 16px; border-radius: 40px;">
+                        <i class="bi bi-check-circle-fill"></i> Lesson Completed!
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            {% if prev_lesson %}
+            <a href="{{ url_for('watch_lesson', lesson_id=prev_lesson.id) }}" class="nav-btn" id="prevBtn">
+                <i class="bi bi-chevron-left"></i> Previous: {{ prev_lesson.title[:40] }}
+            </a>
+            {% else %}
+            <div class="nav-btn disabled"><i class="bi bi-chevron-left"></i> No Previous</div>
+            {% endif %}
+            
+            <a href="{{ url_for('dashboard') }}" class="nav-btn"><i class="bi bi-house"></i> Dashboard</a>
+            
+            {% if next_lesson %}
+            <a href="{{ url_for('watch_lesson', lesson_id=next_lesson.id) }}" class="nav-btn" id="nextBtn">
+                Next: {{ next_lesson.title[:40] }} <i class="bi bi-chevron-right"></i>
+            </a>
+            {% else %}
+            <div class="nav-btn disabled">No Next <i class="bi bi-chevron-right"></i></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="speed-control">
+    <select id="playbackSpeed">
+        <option value="0.5">0.5x</option>
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+    </select>
+</div>
+
+<script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+<script>
+    let player = null;
+    let saveInterval = null;
+    let lastSavedTime = 0;
+    
+    // Set keyboard shortcut URLs
+    window.prevLessonUrl = "{{ url_for('watch_lesson', lesson_id=prev_lesson.id) if prev_lesson else '' }}";
+    window.nextLessonUrl = "{{ url_for('watch_lesson', lesson_id=next_lesson.id) if next_lesson else '' }}";
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        player = videojs('main-video', {
+            controls: true,
+            autoplay: false,
+            preload: 'auto',
+            fluid: true,
+            playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
+            controlBar: {
+                children: ['playToggle', 'volumePanel', 'currentTimeDisplay', 'timeDivider', 'durationDisplay', 
+                          'progressControl', 'playbackRateMenuButton', 'fullscreenToggle']
+            }
+        });
+        
+        // Load saved progress
+        fetch('/api/lesson/{{ lesson.id }}/progress')
+            .then(r => r.json())
+            .then(data => {
+                if (data.watch_time > 0 && !data.completed) {
+                    player.currentTime(data.watch_time);
+                }
+                updateProgressDisplay(data.progress, data.completed);
+            });
+        
+        // Save progress every 10 seconds
+        saveInterval = setInterval(saveProgress, 10000);
+        
+        // Save on pause
+        player.on('pause', saveProgress);
+        
+        // Save on ended
+        player.on('ended', () => saveProgress(true));
+        
+        // Playback speed control
+        document.getElementById('playbackSpeed').addEventListener('change', function() {
+            player.playbackRate(parseFloat(this.value));
+        });
+    });
+    
+    function saveProgress(forceComplete = false) {
+        const currentTime = player.currentTime();
+        const duration = player.duration();
+        
+        if (duration > 0 && currentTime > 0 && Math.abs(currentTime - lastSavedTime) > 5) {
+            lastSavedTime = currentTime;
+            const progress = forceComplete ? 100 : (currentTime / duration) * 100;
+            
+            fetch('/api/lesson/{{ lesson.id }}/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ watch_time: currentTime, duration: duration, completed: forceComplete || progress >= 90 })
+            })
+            .then(r => r.json())
+            .then(data => updateProgressDisplay(data.progress, data.completed));
+        }
+    }
+    
+    function updateProgressDisplay(percent, completed) {
+        const percentVal = Math.min(100, Math.floor(percent || 0));
+        document.getElementById('progressPercent').textContent = percentVal + '%';
+        document.getElementById('progressFill').style.width = percentVal + '%';
+        
+        if (completed) {
+            document.getElementById('completionBadge').style.display = 'block';
+        }
+    }
+    
+    window.addEventListener('beforeunload', () => saveProgress());
+</script>
+{% endblock %}

@@ -1,4 +1,4 @@
-<!-- templates/payment_status.html - GOLD ON NAVY WITH GLASS MORPHISM -->
+<!-- templates/payment_status.html - FIXED (Single Notification) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
     <title>Payment Status - myMSCE</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,7 +13,6 @@
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
         * {
             margin: 0;
             padding: 0;
@@ -24,576 +22,620 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a2b4c;
+            background: #EFF6FF;
             min-height: 100vh;
-            color: white;
+            color: #0F172A;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            line-height: 1.5;
+            padding: 24px;
         }
 
-        /* Subtle grain texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.15;
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER ===== */
+        /* ===== PAGE LOADER - CENTERED DOTS ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: #1a2b4c;
+            width: 100%;
+            height: 100%;
+            background: #EFF6FF;
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .page-loader.hidden { opacity: 0; visibility: hidden; }
 
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.03) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(255, 255, 255, 0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
         }
 
-        .skeleton-line {
+        .dot {
+            width: 16px;
             height: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            margin-bottom: 8px;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite alternate;
         }
-        .skeleton-line.w20 { width: 20%; }
-        .skeleton-line.w30 { width: 30%; }
-        .skeleton-line.w40 { width: 40%; }
-        .skeleton-line.w50 { width: 50%; }
-        .skeleton-line.w60 { width: 60%; }
-        .skeleton-line.w70 { width: 70%; }
-        .skeleton-line.w80 { width: 80%; }
-        .skeleton-line.w90 { width: 90%; }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
+        }
 
         /* ===== MAIN CONTAINER ===== */
         .container {
-            max-width: 480px;
+            max-width: 520px;
             width: 100%;
             margin: 0 auto;
         }
 
-        /* ===== STATUS CARD - GLASS MORPHISM ===== */
-        .glass-card {
-            background: rgba(30, 58, 95, 0.3);
+        /* ===== STATUS CARD ===== */
+        .status-card {
+            background: var(--card-bg-glass);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 48px 32px;
-            text-align: center;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 0.6s ease;
-            position: relative;
+            border-radius: 36px;
+            border: 1px solid var(--border-light);
             overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+            position: relative;
         }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(251, 191, 36, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        .card-accent {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #2563EB, #16A34A);
         }
-
-        .glass-card::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            left: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.03) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        .card-content {
+            padding: 40px 32px;
         }
-
+        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        /* ===== SPINNER / STATUS ICON ===== */
-        .icon-container {
-            margin-bottom: 32px;
-            position: relative;
-            z-index: 2;
+        
+        @media (max-width: 480px) {
+            .card-content { padding: 32px 24px; }
         }
 
+        /* ===== ICON CONTAINER ===== */
+        .icon-container {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+        
         .pending-spinner {
             width: 80px;
             height: 80px;
             margin: 0 auto;
-            border: 3px solid rgba(251, 191, 36, 0.2);
-            border-top: 3px solid #fbbf24;
-            border-right: 3px solid #fbbf24;
+            border: 3px solid rgba(37, 99, 235, 0.15);
+            border-top: 3px solid #2563EB;
+            border-right: 3px solid #16A34A;
             border-radius: 50%;
             animation: spin 1s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
         }
-
+        
         .success-icon {
             width: 80px;
             height: 80px;
             margin: 0 auto;
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(22, 163, 74, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(16, 185, 129, 0.3);
+            border: 2px solid rgba(22, 163, 74, 0.3);
             animation: scaleIn 0.5s ease;
         }
+        
         .success-icon i {
             font-size: 3rem;
-            color: #10b981;
-            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
+            color: #16A34A;
+            filter: drop-shadow(0 0 10px rgba(22, 163, 74, 0.3));
         }
-
+        
         .failed-icon {
             width: 80px;
             height: 80px;
             margin: 0 auto;
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(220, 38, 38, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(239, 68, 68, 0.3);
+            border: 2px solid rgba(220, 38, 38, 0.3);
             animation: scaleIn 0.5s ease;
         }
+        
         .failed-icon i {
             font-size: 3rem;
-            color: #ef4444;
-            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.3));
+            color: #DC2626;
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.3));
         }
-
+        
+        .timeout-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            animation: scaleIn 0.5s ease;
+        }
+        
+        .timeout-icon i {
+            font-size: 3rem;
+            color: #F59E0B;
+        }
+        
         @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-
+        
         .pulse-dots {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
+            gap: 10px;
+            margin-top: 20px;
         }
-
+        
         .pulse-dot {
             width: 8px;
             height: 8px;
-            background: #fbbf24;
+            background: #2563EB;
             border-radius: 50%;
-            animation: pulse 1.5s ease infinite;
+            animation: pulseDot 1.5s ease infinite;
         }
-        .pulse-dot:nth-child(2) { animation-delay: 0.2s; }
-        .pulse-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes pulse {
+        
+        .pulse-dot:nth-child(2) { animation-delay: 0.2s; background: #16A34A; }
+        .pulse-dot:nth-child(3) { animation-delay: 0.4s; background: #F59E0B; }
+        
+        @keyframes pulseDot {
             0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+            50% { opacity: 1; transform: scale(1.3); }
         }
 
         /* ===== TYPOGRAPHY ===== */
         h2 {
             font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
             margin-bottom: 12px;
-            position: relative;
-            z-index: 2;
+            letter-spacing: -0.5px;
         }
-
+        
         .highlight {
-            background: linear-gradient(135deg, #fbbf24, #2563eb);
+            background: linear-gradient(135deg, #2563EB, #16A34A);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .message {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1rem;
+        
+        .status-message {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
             line-height: 1.6;
-            margin-bottom: 32px;
-            position: relative;
-            z-index: 2;
+            margin-bottom: 28px;
         }
 
         /* ===== PAYMENT DETAILS ===== */
         .details-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.4);
             border-radius: 24px;
             padding: 24px;
-            margin-bottom: 32px;
-            text-align: left;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            position: relative;
-            z-index: 2;
+            margin-bottom: 28px;
+            border: 1px solid var(--border-light);
         }
-
+        
         .detail-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+            border-bottom: 1px solid var(--border-light);
         }
-        .detail-row:last-child { border-bottom: none; }
-
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
         .detail-label {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.95rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
         }
+        
         .detail-label i {
-            color: #fbbf24;
+            color: #2563EB;
             font-size: 1rem;
         }
-
+        
         .detail-value {
-            color: white;
+            color: var(--text-primary);
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
+        
         .amount-value {
-            color: #fbbf24;
-            font-size: 1.2rem;
+            color: #2563EB;
+            font-size: 1.1rem;
             font-weight: 700;
         }
+        
         .reference-value {
             font-family: monospace;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(37, 99, 235, 0.08);
             padding: 4px 12px;
             border-radius: 30px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             letter-spacing: 0.5px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
         }
-
-        /* ===== STATUS BADGE ===== */
+        
         .status-badge {
             display: inline-block;
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 0.85rem;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
+        
         .badge-pending {
-            background: rgba(251, 191, 36, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            background: rgba(245, 158, 11, 0.12);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
+        
         .badge-completed {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(22, 163, 74, 0.12);
+            color: #16A34A;
+            border: 1px solid rgba(22, 163, 74, 0.3);
         }
+        
         .badge-failed {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(220, 38, 38, 0.12);
+            color: #DC2626;
+            border: 1px solid rgba(220, 38, 38, 0.3);
         }
 
         /* ===== BUTTONS ===== */
         .btn {
+            width: 100%;
             padding: 16px 24px;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            width: 100%;
+            gap: 10px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+            transition: all 0.2s ease;
             border: none;
-            position: relative;
-            z-index: 2;
+            margin-bottom: 12px;
+            text-decoration: none;
         }
+        
         .btn:active { transform: scale(0.98); }
-
+        
         .btn-outline {
-            background: transparent;
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            margin-bottom: 16px;
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563EB;
+            border: 1px solid rgba(37, 99, 235, 0.25);
         }
+        
         .btn-outline:hover {
-            background: rgba(251, 191, 36, 0.05);
-            border-color: #fbbf24;
+            background: rgba(37, 99, 235, 0.15);
         }
-        .btn-outline i { transition: transform 0.3s; }
-        .btn-outline:active i { transform: rotate(180deg); }
-
+        
+        .btn-outline i {
+            transition: transform 0.3s;
+        }
+        
+        .btn-outline:active i {
+            transform: rotate(180deg);
+        }
+        
         .btn-link {
             background: transparent;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-tertiary);
             text-decoration: none;
-            font-size: 0.9rem;
-            padding: 8px 16px;
-            display: inline-flex;
+            font-size: 0.85rem;
+            padding: 12px;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
+            border-radius: 40px;
         }
+        
         .btn-link:hover {
-            color: white;
-            background: rgba(251, 191, 36, 0.05);
-            border-radius: 30px;
+            color: #2563EB;
+            background: rgba(37, 99, 235, 0.05);
         }
-        .btn-link i { color: #fbbf24; }
-
-        /* ===== MANUAL LINK ===== */
-        .manual-link {
-            color: #fbbf24;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 30px;
-            background: rgba(251, 191, 36, 0.1);
-            display: inline-block;
-            margin-top: 12px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            transition: all 0.2s;
-        }
-        .manual-link:hover {
-            background: #fbbf24;
-            color: #1a2b4c;
+        
+        .btn-link i {
+            color: #2563EB;
         }
 
-        /* ===== SMALL TEXT ===== */
-        .small-text {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8rem;
-            margin-top: 20px;
-            line-height: 1.5;
+        /* ===== FOOTER NOTE ===== */
+        .footer-note {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-tertiary);
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            position: relative;
-            z-index: 2;
+            gap: 8px;
         }
-        .small-text i { color: #fbbf24; }
+        
+        .footer-note i {
+            color: #16A34A;
+        }
 
-        /* ===== SKELETON CARD ===== */
+        /* ===== SKELETON ===== */
         .skeleton-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 48px 32px;
-            max-width: 480px;
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+        
+        .skeleton-accent {
+            height: 4px;
+            background: rgba(37, 99, 235, 0.15);
+        }
+        
+        .skeleton-content {
+            padding: 40px 32px;
+        }
+        
+        .skeleton-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50%;
+            margin: 0 auto 28px;
+        }
+        
+        .skeleton-line {
+            height: 16px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            width: 60%;
+            height: 32px;
+            margin: 0 auto 12px;
+        }
+        
+        .skeleton-line.subtitle {
+            width: 70%;
+            height: 20px;
+            margin: 0 auto 28px;
+        }
+        
+        .skeleton-details {
+            background: rgba(37, 99, 235, 0.04);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+        
+        .skeleton-button {
             width: 100%;
-            border: 1px solid rgba(251, 191, 36, 0.1);
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50px;
+            margin-bottom: 12px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
+        /* ===== TOAST ===== */
         .toast-container {
             position: fixed;
             top: 20px;
             left: 0;
             right: 0;
-            z-index: 99999;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             pointer-events: none;
             padding: 0 16px;
         }
-
+        
         .toast {
-            background: rgba(26, 43, 76, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-left: 4px solid #fbbf24;
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
             padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
             display: flex;
             align-items: center;
             gap: 12px;
-            color: white;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
             animation: toastIn 0.3s ease;
             pointer-events: auto;
-            margin-bottom: 8px;
-            max-width: 380px;
-            width: 100%;
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
         }
-        .toast i { color: #fbbf24; }
+        
+        .toast.error { border-left-color: #DC2626; }
+        .toast.success { border-left-color: #16A34A; }
+        .toast.warning { border-left-color: #F59E0B; }
+        
         .toast button {
-            background: none;
+            background: transparent;
             border: none;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
+            color: rgba(255,255,255,0.5);
             margin-left: auto;
-            font-size: 1.1rem;
+            cursor: pointer;
+            font-size: 1rem;
         }
-
+        
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 480px) {
-            .glass-card { padding: 32px 20px; }
-            h2 { font-size: 1.5rem; }
-            .pending-spinner { width: 60px; height: 60px; }
-            .success-icon, .failed-icon { width: 60px; height: 60px; }
-            .success-icon i, .failed-icon i { font-size: 2.2rem; }
-        }
-
-        /* ===== SAFE AREAS ===== */
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-top: max(20px, env(safe-area-inset-top));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
-            }
-        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- PAGE LOADER - CENTERED DOTS -->
     <div class="page-loader" id="pageLoader">
-        <div class="spinner"></div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
     </div>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <div class="container" id="mainContent">
-        <!-- Skeleton Card (shown initially) -->
+        <!-- Skeleton Card (visible initially) -->
         <div class="skeleton-card" id="skeletonCard">
-            <div style="display: flex; justify-content: center; margin-bottom: 32px;">
-                <div class="skeleton" style="width: 80px; height: 80px; border-radius: 50%;"></div>
+            <div class="skeleton-accent shimmer"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-line title shimmer"></div>
+                <div class="skeleton-line subtitle shimmer"></div>
+                <div class="skeleton-details shimmer">
+                    <div class="skeleton-line" style="width: 100%; height: 20px;"></div>
+                    <div class="skeleton-line" style="width: 100%; height: 20px;"></div>
+                    <div class="skeleton-line" style="width: 60%; height: 20px;"></div>
+                </div>
+                <div class="skeleton-button shimmer"></div>
+                <div class="skeleton-line" style="width: 40%; height: 16px; margin: 16px auto 0;"></div>
             </div>
-            <div class="skeleton-line w50" style="height: 40px; margin: 0 auto 12px;"></div>
-            <div class="skeleton-line w70" style="height: 20px; margin: 0 auto 32px;"></div>
-            <div style="background: rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; margin-bottom: 32px;">
-                <div class="skeleton-line w90" style="height: 24px; margin-bottom: 16px;"></div>
-                <div class="skeleton-line w80" style="height: 24px; margin-bottom: 16px;"></div>
-                <div class="skeleton-line w70" style="height: 24px;"></div>
-            </div>
-            <div class="skeleton-line w100" style="height: 50px; margin-bottom: 16px;"></div>
-            <div class="skeleton-line w40" style="height: 20px; margin: 0 auto;"></div>
         </div>
 
         <!-- Real Content (hidden initially) -->
-        <div class="glass-card" id="realCard" style="display: none;">
-            <!-- Dynamic Icon Area -->
-            <div id="iconArea" class="icon-container">
-                <div class="pending-spinner"></div>
-                <div class="pulse-dots">
-                    <div class="pulse-dot"></div>
-                    <div class="pulse-dot"></div>
-                    <div class="pulse-dot"></div>
+        <div class="status-card" id="realCard" style="display: none;">
+            <div class="card-accent"></div>
+            <div class="card-content">
+                <div id="iconArea" class="icon-container">
+                    <div class="pending-spinner"></div>
+                    <div class="pulse-dots">
+                        <div class="pulse-dot"></div>
+                        <div class="pulse-dot"></div>
+                        <div class="pulse-dot"></div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Dynamic Content Area -->
-            <div id="contentArea">
-                <h2>Processing <span class="highlight">Payment</span></h2>
-                <div class="message" id="statusMessage">
-                    Please wait while we confirm your payment...
+                <div id="contentArea">
+                    <h2>Processing <span class="highlight">Payment</span></h2>
+                    <div class="status-message" id="statusMessage">
+                        Please wait while we confirm your payment...
+                    </div>
                 </div>
-            </div>
 
-            <!-- Payment Details (always visible) -->
-            <div class="details-card">
-                <div class="detail-row">
-                    <span class="detail-label">
-                        <i class="bi bi-cash-stack"></i>
-                        Amount
-                    </span>
-                    <span class="detail-value amount-value">MWK {{ payment.amount }}</span>
+                <div class="details-card">
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <i class="bi bi-cash-stack"></i>
+                            Amount
+                        </span>
+                        <span class="detail-value amount-value">MWK {{ payment.amount }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <i class="bi bi-upc-scan"></i>
+                            Reference
+                        </span>
+                        <span class="detail-value reference-value">{{ payment.reference }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <i class="bi bi-clock-history"></i>
+                            Status
+                        </span>
+                        <span class="status-badge badge-pending" id="statusBadge">Pending</span>
+                    </div>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">
-                        <i class="bi bi-upc-scan"></i>
-                        Reference
-                    </span>
-                    <span class="detail-value reference-value">{{ payment.reference }}</span>
+
+                <button onclick="checkPaymentStatus()" class="btn btn-outline" id="checkBtn">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Check Status Manually
+                </button>
+
+                <a href="{{ url_for('dashboard') }}" class="btn-link" id="dashboardLink">
+                    <i class="bi bi-house-door"></i>
+                    Return to Dashboard
+                </a>
+
+                <div class="footer-note">
+                    <i class="bi bi-shield-check"></i>
+                    Your money is safe. We'll update you automatically once confirmed.
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">
-                        <i class="bi bi-clock-history"></i>
-                        Status
-                    </span>
-                    <span class="status-badge badge-pending" id="statusBadge">Pending</span>
-                </div>
-            </div>
-
-            <!-- Manual Check Button -->
-            <button onclick="checkPaymentStatus()" class="btn btn-outline" id="checkBtn">
-                <i class="bi bi-arrow-repeat"></i>
-                Check Status Manually
-            </button>
-
-            <!-- Dashboard Link -->
-            <a href="{{ url_for('dashboard') }}" class="btn-link" id="dashboardLink">
-                <i class="bi bi-house"></i>
-                Return to Dashboard
-            </a>
-
-            <!-- Small Note -->
-            <div class="small-text">
-                <i class="bi bi-shield-check"></i>
-                Your money is safe. We'll redirect you automatically once confirmed.
             </div>
         </div>
     </div>
 
     <script>
-        // ===== TOAST FUNCTION =====
+        let notificationShown = false; // Prevent duplicate notifications
+        let redirectTriggered = false; // Prevent multiple redirects
+
         function showToast(message, type = 'info', duration = 5000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -603,14 +645,14 @@
             }
 
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle' :
-                      type === 'error' ? 'exclamation-circle' :
-                      type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'check-circle-fill' :
+                      type === 'error' ? 'exclamation-triangle-fill' :
+                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
 
             toast.innerHTML = `
                 <i class="bi bi-${icon}"></i>
-                <span>${message}</span>
+                <span>${escapeHtml(message)}</span>
                 <button onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(toast);
@@ -620,133 +662,164 @@
             }, duration);
         }
 
-        // ===== PAGE LOAD SIMULATION =====
-        window.addEventListener('load', function() {
-            // Hide loader after 600ms
-            setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-            // Show skeleton for 800ms, then real content
+        // Loading animation
+        document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
-                document.getElementById('skeletonCard').style.display = 'none';
-                document.getElementById('realCard').style.display = 'block';
+                const skeleton = document.getElementById('skeletonCard');
+                const real = document.getElementById('realCard');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
             }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
 
-            // Show any flashed messages
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1000 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            // Start checking payment status after 2 seconds
-            setTimeout(checkPaymentStatus, 2000);
+            startAutoVerification();
         });
 
-        // ===== PAYMENT STATUS CHECKING =====
-        let checkCount = 0;
-        const maxChecks = 30; // Check for 90 seconds (30 * 3s)
+        let verificationAttempts = 0;
+        const maxAttempts = 40;
         let paymentId = {{ payment.id }};
+        let verificationInterval;
+
+        function startAutoVerification() {
+            verifyWithPayChangu();
+            verificationInterval = setInterval(verifyWithPayChangu, 3000);
+        }
+
+        function verifyWithPayChangu() {
+            verificationAttempts++;
+            
+            fetch(`/api/auto-verify/${paymentId}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    clearInterval(verificationInterval);
+                    updateUIForStatus('completed', data.message);
+                    
+                    // Show ONLY ONE success notification
+                    if (!notificationShown) {
+                        notificationShown = true;
+                        showToast('✅ Payment successful! Redirecting...', 'success');
+                    }
+                    
+                    // Redirect only once
+                    if (!redirectTriggered) {
+                        redirectTriggered = true;
+                        setTimeout(() => {
+                            window.location.href = data.redirect || "{{ url_for('payment_success') }}";
+                        }, 1500);
+                    }
+                    
+                } else if (data.status === 'pending') {
+                    updateUIForStatus('pending', data.message || 'Waiting for payment confirmation...');
+                    
+                    const attemptsLeft = maxAttempts - verificationAttempts;
+                    if (attemptsLeft <= 10 && attemptsLeft > 0) {
+                        const secondsLeft = Math.ceil(attemptsLeft * 3);
+                        document.getElementById('statusMessage').innerHTML = 
+                            `Still waiting... Will continue checking for ${secondsLeft} more seconds`;
+                    }
+                    
+                } else if (data.status === 'failed') {
+                    clearInterval(verificationInterval);
+                    updateUIForStatus('failed', data.message || 'Payment failed. Please try again.');
+                    
+                    if (!notificationShown) {
+                        notificationShown = true;
+                        showToast('❌ Payment failed. Please try again.', 'error');
+                    }
+                }
+                
+                if (verificationAttempts >= maxAttempts) {
+                    clearInterval(verificationInterval);
+                    if (!notificationShown) {
+                        notificationShown = true;
+                        showToast('⏳ Payment is taking longer than expected. Please check manually.', 'warning');
+                    }
+                    updateUIForStatus('timeout', 'Taking longer than expected. You can manually check below.');
+                }
+            })
+            .catch(error => {
+                console.error('Verification error:', error);
+                if (verificationAttempts < maxAttempts) {
+                    document.getElementById('statusMessage').innerHTML = 'Connection issue. Retrying...';
+                }
+            });
+        }
 
         function updateUIForStatus(status, message) {
             const iconArea = document.getElementById('iconArea');
             const statusBadge = document.getElementById('statusBadge');
             const statusMessage = document.getElementById('statusMessage');
-            const contentArea = document.getElementById('contentArea').querySelector('h2');
+            const contentH2 = document.querySelector('#contentArea h2');
+            const checkBtn = document.getElementById('checkBtn');
 
             if (status === 'completed') {
-                // Success UI
-                iconArea.innerHTML = `
-                    <div class="success-icon">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                `;
-                statusBadge.textContent = 'Completed';
-                statusBadge.className = 'status-badge badge-completed';
-                statusMessage.innerHTML = 'Payment successful! Redirecting...';
-                contentArea.innerHTML = 'Payment <span class="highlight">Successful</span>';
-
-                // Redirect to success page
-                setTimeout(() => {
-                    window.location.href = "{{ url_for('payment_success') }}";
-                }, 1500);
-
+                iconArea.innerHTML = `<div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>`;
+                if(statusBadge) {
+                    statusBadge.textContent = 'Completed';
+                    statusBadge.className = 'status-badge badge-completed';
+                }
+                if(statusMessage) statusMessage.innerHTML = message || 'Payment successful! Redirecting...';
+                if(contentH2) contentH2.innerHTML = 'Payment <span class="highlight">Successful</span>';
+                if(checkBtn) checkBtn.style.display = 'none';
+                
             } else if (status === 'failed') {
-                // Failed UI
-                iconArea.innerHTML = `
-                    <div class="failed-icon">
-                        <i class="bi bi-x-circle-fill"></i>
-                    </div>
-                `;
-                statusBadge.textContent = 'Failed';
-                statusBadge.className = 'status-badge badge-failed';
-                statusMessage.innerHTML = 'Payment failed. Please try again.';
-                contentArea.innerHTML = 'Payment <span class="highlight">Failed</span>';
-
-                // Redirect to failure page after delay
-                setTimeout(() => {
-                    window.location.href = "{{ url_for('payment_failed') }}";
-                }, 2000);
-
+                iconArea.innerHTML = `<div class="failed-icon"><i class="bi bi-x-circle-fill"></i></div>`;
+                if(statusBadge) {
+                    statusBadge.textContent = 'Failed';
+                    statusBadge.className = 'status-badge badge-failed';
+                }
+                if(statusMessage) statusMessage.innerHTML = message || 'Payment failed. Please try again.';
+                if(contentH2) contentH2.innerHTML = 'Payment <span class="highlight">Failed</span>';
+                
+            } else if (status === 'timeout') {
+                iconArea.innerHTML = `<div class="timeout-icon"><i class="bi bi-hourglass-split"></i></div>`;
+                if(statusMessage) statusMessage.innerHTML = message || 'Still processing. You can check manually below.';
+                
             } else {
-                // Pending - keep as is
-                statusBadge.textContent = 'Pending';
-                statusBadge.className = 'status-badge badge-pending';
+                if(statusMessage) statusMessage.innerHTML = message || 'Processing payment... Please wait.';
+                if(statusBadge) {
+                    statusBadge.textContent = 'Pending';
+                    statusBadge.className = 'status-badge badge-pending';
+                }
             }
         }
 
         function checkPaymentStatus() {
-            fetch(`/api/payment-status/${paymentId}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Payment status:', data);
-
-                    if (data.status === 'completed') {
-                        updateUIForStatus('completed');
-                    } else if (data.status === 'failed') {
-                        updateUIForStatus('failed');
-                    } else {
-                        // Still pending
-                        updateUIForStatus('pending');
-
-                        checkCount++;
-                        if (checkCount < maxChecks) {
-                            // Check again in 3 seconds
-                            setTimeout(checkPaymentStatus, 3000);
-                        } else {
-                            // Too many checks - show manual options
-                            document.getElementById('iconArea').innerHTML = `
-                                <div style="text-align: center;">
-                                    <i class="bi bi-hourglass-split" style="font-size: 4rem; color: #fbbf24;"></i>
-                                </div>
-                            `;
-                            document.getElementById('contentArea').innerHTML = `
-                                <h2>Still <span class="highlight">Processing?</span></h2>
-                                <div class="message">
-                                    This is taking longer than expected.<br>
-                                    <a href="{{ url_for('verify_payment', reference=payment.reference) }}" class="manual-link">
-                                        <i class="bi bi-shield-check"></i>
-                                        Click here to verify manually
-                                    </a>
-                                </div>
-                            `;
-                            document.getElementById('statusMessage').innerHTML =
-                                'This is taking longer than expected. Please check manually.';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking payment:', error);
-                    showToast('Connection error. Retrying...', 'warning');
-                    // Retry on error after 5 seconds
-                    setTimeout(checkPaymentStatus, 5000);
-                });
+            if (!notificationShown) {
+                showToast('Manually checking payment status...', 'info');
+            }
+            verificationAttempts = 0;
+            verifyWithPayChangu();
         }
+
+        window.checkPaymentStatus = checkPaymentStatus;
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/dashboard');
+                }
+            }
+        });
+
+        // Flash messages from server - SKIP to avoid duplicates
+        // We rely on our own notifications only
     </script>
 </body>
 </html>

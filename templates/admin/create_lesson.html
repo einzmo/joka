@@ -1,4 +1,4 @@
-<!-- templates/admin/create_lesson.html - POLISHED WITH GOLD-ON-NAVY BRANDING -->
+<!-- templates/admin/create_lesson.html - PREMIUM REDESIGN with Dot Loader & Enhanced Inputs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
     <title>Create Lesson - myMSCE Admin</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,1010 +13,882 @@
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        @layer reset, base, components, utilities, animations;
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a2b4c; /* Light navy base */
-            color: rgba(255, 255, 255, 0.9);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
+        @layer base {
+            :root {
+                --primary-blue: #2563EB;
+                --primary-dark: #1D4ED8;
+                --primary-light: #DBEAFE;
+                --secondary-green: #16A34A;
+                --secondary-light: #DCFCE7;
+                --accent-orange: #F59E0B;
+                --accent-dark: #D97706;
+                --error-red: #DC2626;
+                --bg-main: #EFF6FF;
+                --card-bg-glass: rgba(219, 234, 254, 0.7);
+                --card-bg-glass-solid: rgba(219, 234, 254, 0.95);
+                --text-primary: #0F172A;
+                --text-secondary: #475569;
+                --text-tertiary: #64748B;
+                --border-light: rgba(37, 99, 235, 0.12);
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            }
 
-        /* Subtle grain texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.15;
-        }
-
-        /* ===== PAGE LOADER ===== */
-        .page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #1a2b4c;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.4s ease;
-        }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.03) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(255, 255, 255, 0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-line {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-        .skeleton-line.w20 { width: 20%; }
-        .skeleton-line.w30 { width: 30%; }
-        .skeleton-line.w40 { width: 40%; }
-        .skeleton-line.w50 { width: 50%; }
-        .skeleton-line.w60 { width: 60%; }
-        .skeleton-line.w70 { width: 70%; }
-        .skeleton-line.w80 { width: 80%; }
-        .skeleton-line.w90 { width: 90%; }
-
-        .skeleton-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 32px;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-        }
-
-        .skeleton-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-        }
-
-        /* ===== MAIN CONTAINER ===== */
-        .app {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-            min-height: 100vh;
-        }
-
-        /* ===== HEADER ===== */
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 32px;
-            animation: slideDown 0.5s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .back-btn {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fbbf24;
-            text-decoration: none;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-        }
-
-        .back-btn:hover {
-            background: #fbbf24;
-            color: #1a2b4c;
-            transform: translateX(-4px);
-        }
-
-        .back-btn:active { transform: scale(0.95) translateX(-4px); }
-
-        .page-header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .page-header h1 i {
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.1);
-            padding: 8px;
-            border-radius: 16px;
-        }
-
-        /* ===== LAYOUT ===== */
-        .content-layout {
-            display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 24px;
-            animation: fadeInUp 0.6s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 992px) {
-            .content-layout {
-                grid-template-columns: 1fr;
+            * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                background: var(--bg-main);
+                color: var(--text-primary);
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
             }
         }
 
-        /* ===== FORM CARD - GLASS MORPHISM ===== */
-        .form-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 32px;
-            padding: 32px;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-        }
+        /* ===== PAGE LOADER - CENTERED DOTS ===== */
+        @layer components {
+            .page-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-main);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.5s ease, visibility 0.5s ease;
+            }
+            .page-loader.hidden { opacity: 0; visibility: hidden; }
 
-        .form-section {
-            margin-bottom: 32px;
-            padding-bottom: 32px;
-            border-bottom: 1px solid rgba(251, 191, 36, 0.1);
-            animation: fadeIn 0.5s ease;
-        }
+            .dots-loader {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                justify-content: center;
+            }
 
-        .form-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
+            .dot {
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                border-radius: 50%;
+                animation: bounce 0.6s ease-in-out infinite alternate;
+            }
+            .dot:nth-child(1) { animation-delay: 0s; }
+            .dot:nth-child(2) { animation-delay: 0.15s; }
+            .dot:nth-child(3) { animation-delay: 0.3s; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.1);
-            padding: 6px;
-            border-radius: 10px;
-        }
-
-        /* ===== FORM ELEMENTS ===== */
-        .form-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .form-label i {
-            color: #fbbf24;
-            font-size: 0.9rem;
-        }
-
-        .form-control, .form-select {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            border-radius: 16px;
-            padding: 14px 18px;
-            color: white;
-            font-size: 0.95rem;
-            width: 100%;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-        }
-
-        .form-control:focus, .form-select:focus {
-            outline: none;
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.2);
-        }
-
-        .form-control-lg {
-            padding: 18px 22px;
-            font-size: 1.1rem;
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* ===== CONTENT TYPE GRID ===== */
-        .content-type-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 640px) {
-            .content-type-grid {
-                grid-template-columns: repeat(2, 1fr);
+            @keyframes bounce {
+                from { transform: translateY(0); opacity: 0.4; }
+                to { transform: translateY(-20px); opacity: 1; }
             }
         }
 
-        .content-type-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
-            border: 2px solid rgba(251, 191, 36, 0.1);
-            border-radius: 20px;
-            padding: 20px 12px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .content-type-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(251, 191, 36, 0.4);
-            background: rgba(251, 191, 36, 0.05);
-        }
-
-        .content-type-card.selected {
-            border-color: #fbbf24;
-            background: rgba(251, 191, 36, 0.1);
-            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
-        }
-
-        .content-type-card i {
-            font-size: 2.2rem;
-            margin-bottom: 8px;
-        }
-
-        .content-type-card.video i { color: #3b82f6; }
-        .content-type-card.audio i { color: #10b981; }
-        .content-type-card.document i { color: #ef4444; }
-        .content-type-card.youtube i { color: #ef4444; }
-
-        .content-type-card h6 {
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .content-type-card small {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.7rem;
-        }
-
-        /* ===== FILE UPLOAD ===== */
-        .file-upload {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
-            border: 2px dashed rgba(251, 191, 36, 0.3);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-        }
-
-        .file-upload:hover {
-            border-color: #fbbf24;
-            background: rgba(251, 191, 36, 0.05);
-            transform: scale(1.02);
-        }
-
-        .file-upload:active { transform: scale(0.98); }
-
-        .file-upload i {
-            font-size: 3rem;
-            color: #fbbf24;
-            margin-bottom: 12px;
-        }
-
-        .file-upload p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
-            margin-bottom: 4px;
-        }
-
-        .file-upload small {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .file-info {
-            display: none;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(4px);
-            border-radius: 16px;
-            padding: 16px 20px;
-            margin-top: 16px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .file-info.active {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .file-name {
-            color: white;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .file-name i {
-            color: #fbbf24;
-            font-size: 1.2rem;
-        }
-
-        .file-remove {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 30px;
-            transition: all 0.2s;
-        }
-
-        .file-remove:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        /* ===== TOGGLE SWITCH ===== */
-        .form-switch {
-            padding-left: 3rem;
-        }
-
-        .form-switch .form-check-input {
-            width: 3rem;
-            height: 1.5rem;
-            margin-left: -3rem;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .form-switch .form-check-input:checked {
-            background-color: #fbbf24;
-            border-color: #fbbf24;
-        }
-
-        .form-switch .form-check-label {
-            color: white;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-check-label i { color: #fbbf24; }
-
-        .text-muted {
-            color: rgba(255, 255, 255, 0.4) !important;
-            font-size: 0.8rem;
-            margin-top: 4px;
-        }
-
-        /* ===== INFO BOX ===== */
-        .info-box {
-            background: rgba(251, 191, 36, 0.05);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            border-left: 4px solid #fbbf24;
-            border-radius: 16px;
-            padding: 16px 20px;
-            margin-top: 16px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { border-left-color: #fbbf24; }
-            50% { border-left-color: rgba(251, 191, 36, 0.4); }
-        }
-
-        .info-box i {
-            color: #fbbf24;
-            margin-right: 8px;
-        }
-
-        .info-box small {
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.6;
-        }
-
-        .info-box strong { color: #fbbf24; }
-
-        /* ===== PREVIEW CARD - GLASS MORPHISM ===== */
-        .preview-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 32px;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            position: sticky;
-            top: 24px;
-            height: fit-content;
-            animation: slideInRight 0.6s ease 0.1s both;
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .preview-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(251, 191, 36, 0.1);
-        }
-
-        .preview-header h5 {
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .preview-header h5 i {
-            color: #fbbf24;
-        }
-
-        .preview-body {
-            padding: 24px;
-        }
-
-        .lesson-preview {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
-            border-radius: 24px;
-            padding: 32px 24px;
-            text-align: center;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .preview-icon {
-            margin-bottom: 16px;
-            transform: scale(1);
-            transition: transform 0.3s;
-        }
-
-        .lesson-preview:hover .preview-icon {
-            transform: scale(1.1);
-        }
-
-        .preview-icon i {
-            font-size: 3.5rem;
-        }
-
-        .preview-icon.video i { color: #3b82f6; }
-        .preview-icon.audio i { color: #10b981; }
-        .preview-icon.document i { color: #ef4444; }
-        .preview-icon.youtube i { color: #ef4444; }
-
-        .preview-title {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-
-        .preview-badges {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            padding: 6px 14px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        .badge-subject {
-            background: rgba(59, 130, 246, 0.15);
-            color: #3b82f6;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .badge-type {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .badge-free {
-            background: #fbbf24;
-            color: #1a2b4c;
-            border: 1px solid #fbbf24;
-        }
-
-        .preview-desc {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        /* ===== FORM ACTIONS ===== */
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 32px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(251, 191, 36, 0.1);
-        }
-
-        .btn {
-            padding: 14px 28px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:active { transform: scale(0.97); }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #1a2b4c;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(4px);
-            color: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(251, 191, 36, 0.1);
-            color: white;
-            border-color: #fbbf24;
-        }
-
-        .btn i { transition: transform 0.2s; }
-        .btn-primary:hover i { transform: translateX(4px); }
-        .btn-secondary:hover i { transform: translateX(-4px); }
-
-        /* ===== TOAST NOTIFICATIONS ===== */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 0;
-            right: 0;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
-            padding: 0 16px;
-        }
-
-        .toast {
-            background: rgba(26, 43, 76, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-left: 4px solid #fbbf24;
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: white;
-            font-size: 0.9rem;
-            animation: toastIn 0.3s ease;
-            pointer-events: auto;
-            margin-bottom: 8px;
-            max-width: 380px;
-            width: 100%;
-            border-radius: 60px;
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
-        }
-
-        .toast i { color: #fbbf24; }
-        .toast button {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            margin-left: auto;
-            font-size: 1.1rem;
-        }
-
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== SKELETON CARD ===== */
-        .skeleton-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 32px;
-            padding: 32px;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .app { padding: 16px; }
-            .page-header h1 { font-size: 1.6rem; }
-            .form-card { padding: 24px; }
-            .content-type-grid { gap: 8px; }
-            .content-type-card { padding: 16px 8px; }
-            .content-type-card i { font-size: 1.8rem; }
-            .content-type-card h6 { font-size: 0.8rem; }
-            .preview-card { position: static; margin-top: 24px; }
-            .form-actions { flex-direction: column; }
-            .btn { width: 100%; justify-content: center; }
-        }
-
-        /* ===== SAFE AREAS ===== */
-        @supports (padding: max(0px)) {
-            .app {
-                padding-left: max(24px, env(safe-area-inset-left));
-                padding-right: max(24px, env(safe-area-inset-right));
-                padding-top: max(24px, env(safe-area-inset-top));
-                padding-bottom: max(24px, env(safe-area-inset-bottom));
+        /* ===== NAVBAR ===== */
+        @layer components {
+            .navbar {
+                background: var(--primary-blue);
+                padding: 14px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             }
+            .logo { font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.5px; }
+            .nav-actions { display: flex; gap: 12px; align-items: center; }
+            .menu-btn {
+                width: 42px; height: 42px;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(4px);
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+            .menu-btn i { font-size: 1.3rem; color: white; }
+        }
+
+        /* ===== SLIDE MENU ===== */
+        @layer components {
+            .slide-menu {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                padding: 24px 0;
+                border-right: 1px solid rgba(37, 99, 235, 0.1);
+            }
+            .slide-menu.open { left: 0; }
+            .menu-overlay {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            }
+            .menu-overlay.active { opacity: 1; visibility: visible; }
+            .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+            .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+            .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+            .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+            .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+            .menu-section { padding: 0 20px; margin-bottom: 24px; }
+            .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+            .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+            .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+            .menu-item i { width: 22px; color: #94A3B8; }
+            .menu-item:hover i { color: var(--primary-blue); }
+            .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        @layer components {
+            .main-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 32px 24px 60px;
+            }
+            @media (max-width: 768px) { .main-content { padding: 24px 20px 40px; } }
+        }
+
+        /* ===== PAGE HEADER ===== */
+        @layer components {
+            .page-header { margin-bottom: 32px; }
+            .page-header h1 {
+                font-size: 1.8rem;
+                font-weight: 800;
+                color: var(--text-primary);
+                letter-spacing: -0.5px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .page-header h1 i {
+                color: var(--primary-blue);
+                background: rgba(37, 99, 235, 0.1);
+                padding: 8px;
+                border-radius: 16px;
+            }
+            .page-header p {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ===== FORM LAYOUT ===== */
+        @layer components {
+            .form-layout {
+                display: grid;
+                grid-template-columns: 1fr 340px;
+                gap: 28px;
+            }
+            @media (max-width: 900px) { .form-layout { grid-template-columns: 1fr; gap: 24px; } }
+        }
+
+        /* ===== FORM CARD ===== */
+        @layer components {
+            .form-card {
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(12px);
+                border-radius: 28px;
+                border: 1px solid var(--border-light);
+                overflow: hidden;
+                box-shadow: var(--shadow-sm);
+            }
+            .card-accent {
+                height: 4px;
+                width: 100%;
+                background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green));
+            }
+            .card-content { padding: 28px; }
+            @media (max-width: 480px) { .card-content { padding: 20px; } }
+            .form-group { margin-bottom: 24px; }
+            .form-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--text-secondary);
+                font-size: 0.85rem;
+                font-weight: 500;
+                margin-bottom: 8px;
+            }
+            .form-label i { color: var(--primary-blue); font-size: 0.9rem; }
+            .form-label .required { color: var(--error-red); font-size: 0.7rem; }
+            .form-control, .form-select {
+                width: 100%;
+                padding: 12px 16px;
+                background: rgba(255, 255, 255, 0.4);
+                border: 1px solid var(--border-light);
+                border-radius: 14px;
+                font-size: 0.9rem;
+                color: var(--text-primary);
+                transition: all 0.2s;
+                font-family: 'Inter', sans-serif;
+            }
+            .form-control:focus, .form-select:focus {
+                outline: none;
+                border-color: var(--primary-blue);
+                background: rgba(255, 255, 255, 0.6);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }
+            .form-control::placeholder { color: var(--text-tertiary); opacity: 0.5; }
+            textarea.form-control { resize: vertical; min-height: 100px; }
+            .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            @media (max-width: 500px) { .row { grid-template-columns: 1fr; gap: 16px; } }
+
+            /* Styled Number Input */
+            .number-input-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+            .number-input-wrapper .form-control {
+                padding-right: 50px;
+            }
+            .number-controls {
+                position: absolute;
+                right: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .number-controls button {
+                width: 24px;
+                height: 20px;
+                background: rgba(37, 99, 235, 0.1);
+                border: none;
+                border-radius: 6px;
+                color: var(--primary-blue);
+                font-size: 0.7rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .number-controls button:active { transform: scale(0.95); background: rgba(37, 99, 235, 0.2); }
+
+            /* Modern Checkbox */
+            .checkbox-modern {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                cursor: pointer;
+                padding: 12px 16px;
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 16px;
+                border: 1px solid var(--border-light);
+                transition: all 0.2s;
+            }
+            .checkbox-modern:hover {
+                background: rgba(37, 99, 235, 0.08);
+                border-color: var(--primary-blue);
+            }
+            .checkbox-modern input {
+                display: none;
+            }
+            .checkbox-custom {
+                width: 22px;
+                height: 22px;
+                background: rgba(255, 255, 255, 0.4);
+                border: 2px solid var(--border-light);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .checkbox-modern input:checked + .checkbox-custom {
+                background: var(--secondary-green);
+                border-color: var(--secondary-green);
+            }
+            .checkbox-modern input:checked + .checkbox-custom i {
+                color: white;
+                font-size: 0.8rem;
+            }
+            .checkbox-text {
+                flex: 1;
+                color: var(--text-primary);
+                font-weight: 500;
+                font-size: 0.85rem;
+            }
+            .checkbox-text small {
+                color: var(--text-tertiary);
+                font-weight: normal;
+                font-size: 0.7rem;
+                margin-left: 8px;
+            }
+
+            /* Content Type Sections */
+            .content-section {
+                margin-top: 20px;
+                padding: 16px;
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 20px;
+                border: 1px solid var(--border-light);
+                animation: fadeSlide 0.3s ease;
+            }
+            @keyframes fadeSlide {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .content-section .helper-text {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-top: 6px;
+                color: var(--text-tertiary);
+                font-size: 0.7rem;
+            }
+            .content-section .helper-text i { color: var(--primary-blue); }
+
+            /* Content Type Preview */
+            .content-type-preview {
+                margin-top: 16px;
+                padding: 12px;
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border: 1px solid var(--border-light);
+            }
+            .content-type-preview i { font-size: 1.5rem; color: var(--primary-blue); }
+            .content-type-preview .preview-text {
+                font-size: 0.8rem;
+                color: var(--text-tertiary);
+            }
+            .content-type-preview .preview-text strong { color: var(--text-primary); }
+
+            /* Alert */
+            .alert {
+                background: rgba(37, 99, 235, 0.08);
+                border-left: 4px solid var(--primary-blue);
+                border-radius: 16px;
+                padding: 16px 20px;
+                margin: 24px 0;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .alert i { color: var(--primary-blue); font-size: 1.2rem; }
+            .alert p { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+
+            /* Buttons */
+            .button-group {
+                display: flex;
+                gap: 12px;
+                margin-top: 24px;
+            }
+            .btn {
+                padding: 12px 24px;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 0.85rem;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.2s;
+                cursor: pointer;
+                border: none;
+            }
+            .btn:active { transform: scale(0.97); }
+            .btn-primary {
+                background: var(--accent-orange);
+                color: white;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+            }
+            .btn-primary:active { background: var(--accent-dark); }
+            .btn-secondary {
+                background: rgba(37, 99, 235, 0.1);
+                color: var(--primary-blue);
+                border: 1px solid var(--border-light);
+            }
+            .btn-secondary:active { background: rgba(37, 99, 235, 0.2); }
+        }
+
+        /* ===== INFO CARD ===== */
+        @layer components {
+            .info-card {
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(12px);
+                border-radius: 28px;
+                border: 1px solid var(--border-light);
+                overflow: hidden;
+                box-shadow: var(--shadow-sm);
+                height: fit-content;
+            }
+            .info-card .card-header {
+                background: rgba(37, 99, 235, 0.04);
+                border-bottom: 1px solid var(--border-light);
+                padding: 18px 20px;
+            }
+            .info-card .card-header h5 {
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .info-card .card-header h5 i { color: var(--primary-blue); }
+            .info-card .card-body { padding: 20px; }
+            .workflow-steps { list-style: none; padding: 0; margin: 0; }
+            .workflow-steps li {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 0;
+                color: var(--text-secondary);
+                font-size: 0.85rem;
+                border-bottom: 1px solid var(--border-light);
+            }
+            .workflow-steps li:last-child { border-bottom: none; }
+            .step-number {
+                width: 28px;
+                height: 28px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                flex-shrink: 0;
+            }
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        @layer components {
+            .skeleton-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 32px 24px 60px;
+            }
+            .skeleton-layout { display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
+            .skeleton-form-card { background: rgba(219, 234, 254, 0.5); border-radius: 28px; overflow: hidden; }
+            .skeleton-accent { height: 4px; background: rgba(37, 99, 235, 0.15); }
+            .skeleton-content { padding: 28px; }
+            .skeleton-line { height: 14px; background: rgba(37, 99, 235, 0.08); border-radius: 8px; margin-bottom: 12px; }
+            .skeleton-input { height: 48px; background: rgba(37, 99, 235, 0.06); border-radius: 14px; margin-bottom: 24px; }
+            .skeleton-textarea { height: 100px; background: rgba(37, 99, 235, 0.06); border-radius: 14px; margin-bottom: 24px; }
+            .skeleton-button-group { display: flex; gap: 12px; margin-top: 24px; }
+            .skeleton-button { flex: 1; height: 48px; background: rgba(37, 99, 235, 0.08); border-radius: 50px; }
+            .shimmer {
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+            @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        }
+
+        /* ===== TOAST ===== */
+        @layer components {
             .toast-container {
-                top: max(20px, env(safe-area-inset-top));
+                position: fixed;
+                top: 20px;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+                padding: 0 16px;
+            }
+            .toast {
+                background: #1E293B;
+                border-left: 4px solid var(--primary-blue);
+                padding: 14px 20px;
+                border-radius: 16px;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                width: 100%;
+                max-width: 380px;
+                animation: toastIn 0.3s ease;
+                pointer-events: auto;
+                font-weight: 500;
+                box-shadow: var(--shadow-lg);
+            }
+            .toast.error { border-left-color: var(--error-red); }
+            .toast.success { border-left-color: var(--secondary-green); }
+            .toast.warning { border-left-color: var(--accent-orange); }
+            .toast button {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                margin-left: auto;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+            @keyframes toastIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
         }
 
-        /* Utility */
-        .d-none { display: none; }
+        /* ===== UTILITIES ===== */
+        @layer utilities {
+            ::-webkit-scrollbar { width: 5px; }
+            ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+            @supports (padding: max(0px)) {
+                .main-content {
+                    padding-left: max(24px, env(safe-area-inset-left));
+                    padding-right: max(24px, env(safe-area-inset-right));
+                    padding-top: max(32px, env(safe-area-inset-top));
+                    padding-bottom: max(60px, env(safe-area-inset-bottom));
+                }
+                .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            }
+        }
+
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- PAGE LOADER - CENTERED DOTS -->
     <div class="page-loader" id="pageLoader">
-        <div class="spinner"></div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
+                    <p>Administrator</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Main</div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Account</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
+        </div>
     </div>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <div class="app">
-        <!-- Header -->
-        <div class="page-header">
-            <a href="{{ url_for('admin_lessons') }}" class="back-btn">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <h1>
-                <i class="bi bi-plus-circle"></i>
-                Create New Lesson
-            </h1>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="nav-actions">
+            <div class="menu-btn" id="menuBtn">
+                <i class="bi bi-list"></i>
+            </div>
         </div>
+    </div>
 
-        <!-- Main Content with Skeleton -->
-        <div id="mainContent">
-            <!-- Real Content -->
-            <div id="realContent">
-                <div class="content-layout">
-                    <!-- Form Section -->
-                    <div class="form-card">
-                        <form method="POST" enctype="multipart/form-data" id="lessonForm">
-                            <!-- Basic Information -->
-                            <div class="form-section">
-                                <div class="section-title">
-                                    <i class="bi bi-info-circle"></i>
-                                    Basic Information
-                                </div>
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1><i class="bi bi-plus-circle-fill"></i> Create New Lesson</h1>
+                <p>Create lesson structure first, upload content separately after creation</p>
+            </div>
 
-                                <div class="mb-4">
+            <!-- Form Layout -->
+            <div class="form-layout">
+                <!-- Main Form Card -->
+                <div class="form-card">
+                    <div class="card-accent"></div>
+                    <div class="card-content">
+                        <form method="POST" id="lessonForm">
+                            <!-- Basic Information Section -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-type"></i>
+                                    Lesson Title <span class="required">*</span>
+                                </label>
+                                <input type="text" name="title" class="form-control" placeholder="Enter lesson title" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
                                     <label class="form-label">
-                                        <i class="bi bi-type"></i>
-                                        Lesson Title
+                                        <i class="bi bi-book-fill"></i>
+                                        Subject <span class="required">*</span>
                                     </label>
-                                    <input type="text" class="form-control form-control-lg" name="title" required
-                                           placeholder="e.g., Introduction to Algebra">
+                                    <select name="subject_id" class="form-select" required>
+                                        <option value="">Select Subject</option>
+                                        {% for subject in subjects %}
+                                        <option value="{{ subject.id }}">{{ subject.name }} - Form {{ subject.form }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
-
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">
-                                            <i class="bi bi-book"></i>
-                                            Subject
-                                        </label>
-                                        <select class="form-select" name="subject_id" required>
-                                            <option value="">Select Subject</option>
-                                            {% for subject in subjects %}
-                                            <option value="{{ subject.id }}">{{ subject.name }} - Form {{ subject.form }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">
-                                            <i class="bi bi-sort-numeric-up"></i>
-                                            Display Order
-                                        </label>
-                                        <input type="number" class="form-control" name="order" value="0" min="0">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Content Type -->
-                            <div class="form-section">
-                                <div class="section-title">
-                                    <i class="bi bi-file-earmark"></i>
-                                    Content Type
-                                </div>
-
-                                <div class="content-type-grid">
-                                    <div class="content-type-card video" data-type="video" onclick="selectContentType('video')">
-                                        <i class="bi bi-camera-reel-fill"></i>
-                                        <h6>Video</h6>
-                                        <small>MP4, AVI, MOV</small>
-                                    </div>
-                                    <div class="content-type-card audio" data-type="audio" onclick="selectContentType('audio')">
-                                        <i class="bi bi-mic-fill"></i>
-                                        <h6>Audio</h6>
-                                        <small>MP3, WAV, M4A</small>
-                                    </div>
-                                    <div class="content-type-card document" data-type="document" onclick="selectContentType('document')">
-                                        <i class="bi bi-file-pdf-fill"></i>
-                                        <h6>Document</h6>
-                                        <small>PDF, DOC, PPT</small>
-                                    </div>
-                                    <div class="content-type-card youtube" data-type="youtube" onclick="selectContentType('youtube')">
-                                        <i class="bi bi-youtube"></i>
-                                        <h6>YouTube</h6>
-                                        <small>External video</small>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="content_type" id="content_type" value="video">
-                            </div>
-
-                            <!-- File Upload Section -->
-                            <div class="form-section" id="file-upload-section">
-                                <div class="section-title">
-                                    <i class="bi bi-upload"></i>
-                                    Upload File
-                                </div>
-
-                                <div class="file-upload" onclick="document.getElementById('fileUpload').click()">
-                                    <i class="bi bi-cloud-upload"></i>
-                                    <p>Click to upload or drag and drop</p>
-                                    <small>Max size: 500MB</small>
-                                </div>
-                                <input type="file" class="d-none" name="file" id="fileUpload"
-                                       accept=".mp4,.avi,.mov,.mp3,.wav,.pdf,.doc,.docx,.ppt,.pptx">
-
-                                <div class="file-info" id="fileInfo">
-                                    <span class="file-name" id="fileName">
-                                        <i class="bi bi-file-earmark"></i>
-                                        <span></span>
-                                    </span>
-                                    <button type="button" class="file-remove" onclick="clearFile()">
-                                        <i class="bi bi-x"></i>
-                                    </button>
-                                </div>
-
-                                <div class="info-box">
-                                    <i class="bi bi-info-circle"></i>
-                                    <small>
-                                        <strong>Supported formats:</strong> MP4, AVI, MOV, MP3, WAV, PDF, DOC, PPT<br>
-                                        Videos and audio will be streamable, documents can be viewed in browser.
-                                    </small>
-                                </div>
-
-                                <!-- Downloadable checkbox -->
-                                <div class="form-check form-switch mt-3">
-                                    <input class="form-check-input" type="checkbox" name="downloadable" id="downloadable" checked>
-                                    <label class="form-check-label" for="downloadable">
-                                        <i class="bi bi-download"></i>
-                                        Allow students to download this file
-                                    </label>
-                                    <small class="d-block text-muted" style="margin-left: 3rem;">
-                                        Uncheck for streaming-only content (videos/audio will use player)
-                                    </small>
-                                </div>
-                            </div>
-
-                            <!-- YouTube URL Section -->
-                            <div class="form-section" id="youtube-section" style="display: none;">
-                                <div class="section-title">
-                                    <i class="bi bi-youtube"></i>
-                                    YouTube Video
-                                </div>
-
-                                <div class="mb-3">
+                                <div class="form-group">
                                     <label class="form-label">
-                                        <i class="bi bi-link"></i>
-                                        YouTube Video ID or URL
+                                        <i class="bi bi-sort-numeric-down"></i>
+                                        Display Order
                                     </label>
-                                    <input type="text" class="form-control" name="video_url" id="video_url"
-                                           placeholder="e.g., dQw4w9WgXcQ or https://youtu.be/...">
-                                    <small class="text-muted d-block mt-1">
-                                        Enter YouTube video ID or full URL
-                                    </small>
-                                    <input type="hidden" name="video_type" value="youtube">
-                                </div>
-
-                                <div class="info-box">
-                                    <i class="bi bi-info-circle"></i>
-                                    <small>
-                                        <strong>Note:</strong> YouTube videos will open in our dedicated player with progress tracking.
-                                    </small>
+                                    <div class="number-input-wrapper">
+                                        <input type="number" name="order" class="form-control" value="0" min="0" id="orderInput">
+                                        <div class="number-controls">
+                                            <button type="button" onclick="incrementOrder()">▲</button>
+                                            <button type="button" onclick="decrementOrder()">▼</button>
+                                        </div>
+                                    </div>
+                                    <div class="helper-text">
+                                        <i class="bi bi-info-circle-fill"></i>
+                                        Lower numbers appear first in the lesson list
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Duration & Description -->
-                            <div class="form-section">
-                                <div class="section-title">
-                                    <i class="bi bi-clock"></i>
-                                    Details
-                                </div>
-
-                                <div class="mb-4">
+                            <div class="row">
+                                <div class="form-group">
                                     <label class="form-label">
-                                        <i class="bi bi-hourglass-split"></i>
+                                        <i class="bi bi-clock"></i>
                                         Duration (minutes)
                                     </label>
-                                    <input type="number" class="form-control" name="duration" id="duration" value="0" min="0">
+                                    <div class="number-input-wrapper">
+                                        <input type="number" name="duration" class="form-control" value="0" min="0" id="durationInput">
+                                        <div class="number-controls">
+                                            <button type="button" onclick="incrementDuration()">▲</button>
+                                            <button type="button" onclick="decrementDuration()">▼</button>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div class="mb-4">
+                                <div class="form-group">
                                     <label class="form-label">
-                                        <i class="bi bi-text-paragraph"></i>
-                                        Short Description
+                                        <i class="bi bi-card-text"></i>
+                                        Content Type
                                     </label>
-                                    <textarea class="form-control" name="description" id="description" rows="3"
-                                              placeholder="Brief description of this lesson..."></textarea>
+                                    <select name="content_type" id="contentType" class="form-select">
+                                        <option value="video">📹 Video Lesson</option>
+                                        <option value="audio">🎵 Audio Lesson</option>
+                                        <option value="document">📄 Document Lesson</option>
+                                        <option value="youtube">▶️ YouTube Video</option>
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- Free Sample Toggle -->
-                            <div class="form-section">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_free" id="is_free">
-                                    <label class="form-check-label" for="is_free">
-                                        <i class="bi bi-gift-fill"></i>
-                                        Mark as Free Sample Lesson
-                                    </label>
+                            <!-- Content Type Specific Sections -->
+                            
+                            <!-- Video Section -->
+                            <div id="videoSection" class="content-section" style="display: none;">
+                                <label class="form-label">
+                                    <i class="bi bi-camera-reel-fill"></i>
+                                    Video Settings
+                                </label>
+                                <div class="helper-text">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    After creating the lesson, you'll be able to upload a video from the lessons list page.
                                 </div>
-                                <div class="info-box mt-3">
-                                    <i class="bi bi-info-circle"></i>
-                                    <small>
-                                        <strong>Free sample lessons</strong> are accessible to all users without a subscription.
-                                        Great for marketing and letting students preview your content!
-                                    </small>
+                                <div class="content-type-preview">
+                                    <i class="bi bi-camera-reel-fill"></i>
+                                    <div class="preview-text">
+                                        <strong>Video Lesson</strong><br>
+                                        Students will watch and learn from video content
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Form Actions -->
-                            <div class="form-actions">
-                                <a href="{{ url_for('admin_lessons') }}" class="btn btn-secondary">
-                                    <i class="bi bi-x"></i>
-                                    Cancel
-                                </a>
+                            <!-- Audio Section -->
+                            <div id="audioSection" class="content-section" style="display: none;">
+                                <label class="form-label">
+                                    <i class="bi bi-mic-fill"></i>
+                                    Audio Settings
+                                </label>
+                                <div class="helper-text">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    Upload audio files (MP3, WAV, M4A) after lesson creation.
+                                </div>
+                                <div class="content-type-preview">
+                                    <i class="bi bi-mic-fill"></i>
+                                    <div class="preview-text">
+                                        <strong>Audio Lesson</strong><br>
+                                        Students can listen and learn on the go
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Document Section -->
+                            <div id="documentSection" class="content-section" style="display: none;">
+                                <label class="form-label">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                    Document Settings
+                                </label>
+                                <div class="helper-text">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    Upload PDF, DOC, PPT, or XLS files after lesson creation.
+                                </div>
+                                <div class="content-type-preview">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                    <div class="preview-text">
+                                        <strong>Document Lesson</strong><br>
+                                        Students can read and download study materials
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- YouTube Section -->
+                            <div id="youtubeSection" class="content-section" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="bi bi-youtube"></i>
+                                        YouTube URL
+                                    </label>
+                                    <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/watch?v=...">
+                                    <div class="helper-text">
+                                        <i class="bi bi-link-45deg"></i>
+                                        Enter the full YouTube video URL
+                                    </div>
+                                </div>
+                                <div class="content-type-preview">
+                                    <i class="bi bi-youtube"></i>
+                                    <div class="preview-text">
+                                        <strong>YouTube Lesson</strong><br>
+                                        Students will watch YouTube videos (no upload needed)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-file-text-fill"></i>
+                                    Description
+                                </label>
+                                <textarea name="description" class="form-control" rows="4" placeholder="Describe what students will learn in this lesson..."></textarea>
+                            </div>
+
+                            <!-- Modern Checkbox for Free Sample -->
+                            <label class="checkbox-modern">
+                                <input type="checkbox" name="is_free" id="isFree">
+                                <span class="checkbox-custom">
+                                    <i class="bi bi-check"></i>
+                                </span>
+                                <span class="checkbox-text">
+                                    <i class="bi bi-gift-fill"></i> Free Sample Lesson
+                                    <small>(accessible to all users, great for previews)</small>
+                                </span>
+                            </label>
+
+                            <div class="alert">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <p>After creating the lesson, you'll be able to upload content from the lessons list page.</p>
+                            </div>
+
+                            <div class="button-group">
                                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                                    <i class="bi bi-check-circle"></i>
-                                    Create Lesson
+                                    <i class="bi bi-check-circle-fill"></i> Create Lesson
                                 </button>
+                                <a href="{{ url_for('admin_lessons') }}" class="btn btn-secondary" id="cancelBtn">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
                             </div>
                         </form>
                     </div>
+                </div>
 
-                    <!-- Preview Panel -->
-                    <div class="preview-card">
-                        <div class="preview-header">
-                            <h5>
-                                <i class="bi bi-eye"></i>
-                                Live Preview
-                            </h5>
+                <!-- Info Card -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-info-circle-fill"></i> Workflow</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="workflow-steps">
+                            <li><span class="step-number">1</span> Create lesson structure</li>
+                            <li><span class="step-number">2</span> Go to Lessons list</li>
+                            <li><span class="step-number">3</span> Click "Upload" for the lesson</li>
+                            <li><span class="step-number">4</span> Content is stored privately on Cloudinary</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skeleton Container -->
+    <div id="skeletonContent">
+        <div class="skeleton-container">
+            <div class="skeleton-layout">
+                <div class="skeleton-form-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                        <div class="skeleton-input shimmer"></div>
+                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                        <div class="skeleton-input shimmer"></div>
+                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                        <div class="skeleton-input shimmer"></div>
+                        <div class="skeleton-textarea shimmer"></div>
+                        <div class="skeleton-button-group">
+                            <div class="skeleton-button shimmer"></div>
+                            <div class="skeleton-button shimmer"></div>
                         </div>
-                        <div class="preview-body">
-                            <div class="lesson-preview">
-                                <div class="preview-icon video" id="previewIcon">
-                                    <i class="bi bi-camera-reel-fill"></i>
-                                </div>
-                                <h6 class="preview-title" id="previewTitle">Lesson Title</h6>
-                                <div class="preview-badges">
-                                    <span class="badge badge-subject" id="previewSubject">Subject</span>
-                                    <span class="badge badge-type" id="previewType">Video</span>
-                                    <span class="badge badge-free" id="previewFree" style="display: none;">FREE</span>
-                                </div>
-                                <p class="preview-desc" id="previewDesc">Description will appear here</p>
-                            </div>
-                        </div>
+                    </div>
+                </div>
+                <div class="skeleton-form-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line" style="width: 40%; height: 24px;"></div>
+                        <div class="skeleton-line" style="width: 90%; height: 40px;"></div>
+                        <div class="skeleton-line" style="width: 90%; height: 40px;"></div>
+                        <div class="skeleton-line" style="width: 90%; height: 40px;"></div>
                     </div>
                 </div>
             </div>
@@ -1025,154 +896,141 @@
     </div>
 
     <script>
-        // ===== TOAST FUNCTION =====
-        function showToast(message, type = 'info', duration = 5000) {
+        function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
-            if (container.children.length >= 3) {
-                container.children[0].remove();
-            }
-
+            if (container.children.length >= 3) container.children[0].remove();
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle' :
-                      type === 'error' ? 'exclamation-circle' :
-                      type === 'warning' ? 'exclamation-triangle' : 'info-circle';
-
-            toast.innerHTML = `
-                <i class="bi bi-${icon}"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.remove()">✕</button>
-            `;
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
-
             setTimeout(() => {
-                if (toast.parentElement) toast.remove();
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
             }, duration);
         }
 
-        // ===== PAGE LOADER =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menu = document.getElementById('slideMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const menuBtn = document.getElementById('menuBtn');
+
+            function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+            function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+            if(menuBtn) menuBtn.addEventListener('click', openMenu);
+            if(overlay) overlay.addEventListener('click', closeMenu);
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+        });
+
+        // Loading animation
         window.addEventListener('load', function() {
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
         });
 
-        // ===== FORM SUBMISSION LOADING STATE =====
-        document.getElementById('lessonForm')?.addEventListener('submit', function(e) {
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Creating...';
-            submitBtn.style.opacity = '0.8';
-            submitBtn.style.pointerEvents = 'none';
-        });
-
-        // ===== SELECT CONTENT TYPE =====
-        function selectContentType(type) {
-            // Update cards
-            document.querySelectorAll('.content-type-card').forEach(c => {
-                c.classList.remove('selected');
-            });
-            const selectedCard = document.querySelector(`.content-type-card[data-type="${type}"]`);
-            if (selectedCard) selectedCard.classList.add('selected');
-
-            // Update hidden input
-            document.getElementById('content_type').value = type;
-
-            // Update preview
-            const previewIcon = document.getElementById('previewIcon');
-            previewIcon.className = `preview-icon ${type}`;
-
-            const icons = {
-                'video': 'bi-camera-reel-fill',
-                'audio': 'bi-mic-fill',
-                'document': 'bi-file-pdf-fill',
-                'youtube': 'bi-youtube'
-            };
-
-            previewIcon.innerHTML = `<i class="bi ${icons[type] || 'bi-camera-reel-fill'}"></i>`;
-            document.getElementById('previewType').textContent = type.charAt(0).toUpperCase() + type.slice(1);
-
-            // Toggle sections with animation
-            const fileSection = document.getElementById('file-upload-section');
-            const youtubeSection = document.getElementById('youtube-section');
-
-            if (type === 'youtube') {
-                fileSection.style.opacity = '0';
-                setTimeout(() => {
-                    fileSection.style.display = 'none';
-                    youtubeSection.style.display = 'block';
-                    setTimeout(() => youtubeSection.style.opacity = '1', 50);
-                }, 200);
-            } else {
-                youtubeSection.style.opacity = '0';
-                setTimeout(() => {
-                    youtubeSection.style.display = 'none';
-                    fileSection.style.display = 'block';
-                    setTimeout(() => fileSection.style.opacity = '1', 50);
-                }, 200);
-            }
-
-            showToast(`Content type set to ${type}`, 'info');
+        // Number input controls
+        function incrementOrder() {
+            const input = document.getElementById('orderInput');
+            if (input) input.value = parseInt(input.value) + 1;
+        }
+        function decrementOrder() {
+            const input = document.getElementById('orderInput');
+            if (input && parseInt(input.value) > 0) input.value = parseInt(input.value) - 1;
+        }
+        function incrementDuration() {
+            const input = document.getElementById('durationInput');
+            if (input) input.value = parseInt(input.value) + 1;
+        }
+        function decrementDuration() {
+            const input = document.getElementById('durationInput');
+            if (input && parseInt(input.value) > 0) input.value = parseInt(input.value) - 1;
         }
 
-        // ===== FILE UPLOAD HANDLING =====
-        document.getElementById('fileUpload')?.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const fileInfo = document.getElementById('fileInfo');
-                const fileName = document.getElementById('fileName').querySelector('span');
-                fileName.textContent = file.name;
-                fileInfo.classList.add('active');
-                showToast(`File selected: ${file.name}`, 'success');
+        // Content type switching
+        const contentType = document.getElementById('contentType');
+        const videoSection = document.getElementById('videoSection');
+        const audioSection = document.getElementById('audioSection');
+        const documentSection = document.getElementById('documentSection');
+        const youtubeSection = document.getElementById('youtubeSection');
+
+        function updateContentSections() {
+            if (videoSection) videoSection.style.display = 'none';
+            if (audioSection) audioSection.style.display = 'none';
+            if (documentSection) documentSection.style.display = 'none';
+            if (youtubeSection) youtubeSection.style.display = 'none';
+            
+            const selected = contentType ? contentType.value : 'video';
+            if (selected === 'video' && videoSection) videoSection.style.display = 'block';
+            else if (selected === 'audio' && audioSection) audioSection.style.display = 'block';
+            else if (selected === 'document' && documentSection) documentSection.style.display = 'block';
+            else if (selected === 'youtube' && youtubeSection) youtubeSection.style.display = 'block';
+        }
+
+        if (contentType) {
+            contentType.addEventListener('change', updateContentSections);
+            updateContentSections();
+        }
+
+        // Form submission
+        const form = document.getElementById('lessonForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function() {
+                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Creating...';
+                submitBtn.style.opacity = '0.8';
+                submitBtn.disabled = true;
+            });
+        }
+
+        // Cancel button - replace history
+        const cancelBtn = document.getElementById('cancelBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.replace(this.href);
+            });
+        }
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/admin/lessons');
+                }
             }
         });
 
-        function clearFile() {
-            document.getElementById('fileUpload').value = '';
-            document.getElementById('fileInfo').classList.remove('active');
-            showToast('File removed', 'info');
-        }
-
-        // ===== LIVE PREVIEW UPDATES =====
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize with video selected
-            selectContentType('video');
-
-            // Title preview
-            document.querySelector('input[name="title"]')?.addEventListener('input', function(e) {
-                document.getElementById('previewTitle').textContent = e.target.value || 'Lesson Title';
-            });
-
-            // Description preview
-            document.querySelector('textarea[name="description"]')?.addEventListener('input', function(e) {
-                document.getElementById('previewDesc').textContent = e.target.value || 'Description will appear here';
-            });
-
-            // Subject preview
-            document.querySelector('select[name="subject_id"]')?.addEventListener('change', function(e) {
-                const selected = e.target.options[e.target.selectedIndex];
-                document.getElementById('previewSubject').textContent = selected.text ? selected.text.split(' - ')[0] : 'Subject';
-            });
-
-            // Free sample toggle
-            document.getElementById('is_free')?.addEventListener('change', function(e) {
-                const previewFree = document.getElementById('previewFree');
-                previewFree.style.display = e.target.checked ? 'inline-block' : 'none';
-                showToast(e.target.checked ? 'Marked as free sample' : 'Free sample removed', 'info');
-            });
-
-            // Show any flashed messages
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1000 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        });
+        // Flash messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>

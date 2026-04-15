@@ -1,6 +1,34 @@
 # app.py
+
 import sys
 import os
+import secrets
+import json
+import re
+import requests
+import hmac
+import random
+from werkzeug.utils import secure_filename
+import cloudinary
+import cloudinary.uploader
+import io
+import hashlib
+from datetime import datetime, timedelta
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, session, send_file, abort
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash
+from dotenv import load_dotenv
+from certificate import generate_certificate, check_subject_completion
+from models import db, User, Subject, Lesson, Payment, EmailVerification, PasswordReset, Progress, LoginAttempt
+from forms import LoginForm, RegistrationForm, PaymentForm, RequestResetForm, ResetPasswordForm
+from email_utils import mail, send_verification_email, send_welcome_email, send_payment_confirmation_email, test_smtp_connection, send_password_reset_code, send_verification_code
+from paychangu import PayChangu
+
+def generate_reset_code():
+    """Generate 6-digit numeric code"""
+    return f"{random.randint(100000, 999999)}"
+
+
 print("=" * 60)
 print("Starting app.py...")
 print(f"Python version: {sys.version}")
@@ -10,6 +38,8 @@ print("=" * 60)
 
 # Email test mode - set to True to skip actual email sending
 EMAIL_TEST_MODE = os.getenv('EMAIL_TEST_MODE', 'False') == 'True'
+
+
 
 
 
@@ -47,7 +77,7 @@ except Exception as e:
 
 try:
     print("Importing email_utils...")
-    from email_utils import mail, send_verification_email, send_welcome_email, send_password_reset_email, send_payment_confirmation_email, test_smtp_connection
+    from email_utils import mail, send_verification_email, send_welcome_email, send_payment_confirmation_email, test_smtp_connection, send_password_reset_code
     print("✅ Email utils imported")
 except Exception as e:
     print(f"❌ Failed to import email_utils: {e}")
@@ -63,25 +93,7 @@ except Exception as e:
 
 print("\n✅ All imports successful!")
 print("=" * 60)
-import secrets
-import json
-import re
-import requests
-import hmac
-from werkzeug.utils import secure_filename
 
-import hashlib
-from datetime import datetime, timedelta
-from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, session, send_file, abort
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash
-from dotenv import load_dotenv
-
-from models import db, User, Subject, Lesson, Payment, EmailVerification, PasswordReset, Progress
-from forms import LoginForm, RegistrationForm, PaymentForm, RequestResetForm, ResetPasswordForm
-from email_utils import mail, send_verification_email, send_welcome_email, send_password_reset_email, \
-    send_payment_confirmation_email, test_smtp_connection
-from paychangu import PayChangu
 
 # Import test settings
 try:
@@ -101,6 +113,28 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# Cloudinary integration (optional - app works without it)
+try:
+    from cloudinary_utils import CloudinaryService
+    CLOUDINARY_AVAILABLE = True
+    print("✅ Cloudinary module loaded")
+except ImportError as e:
+    CLOUDINARY_AVAILABLE = False
+    print(f"⚠️ Cloudinary not available: {e}")
+    CloudinaryService = None
+
+
+# Initialize Cloudinary (only if available and configured)
+cloudinary_service = None
+if CLOUDINARY_AVAILABLE and CloudinaryService:
+    try:
+        cloudinary_service = CloudinaryService(app)  # Pass app to constructor
+        if cloudinary_service.available:
+            print("✅ Cloudinary service ready")
+    except Exception as e:
+        print(f"⚠️ Failed to initialize Cloudinary: {e}")
+        cloudinary_service = None
 
 # File upload configuration
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -123,6 +157,12 @@ def allowed_file(filename):
 app.config['SESSION_COOKIE_DOMAIN'] = None
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)
+app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # Database configuration
 database_url = os.getenv('DATABASE_URL', 'sqlite:///mymsce.db')
@@ -183,10 +223,155 @@ app.config['SITE_URL'] = os.getenv('SITE_URL', 'https://mymsce3.onrender.com').r
 # Initialize extensions
 db.init_app(app)
 mail.init_app(app)
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+# At the top of app.py with other imports
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# After app = Flask(__name__) and db.init_app(app)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+
+
+def get_user_analytics(user_id):
+    """Get comprehensive analytics for a user"""
+    
+    # Get all progress entries
+    progress_entries = Progress.query.filter_by(user_id=user_id).all()
+    
+    # Total lessons watched (any progress)
+    total_started = len(progress_entries)
+    
+    # Completed lessons (watched 90%+)
+    completed_count = sum(1 for p in progress_entries if p.completed)
+    
+    # Total watch time in seconds
+    total_seconds = sum(p.watch_time for p in progress_entries)
+    total_hours = round(total_seconds / 3600, 1)
+    
+    # Average completion rate
+    avg_completion = 0
+    if total_started > 0:
+        avg_completion = round((completed_count / total_started) * 100, 1)
+    
+    # Current streak (consecutive days with activity)
+    streak = calculate_streak(user_id)
+    
+    # Subject breakdown
+    subject_stats = get_subject_analytics(user_id)
+    
+    # Daily activity (last 7 days)
+    daily_activity = get_daily_activity(user_id, days=7)
+    
+    return {
+        'total_started': total_started,
+        'completed_count': completed_count,
+        'total_hours': total_hours,
+        'avg_completion': avg_completion,
+        'streak': streak,
+        'subject_stats': subject_stats,
+        'daily_activity': daily_activity
+    }
+
+
+def calculate_streak(user_id):
+    """Calculate current learning streak"""
+    from datetime import date, timedelta
+    
+    # Get all unique dates where user had activity
+    result = db.session.query(
+        db.func.date(Progress.last_watched)
+    ).filter(
+        Progress.user_id == user_id,
+        Progress.watch_time > 0
+    ).distinct().order_by(db.func.date(Progress.last_watched).desc()).all()
+    
+    if not result:
+        return 0
+    
+    dates = [r[0] for r in result]
+    today = date.today()
+    
+    streak = 0
+    check_date = today
+    
+    while check_date in dates:
+        streak += 1
+        check_date -= timedelta(days=1)
+    
+    return streak
+
+
+def get_subject_analytics(user_id):
+    """Get progress breakdown by subject"""
+    subjects = Subject.query.all()
+    result = []
+    
+    for subject in subjects:
+        lessons = Lesson.query.filter_by(subject_id=subject.id).all()
+        lesson_ids = [l.id for l in lessons]
+        
+        if not lesson_ids:
+            continue
+        
+        # Get progress for all lessons in this subject
+        progresses = Progress.query.filter(
+            Progress.user_id == user_id,
+            Progress.lesson_id.in_(lesson_ids)
+        ).all()
+        
+        completed = sum(1 for p in progresses if p.completed)
+        total_watch = sum(p.watch_time for p in progresses)
+        
+        result.append({
+            'id': subject.id,
+            'name': subject.name,
+            'icon': subject.icon or 'book',
+            'total_lessons': len(lesson_ids),
+            'completed': completed,
+            'progress': round((completed / len(lesson_ids)) * 100, 1) if lesson_ids else 0,
+            'watch_time_hours': round(total_watch / 3600, 1)
+        })
+    
+    return sorted(result, key=lambda x: x['progress'], reverse=True)
+
+
+def get_daily_activity(user_id, days=7):
+    """Get daily watch time for last N days"""
+    from datetime import date, timedelta
+    
+    activity = []
+    for i in range(days - 1, -1, -1):
+        day = date.today() - timedelta(days=i)
+        day_start = datetime(day.year, day.month, day.day)
+        day_end = day_start + timedelta(days=1)
+        
+        total = db.session.query(db.func.sum(Progress.watch_time)).filter(
+            Progress.user_id == user_id,
+            Progress.last_watched >= day_start,
+            Progress.last_watched < day_end
+        ).scalar() or 0
+        
+        activity.append({
+            'day': day.strftime('%a'),
+            'date': day.strftime('%d %b'),
+            'minutes': round(total / 60, 1),
+            'has_activity': total > 0
+        })
+    
+    return activity
+
 
 @app.context_processor
 def inject_site_url():
@@ -203,6 +388,20 @@ def add_no_cache_headers(response):
     response.headers['Expires'] = '0'
     return response
 
+
+@app.after_request
+def security_headers(response):
+    """Add security headers to all responses"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    
+    # Only add HSTS in production (HTTPS)
+    if app.config.get('ENV') == 'production' or request.is_secure:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    return response
 
 @app.route('/test-email-debug')
 @login_required
@@ -292,38 +491,148 @@ def index():
 
 
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("3 per minute")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
 
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user:
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
             flash('Email already registered. Please login.', 'danger')
             return redirect(url_for('login'))
+        
+        # Check if username already exists
+        existing_username = User.query.filter_by(username=form.username.data).first()
+        if existing_username:
+            flash('Username already taken. Please choose another.', 'danger')
+            return redirect(url_for('register'))
 
-        # Create new user with auto-verify for now
+        # Create user - NOT verified yet
         user = User(
             username=form.username.data,
             email=form.email.data,
             phone=form.phone.data,
-            email_verified=True,  # Auto-verify since email not working yet
-            is_verified=True
+            email_verified=False,
+            is_verified=False
         )
         user.set_password(form.password.data)
 
         try:
             db.session.add(user)
             db.session.commit()
-            flash('Registration successful! You can now login.', 'success')
-            return redirect(url_for('login'))
+            
+            # Generate 6-digit verification code
+            code = generate_reset_code()
+            
+            # Store in database
+            verification = EmailVerification(
+                user_id=user.id,
+                code=code,
+                expires_at=datetime.utcnow() + timedelta(minutes=15)
+            )
+            db.session.add(verification)
+            db.session.commit()
+            
+            # Send code via email
+            send_verification_code(user, code)
+            
+            # Store user_id in session for verification step
+            session['verify_user_id'] = user.id
+            
+            flash('A verification code has been sent to your email.', 'info')
+            return redirect(url_for('verify_email_code'))
+            
         except Exception as e:
+            db.session.rollback()
             app.logger.error(f"Database error: {str(e)}")
             flash('Registration failed. Please try again.', 'danger')
             return redirect(url_for('register'))
 
     return render_template('register.html', form=form)
+
+@app.route('/verify-email-code', methods=['GET', 'POST'])
+def verify_email_code():
+    """Verify email with 6-digit code"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    user_id = session.get('verify_user_id')
+    if not user_id:
+        flash('Please register first.', 'warning')
+        return redirect(url_for('register'))
+    
+    user = User.query.get(user_id)
+    if not user:
+        return redirect(url_for('register'))
+    
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        
+        # Find valid verification entry
+        verification = EmailVerification.query.filter_by(
+            user_id=user_id,
+            code=code,
+            used=False
+        ).first()
+        
+        if not verification or verification.expires_at < datetime.utcnow():
+            flash('Invalid or expired verification code.', 'danger')
+            return redirect(url_for('register'))
+        
+        # Mark as used and verify user
+        verification.used = True
+        user.email_verified = True
+        user.is_verified = True
+        db.session.commit()
+        
+        # Clear session
+        session.pop('verify_user_id', None)
+        
+        # Send welcome email
+        send_welcome_email(user)
+        
+        flash('Email verified successfully! You can now login.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('verify_email_code.html', email=user.email)
+
+@app.route('/resend-verification-code')
+def resend_verification_code():
+    """Resend verification code"""
+    user_id = session.get('verify_user_id')
+    if not user_id:
+        flash('Please register first.', 'warning')
+        return redirect(url_for('register'))
+    
+    user = User.query.get(user_id)
+    if not user:
+        return redirect(url_for('register'))
+    
+    # Generate new code
+    code = generate_reset_code()
+    
+    # Delete old unused codes
+    EmailVerification.query.filter_by(user_id=user_id, used=False).delete()
+    
+    # Store new code
+    verification = EmailVerification(
+        user_id=user_id,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=15)
+    )
+    db.session.add(verification)
+    db.session.commit()
+    
+    # Send new code
+    send_verification_code(user, code)
+    
+    flash('A new verification code has been sent to your email.', 'info')
+    return redirect(url_for('verify_email_code'))
+
+
 @app.route('/test-email-send')
 def test_email_send():
     """Test email sending - remove after testing"""
@@ -367,24 +676,41 @@ def verify_email(token):
 
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         if current_user.is_admin:
             return redirect(url_for('admin_dashboard'))
         return redirect(url_for('dashboard'))
-
+    
+    # Check for too many failed attempts
+    client_ip = request.remote_addr
+    failed_attempts = LoginAttempt.query.filter(
+        LoginAttempt.ip_address == client_ip,
+        LoginAttempt.success == False,
+        LoginAttempt.attempted_at >= datetime.utcnow() - timedelta(minutes=15)
+    ).count()
+    
+    if failed_attempts >= 5:
+        flash('Too many failed attempts. Please try again later.', 'danger')
+        return render_template('login.html', form=LoginForm())
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-
+        
         if user and user.check_password(form.password.data):
             if not user.email_verified:
                 flash('Please verify your email before logging in.', 'warning')
                 return redirect(url_for('login'))
-
+            
             login_user(user, remember=form.remember.data)
-            app.logger.info(f"User {user.username} (admin: {user.is_admin}) logged in")
-
+            
+            # Log successful attempt
+            attempt = LoginAttempt(email=form.email.data, ip_address=client_ip, success=True)
+            db.session.add(attempt)
+            db.session.commit()
+            
             if user.is_admin:
                 flash(f'Welcome back Admin {user.username}!', 'success')
                 return redirect(url_for('admin_dashboard'))
@@ -392,8 +718,13 @@ def login():
                 flash(f'Welcome back {user.username}!', 'success')
                 return redirect(url_for('dashboard'))
         else:
+            # Log failed attempt
+            attempt = LoginAttempt(email=form.email.data, ip_address=client_ip, success=False)
+            db.session.add(attempt)
+            db.session.commit()
+            
             flash('Invalid email or password', 'danger')
-
+    
     return render_template('login.html', form=form)
 
 @app.route('/logout', methods=['POST'])
@@ -429,87 +760,170 @@ def logout():
 
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
+@limiter.limit("3 per minute")
 def forgot_password():
-    form = RequestResetForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+    """Step 1: Request password reset code"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        user = User.query.filter_by(email=email).first()
+        
         if user:
-            # For now, just inform them to contact admin
-            flash('Password reset is temporarily unavailable. Please contact admin for assistance.', 'warning')
+            # Generate 6-digit code
+            code = generate_reset_code()
+            
+            # Delete any existing unused codes for this user
+            PasswordReset.query.filter_by(user_id=user.id, used=False).delete()
+            
+            # Store new code
+            reset = PasswordReset(
+                user_id=user.id,
+                code=code,
+                expires_at=datetime.utcnow() + timedelta(minutes=15)
+            )
+            db.session.add(reset)
+            db.session.commit()
+            
+            # Send code via email
+            send_password_reset_code(user, code)
+            flash('A verification code has been sent to your email.', 'info')
+            
+            # Store user_id in session for next step
+            session['reset_user_id'] = user.id
+            return redirect(url_for('verify_reset_code'))
         else:
-            flash('If an account exists with that email, you will receive password reset instructions.', 'info')
-        return redirect(url_for('login'))
+            # Don't reveal if email exists (security)
+            flash('If an account exists with that email, you will receive a reset code.', 'info')
+            return redirect(url_for('login'))
+    
+    return render_template('forgot_password.html')
 
-    return render_template('forgot_password.html', form=form)
 
-
-@app.route('/reset-password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    reset = PasswordReset.query.filter_by(token=token, used=False).first()
-    if not reset or reset.expires_at < datetime.utcnow():
-        flash('Invalid or expired reset link.', 'danger')
+@app.route('/verify-reset-code', methods=['GET', 'POST'])
+def verify_reset_code():
+    """Step 2: Verify the 6-digit code"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    user_id = session.get('reset_user_id')
+    if not user_id:
+        flash('Please request a password reset first.', 'warning')
         return redirect(url_for('forgot_password'))
-
-    form = ResetPasswordForm()
-    if form.validate_on_submit():
-        user = User.query.get(reset.user_id)
-        user.set_password(form.password.data)
+    
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        
+        # Find valid reset entry
+        reset = PasswordReset.query.filter_by(
+            user_id=user_id,
+            code=code,
+            used=False
+        ).first()
+        
+        if not reset or reset.expires_at < datetime.utcnow():
+            flash('Invalid or expired verification code.', 'danger')
+            return redirect(url_for('forgot_password'))
+        
+        # Mark as used and redirect to set new password
         reset.used = True
         db.session.commit()
-        flash('Your password has been reset! You can now login.', 'success')
-        return redirect(url_for('login'))
+        
+        session['reset_verified'] = True
+        flash('Code verified. Please enter your new password.', 'success')
+        return redirect(url_for('set_new_password'))
+    
+    return render_template('verify_reset_code.html')
 
-    return render_template('reset_password.html', form=form)
+
+@app.route('/set-new-password', methods=['GET', 'POST'])
+def set_new_password():
+    """Step 3: Set new password"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    if not session.get('reset_verified'):
+        flash('Please verify your code first.', 'warning')
+        return redirect(url_for('forgot_password'))
+    
+    user_id = session.get('reset_user_id')
+    if not user_id:
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        if len(password) < 6:
+            flash('Password must be at least 6 characters.', 'danger')
+        elif password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+        else:
+            user = User.query.get(user_id)
+            user.set_password(password)
+            db.session.commit()
+            
+            # Clear session
+            session.pop('reset_user_id', None)
+            session.pop('reset_verified', None)
+            
+            flash('Your password has been reset! You can now login.', 'success')
+            return redirect(url_for('login'))
+    
+    return render_template('set_new_password.html')
+
 
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Add cache control headers
     from flask import make_response
-
-    # FORCE REFRESH user from database (not session)
+    
     user = User.query.get(current_user.id)
-
-    # DEBUG - Check what's happening
-    print("\n" + "=" * 50)
-    print(f"🔍 DASHBOARD ACCESS: {user.username}")
-    print(f"Session user ID: {current_user.id}")
-    print(f"Database user ID: {user.id}")
-    print(f"is_active_subscriber (from DB): {user.is_active_subscriber}")
-    print(f"subscription_form: {user.subscription_form}")
-    print(f"subscription_type: {user.subscription_type}")
-    print(f"subscription_expiry: {user.subscription_expiry}")
-    print(f"Days left: {user.get_subscription_days_left()}")
-    print("=" * 50 + "\n")
-
-    # If admin, redirect to admin dashboard
+    
     if user.is_admin:
         return redirect(url_for('admin_dashboard'))
-
-    # Check email verification
+    
     if not user.email_verified:
         return redirect(url_for('verify_email_reminder'))
-
-    # Get subjects
+    
+    # Get subjects with serializable data
     subjects_form3 = Subject.query.filter_by(form=3).order_by(Subject.order).all()
     subjects_form4 = Subject.query.filter_by(form=4).order_by(Subject.order).all()
-
-    # Add lesson counts
+    
+    # Convert subjects to serializable format for JSON
+    subjects_form3_serializable = []
     for subject in subjects_form3:
-        subject.lesson_count = Lesson.query.filter_by(subject_id=subject.id).count()
+        subjects_form3_serializable.append({
+            'id': subject.id,
+            'name': subject.name,
+            'form': subject.form,
+            'description': subject.description,
+            'icon': subject.icon,
+            'order': subject.order,
+            'lesson_count': Lesson.query.filter_by(subject_id=subject.id).count()
+        })
+    
+    subjects_form4_serializable = []
     for subject in subjects_form4:
-        subject.lesson_count = Lesson.query.filter_by(subject_id=subject.id).count()
-
+        subjects_form4_serializable.append({
+            'id': subject.id,
+            'name': subject.name,
+            'form': subject.form,
+            'description': subject.description,
+            'icon': subject.icon,
+            'order': subject.order,
+            'lesson_count': Lesson.query.filter_by(subject_id=subject.id).count()
+        })
+    
     total_lessons = Lesson.query.count()
-
+    
     # Get user's progress
-    from models import Progress
-
     recent_progress = Progress.query.filter_by(
         user_id=user.id
     ).order_by(Progress.last_watched.desc()).limit(5).all()
-
+    
     recent_lessons = []
     for prog in recent_progress:
         lesson = Lesson.query.get(prog.lesson_id)
@@ -520,82 +934,92 @@ def dashboard():
                 progress_percent = min(100, int((watch_time / total_seconds) * 100))
             else:
                 progress_percent = 50 if prog.watch_time > 0 else 0
-
-            lesson.progress = progress_percent
-            lesson.watch_time = prog.watch_time
-            lesson.completed = prog.completed
-            lesson.last_watched = prog.last_watched
-            recent_lessons.append(lesson)
-
+            
+            recent_lessons.append({
+                'id': lesson.id,
+                'title': lesson.title,
+                'duration': lesson.duration,
+                'content_type': lesson.content_type,
+                'subject': {'id': lesson.subject.id, 'name': lesson.subject.name},
+                'progress': progress_percent,
+                'completed': prog.completed,
+                'watch_time': prog.watch_time,
+                'last_watched': prog.last_watched.isoformat() if prog.last_watched else None
+            })
+        
+        # Get continue watching lessons (recently watched but not completed)
+    continue_watching = []
+    for prog in recent_progress[:10]:  # Get last 10 recent
+        lesson = Lesson.query.get(prog.lesson_id)
+        if lesson and not prog.completed:  # Only show incomplete lessons
+            if lesson.duration and lesson.duration > 0:
+                total_seconds = lesson.duration * 60
+                progress_percent = min(100, int((prog.watch_time / total_seconds) * 100))
+            else:
+                progress_percent = 50 if prog.watch_time > 0 else 0
+            
+            continue_watching.append({
+                'id': lesson.id,
+                'title': lesson.title,
+                'duration': lesson.duration,
+                'content_type': lesson.content_type,
+                'subject': lesson.subject.name,
+                'subject_icon': lesson.subject.icon or 'book',
+                'progress': progress_percent,
+                'watch_time': prog.watch_time,
+                'last_watched': prog.last_watched
+            })
+    
+    
     completed_lessons = Progress.query.filter_by(
         user_id=user.id,
         completed=True
     ).count()
-
+    
     sample_lessons = Lesson.query.filter_by(is_free=True).order_by(Lesson.created_at.desc()).limit(3).all()
-
-    # Get user's subscription info
+    sample_lessons_serializable = []
+    for lesson in sample_lessons:
+        sample_lessons_serializable.append({
+            'id': lesson.id,
+            'title': lesson.title,
+            'duration': lesson.duration,
+            'subject': {'id': lesson.subject.id, 'name': lesson.subject.name}
+        })
+    
+    # In dashboard route, add:
+    analytics = get_user_analytics(user.id)
+    
+    # Subscription info
     subscription_info = {
         'is_active': user.is_active_subscriber,
         'form': user.subscription_form if user.is_active_subscriber else None,
         'type': user.subscription_type if user.is_active_subscriber else None,
         'days_left': user.get_subscription_days_left() if user.is_active_subscriber else 0,
-        'expiry': user.subscription_expiry.strftime(
-            '%d %B %Y') if user.is_active_subscriber and user.subscription_expiry else None
+        'expiry': user.subscription_expiry.strftime('%d %B %Y') if user.is_active_subscriber and user.subscription_expiry else None
     }
-
-    # Print subscription info for debugging
-    print(f"📊 Subscription info sent to template: {subscription_info}")
-
-    # Get recently accessed lessons
-    recently_accessed = recent_lessons[:3]
-
-    # Get recommended lessons
-    recommended_lessons = []
-    if user.is_active_subscriber and user.subscription_form:
-        if user.subscription_form == 'form3':
-            form = 3
-        elif user.subscription_form == 'form4':
-            form = 4
-        else:
-            form = None
-
-        if form:
-            started_lesson_ids = [p.lesson_id for p in Progress.query.filter_by(user_id=user.id).all()]
-            query = Lesson.query.join(Subject).filter(Subject.form == form)
-            if started_lesson_ids:
-                query = query.filter(~Lesson.id.in_(started_lesson_ids))
-            recommended_lessons = query.order_by(Lesson.created_at.desc()).limit(3).all()
-
-    total_watch_time = db.session.query(db.func.sum(Progress.watch_time)).filter_by(
-        user_id=user.id
-    ).scalar() or 0
-    total_hours_watched = round(total_watch_time / 3600, 1)
-
-    app.logger.info(f"User {user.username} accessed dashboard")
-
-    # Render template with cache control headers
+    
     response = make_response(render_template('dashboard.html',
-                                             user=user,
-                                             subscription_info=subscription_info,
-                                             subjects_form3=subjects_form3,
-                                             subjects_form4=subjects_form4,
-                                             total_lessons=total_lessons,
-                                             completed_lescompleted_lessons=completed_lessons,
-                                             total_hours_watched=total_hours_watched,
-                                             sample_lessons=sample_lessons,
-                                             recent_lessons=recent_lessons,
-                                             recently_accessed=recently_accessed,
-                                             recommended_lessons=recommended_lessons,
-                                             now=datetime.utcnow()))
-
-    # Add cache control headers
+        user=user,
+        subscription_info=subscription_info,
+        subjects_form3=subjects_form3_serializable,
+        subjects_form4=subjects_form4_serializable,
+        subjects_form3_objects=subjects_form3,  # For template rendering
+        subjects_form4_objects=subjects_form4,
+        total_lessons=total_lessons,
+        continue_watching=continue_watching, 
+        completed_lessons=completed_lessons,
+        recent_lessons=recent_lessons,
+        
+        sample_lessons=sample_lessons_serializable,
+        sample_lessons_objects=sample_lessons,
+        now=datetime.utcnow()
+    ))
+    
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
-
+    
     return response
-
 
 @app.route('/debug-smtp')
 def debug_smtp():
@@ -646,177 +1070,749 @@ def debug_smtp():
     return "<br>".join(results)
 
 
+
+@app.route('/admin/upload-video/<int:lesson_id>')
+@login_required
+def admin_upload_video_page(lesson_id):
+    """Dedicated video upload page"""
+    if not current_user.is_admin:
+        return redirect(url_for('dashboard'))
+    
+    lesson = Lesson.query.get_or_404(lesson_id)
+    return render_template('admin/upload_video.html', lesson=lesson)
+
+@app.route('/admin/upload-cloudinary-video', methods=['POST'])
+@login_required
+def admin_upload_cloudinary_video():
+    """Upload video to Cloudinary and attach to lesson"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    print("=" * 50)
+    print("📤 UPLOAD REQUEST RECEIVED")
+    print(f"Files: {request.files}")
+    print(f"Form: {request.form}")
+    
+    lesson_id = request.form.get('lesson_id')
+    video_file = request.files.get('video')
+    
+    if not lesson_id:
+        print("❌ Missing lesson_id")
+        return jsonify({'error': 'Missing lesson ID'}), 400
+    
+    if not video_file:
+        print("❌ Missing video file")
+        return jsonify({'error': 'Missing video file'}), 400
+    
+    print(f"✅ Lesson ID: {lesson_id}")
+    print(f"✅ Video file: {video_file.filename}")
+    
+    try:
+        lesson = Lesson.query.get_or_404(lesson_id)
+        print(f"✅ Lesson found: {lesson.title}")
+    except Exception as e:
+        print(f"❌ Lesson not found: {e}")
+        return jsonify({'error': 'Lesson not found'}), 404
+    
+    # Check Cloudinary availability
+    if not cloudinary_service or not cloudinary_service.available:
+        print("❌ Cloudinary not available")
+        return jsonify({'error': 'Cloudinary service not configured'}), 500
+    
+    print("📤 Uploading to Cloudinary...")
+    
+    # Upload to Cloudinary
+    result = cloudinary_service.upload_video(
+        video_file,
+        tags=[f'lesson_{lesson.id}', lesson.subject.name if lesson.subject else 'general'],
+        public_id=f"mymsce_lessons/lesson_{lesson.id}_{int(datetime.utcnow().timestamp())}"
+    )
+    
+    print(f"📦 Upload result: {result}")
+    
+    if result.get('success'):
+        # Update lesson
+        lesson.cloudinary_public_id = result['public_id']
+        lesson.cloudinary_url = result['url']
+        lesson.cloudinary_resource_type = 'video'
+        lesson.is_private = True
+        lesson.duration = int(result.get('duration', 0)) // 60
+        lesson.content_type = 'video'
+        db.session.commit()
+        
+        print("✅ Database updated successfully")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Video uploaded successfully',
+            'public_id': result['public_id'],
+            'url': result['url'],
+            'duration': result['duration']
+        })
+    else:
+        error_msg = result.get('error', 'Unknown error')
+        print(f"❌ Upload failed: {error_msg}")
+        return jsonify({'error': error_msg}), 500
+ 
+    
+@app.route('/admin/upload-cloudinary-file', methods=['POST'])
+@login_required
+def admin_upload_cloudinary_file():
+    """Upload any file to Cloudinary"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    lesson_id = request.form.get('lesson_id')
+    content_type = request.form.get('content_type')
+    file = request.files.get('file')
+    
+    if not lesson_id or not file:
+        return jsonify({'error': 'Missing lesson ID or file'}), 400
+    
+    lesson = Lesson.query.get_or_404(lesson_id)
+    
+    # Determine resource type
+    if content_type == 'video':
+        resource_type = 'video'
+    elif content_type == 'audio':
+        resource_type = 'video'
+    else:
+        resource_type = 'raw'
+    
+    # Save file temporarily
+    temp_path = f"temp_{datetime.utcnow().timestamp()}"
+    file.save(temp_path)
+    
+    try:
+        import cloudinary.uploader
+        
+        result = cloudinary.uploader.upload(
+            temp_path,
+            resource_type=resource_type,
+            folder='mymsce_lessons',
+            use_filename=True,
+            unique_filename=True
+        )
+        
+        # Update lesson
+        lesson.cloudinary_public_id = result['public_id']
+        lesson.cloudinary_url = result['secure_url']
+        lesson.file_name = file.filename  # Store original filename
+        lesson.file_size = result.get('bytes', 0)
+        lesson.file_extension = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else None
+        lesson.content_type = content_type
+        
+        if content_type == 'video' or content_type == 'audio':
+            lesson.duration = int(result.get('duration', 0)) // 60
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{content_type.capitalize()} uploaded successfully',
+            'public_id': result['public_id'],
+            'url': result['secure_url'],
+            'filename': file.filename
+        })
+        
+    except Exception as e:
+        print(f"Upload error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+@app.route('/subjects/<int:form>')
+@login_required
+def subjects_by_form(form):
+    """Show subjects for a specific form (3 or 4)"""
+    if form not in [3, 4]:
+        flash('Invalid form selected', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Check if user has access to this form
+    if not current_user.has_access(form) and not current_user.is_admin:
+        flash(f'Please subscribe to access Form {form} content.', 'warning')
+        return redirect(url_for('pricing'))
+    
+    subjects = Subject.query.filter_by(form=form).order_by(Subject.order).all()
+    
+    # Get lesson counts for each subject
+    for subject in subjects:
+        subject.lesson_count = Lesson.query.filter_by(subject_id=subject.id).count()
+    
+    return render_template('subjects.html', 
+                         subjects=subjects, 
+                         form=form,
+                         form_name=f'Form {form}')
+    
+ 
+ # ==================== CERTIFICATE FUNCTIONS ====================
+ 
+def check_subject_completion(user_id, subject_id):
+    """Check if user has completed all lessons in a subject"""
+    lessons = Lesson.query.filter_by(subject_id=subject_id).all()
+    if not lessons:
+        return False, 0, 0, 0
+    
+    total_lessons = len(lessons)
+    completed_lessons = 0
+    total_watch_time = 0
+    
+    for lesson in lessons:
+        progress = Progress.query.filter_by(
+            user_id=user_id,
+            lesson_id=lesson.id
+        ).first()
+        
+        if progress and progress.completed:
+            completed_lessons += 1
+        if progress:
+            total_watch_time += progress.watch_time
+    
+    is_completed = completed_lessons == total_lessons
+    
+    return is_completed, completed_lessons, total_lessons, total_watch_time
+
+def generate_certificate_pdf(user, subject, completion_data):
+    """Generate professional PDF certificate with Blue/Green/Orange theme"""
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.colors import HexColor
+    import io
+    from datetime import datetime
+    
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=landscape(A4))
+    width, height = landscape(A4)
+    
+    # ===== COLOR DEFINITIONS =====
+    primary_blue = HexColor('#2563EB')
+    secondary_green = HexColor('#16A34A')
+    accent_orange = HexColor('#F59E0B')
+    gray_text = HexColor('#475569')
+    white = HexColor('#FFFFFF')
+    
+    # ===== BACKGROUND =====
+    c.setFillColor(HexColor('#EFF6FF'))
+    c.rect(0, 0, width, height, fill=1)
+    
+    # ===== DECORATIVE BORDERS =====
+    c.setStrokeColor(primary_blue)
+    c.setLineWidth(6)
+    c.rect(15, 15, width - 30, height - 30)
+    
+    c.setStrokeColor(secondary_green)
+    c.setLineWidth(2)
+    c.rect(25, 25, width - 50, height - 50)
+    
+    c.setStrokeColor(accent_orange)
+    c.setLineWidth(1)
+    c.rect(35, 35, width - 70, height - 70)
+    
+    # ===== INSTITUTION SEAL =====
+    c.setFillColor(primary_blue)
+    c.circle(width/2, height - 130, 45, fill=1)
+    c.setFillColor(white)
+    c.circle(width/2, height - 130, 38, fill=1)
+    c.setFillColor(primary_blue)
+    c.setFont("Helvetica-Bold", 22)
+    c.drawCentredString(width/2, height - 140, "M")
+    
+    # ===== TITLE =====
+    c.setFillColor(primary_blue)
+    c.setFont("Helvetica-Bold", 28)
+    c.drawCentredString(width/2, height - 210, "CERTIFICATE OF COMPLETION")
+    
+    # ===== PRESENTATION =====
+    c.setFillColor(gray_text)
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width/2, height - 255, "This certificate is proudly presented to")
+    
+    # ===== USER NAME =====
+    c.setFillColor(accent_orange)
+    c.setFont("Helvetica-Bold", 32)
+    name = user.username.upper() if user.username else "VALUED STUDENT"
+    if len(name) > 35:
+        name = name[:32] + "..."
+    c.drawCentredString(width/2, height - 305, name)
+    
+    # ===== COURSE INFO =====
+    c.setFillColor(gray_text)
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width/2, height - 345, "for successfully completing")
+    
+    c.setFillColor(primary_blue)
+    c.setFont("Helvetica-Bold", 20)
+    course_name = f"{subject.name} - Form {subject.form}"
+    if len(course_name) > 45:
+        course_name = course_name[:42] + "..."
+    c.drawCentredString(width/2, height - 380, course_name)
+    
+    # ===== COMPLETION DATE =====
+    c.setFillColor(gray_text)
+    c.setFont("Helvetica", 11)
+    completion_date = completion_data['completion_date'].strftime('%d %B %Y')
+    c.drawCentredString(width/2, height - 420, f"Completed on {completion_date}")
+    
+    # ===== STATISTICS =====
+    stats_y = height - 470
+    c.setFillColor(HexColor('#F8FAFC'))
+    c.roundRect(width/4 - 20, stats_y - 5, width/2 + 40, 70, 10, fill=1, stroke=0)
+    
+    c.setFillColor(primary_blue)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(width/3 - 30, stats_y + 15, "📚 Lessons Completed:")
+    c.setFillColor(secondary_green)
+    c.drawString(width/3 + 120, stats_y + 15, f"{completion_data['completed_lessons']} / {completion_data['total_lessons']}")
+    
+    c.setFillColor(primary_blue)
+    c.drawString(width/3 - 30, stats_y - 5, "⏱️ Total Study Time:")
+    c.setFillColor(secondary_green)
+    c.drawString(width/3 + 120, stats_y - 5, f"{completion_data['total_hours']} hours")
+    
+    c.setFillColor(gray_text)
+    c.setFont("Helvetica", 8)
+    c.drawString(width/3 - 30, stats_y - 25, f"Certificate ID: {completion_data['certificate_id']}")
+    
+    # ===== SIGNATURES =====
+    signature_y = 90
+    c.setStrokeColor(gray_text)
+    c.setLineWidth(1)
+    c.line(width * 0.2, signature_y, width * 0.35, signature_y)
+    c.setFillColor(gray_text)
+    c.setFont("Helvetica", 9)
+    c.drawCentredString(width * 0.275, signature_y - 15, "Student Signature")
+    
+    c.line(width * 0.55, signature_y, width * 0.70, signature_y)
+    c.drawCentredString(width * 0.625, signature_y - 15, "Academic Director")
+    
+    # ===== FOOTER =====
+    c.setFillColor(HexColor('#94A3B8'))
+    c.setFont("Helvetica", 7)
+    c.drawCentredString(width/2, 25, "myMSCE - Malawi's #1 MSCE Tutoring Platform")
+    c.drawCentredString(width/2, 15, f"Generated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
+    
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+
+
+@app.route('/certificate/subject/<int:subject_id>')
+@login_required
+def view_certificate(subject_id):
+    """View certificate page for a subject"""
+    subject = Subject.query.get_or_404(subject_id)
+    
+    # Check if user has completed all lessons
+    is_completed, completed, total, watch_time = check_subject_completion(current_user.id, subject_id)
+    
+    if not is_completed:
+        flash(f'You need to complete all lessons in {subject.name} to get a certificate.', 'warning')
+        return redirect(url_for('view_subject', subject_id=subject_id))
+    
+    completion_data = {
+        'completed_lessons': completed,
+        'total_lessons': total,
+        'total_hours': round(watch_time / 3600, 1),
+        'completion_date': datetime.utcnow(),
+        'certificate_id': f"MSCE-{subject_id}-{current_user.id}-{datetime.utcnow().strftime('%Y%m%d')}"
+    }
+    
+    return render_template('certificate.html', 
+                         subject=subject, 
+                         completion_data=completion_data,
+                         user=current_user)
+
+@app.route('/certificate/download/<int:subject_id>')
+@login_required
+def download_certificate(subject_id):
+    """Download PDF certificate"""
+    subject = Subject.query.get_or_404(subject_id)
+    
+    # Check if user has completed all lessons
+    is_completed, completed, total, watch_time = check_subject_completion(current_user.id, subject_id)
+    
+    if not is_completed:
+        flash('Complete all lessons first!', 'danger')
+        return redirect(url_for('view_subject', subject_id=subject_id))
+    
+    completion_data = {
+        'completed_lessons': completed,
+        'total_lessons': total,
+        'total_hours': round(watch_time / 3600, 1),
+        'completion_date': datetime.utcnow(),
+        'certificate_id': f"MSCE-{subject_id}-{current_user.id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    }
+    
+    pdf_buffer = generate_certificate_pdf(current_user, subject, completion_data)
+    
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"certificate_{subject.name}_{current_user.username}.pdf",
+        mimetype='application/pdf'
+    )
+    
+ # ==================== ADMIN ANALYTICS FUNCTIONS ====================
+
+def get_user_growth_data(days=30):
+    """Get user registration growth data for the last N days"""
+    from datetime import date, timedelta
+    
+    data = []
+    for i in range(days - 1, -1, -1):
+        day = date.today() - timedelta(days=i)
+        day_start = datetime(day.year, day.month, day.day)
+        day_end = day_start + timedelta(days=1)
+        
+        count = User.query.filter(
+            User.created_at >= day_start,
+            User.created_at < day_end
+        ).count()
+        
+        data.append({
+            'date': day.strftime('%d %b'),
+            'count': count
+        })
+    
+    return data
+
+
+def get_lesson_analytics():
+    """Get lesson completion analytics"""
+    total_lessons = Lesson.query.count()
+    total_lessons_with_progress = Progress.query.filter(Progress.watch_time > 0).distinct(Progress.lesson_id).count()
+    total_completions = Progress.query.filter_by(completed=True).count()
+    
+    # Most popular lessons (most views)
+    popular_lessons = Lesson.query.order_by(Lesson.access_count.desc()).limit(5).all()
+    popular_data = []
+    for lesson in popular_lessons:
+        popular_data.append({
+            'title': lesson.title,
+            'views': lesson.access_count or 0,
+            'subject': lesson.subject.name
+        })
+    
+    return {
+        'total_lessons': total_lessons,
+        'lessons_started': total_lessons_with_progress,
+        'total_completions': total_completions,
+        'popular_lessons': popular_data
+    }
+
+
+def get_payment_analytics():
+    """Get payment analytics"""
+    from datetime import date, timedelta
+    
+    # Total revenue
+    total_revenue = db.session.query(db.func.sum(Payment.amount)).filter_by(status='completed').scalar() or 0
+    
+    # Revenue by subscription type
+    revenue_by_type = db.session.query(
+        Payment.subscription_type,
+        db.func.sum(Payment.amount)
+    ).filter_by(status='completed').group_by(Payment.subscription_type).all()
+    
+    revenue_by_type_data = []
+    for sub_type, amount in revenue_by_type:
+        revenue_by_type_data.append({
+            'type': sub_type,
+            'amount': float(amount or 0)
+        })
+    
+    # Conversion rate (users who subscribed vs total users)
+    total_users = User.query.count()
+    subscribers = User.query.filter_by(is_active_subscriber=True).count()
+    conversion_rate = round((subscribers / total_users) * 100, 1) if total_users > 0 else 0
+    
+    # Average revenue per user
+    avg_revenue = round(total_revenue / total_users, 2) if total_users > 0 else 0
+    
+    return {
+        'total_revenue': total_revenue,
+        'conversion_rate': conversion_rate,
+        'avg_revenue_per_user': avg_revenue,
+        'revenue_by_type': revenue_by_type_data
+    }
+
+
+def get_daily_activity_analytics(days=7):
+    """Get daily user activity"""
+    from datetime import date, timedelta
+    
+    activity = []
+    for i in range(days - 1, -1, -1):
+        day = date.today() - timedelta(days=i)
+        day_start = datetime(day.year, day.month, day.day)
+        day_end = day_start + timedelta(days=1)
+        
+        # Active users (any progress on that day)
+        active_users = db.session.query(Progress.user_id).filter(
+            Progress.last_watched >= day_start,
+            Progress.last_watched < day_end
+        ).distinct().count()
+        
+        # Total watch time that day
+        watch_time = db.session.query(db.func.sum(Progress.watch_time)).filter(
+            Progress.last_watched >= day_start,
+            Progress.last_watched < day_end
+        ).scalar() or 0
+        
+        activity.append({
+            'day': day.strftime('%a'),
+            'date': day.strftime('%d %b'),
+            'active_users': active_users,
+            'watch_time_hours': round(watch_time / 3600, 1)
+        })
+    
+    return activity
+
+@app.route('/admin/analytics')
+@login_required
+def admin_analytics():
+    if not current_user.is_admin:
+        flash('Access denied', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Get all analytics data
+    user_growth = get_user_growth_data(30)
+    lesson_stats = get_lesson_analytics()
+    payment_stats = get_payment_analytics()
+    daily_activity = get_daily_activity_analytics(7)
+    
+    # Get top performing subjects
+    subjects = Subject.query.all()
+    subject_stats = []
+    for subject in subjects:
+        lesson_count = Lesson.query.filter_by(subject_id=subject.id).count()
+        completions = db.session.query(Progress).join(Lesson).filter(
+            Lesson.subject_id == subject.id,
+            Progress.completed == True
+        ).count()
+        
+        subject_stats.append({
+            'name': subject.name,
+            'form': subject.form,
+            'lessons': lesson_count,
+            'completions': completions
+        })
+    
+    return render_template('admin/analytics.html',
+                         user_growth=user_growth,
+                         lesson_stats=lesson_stats,
+                         payment_stats=payment_stats,
+                         daily_activity=daily_activity,
+                         subject_stats=subject_stats)
+ 
+ 
+@app.route('/debug-cloudinary')
+@login_required
+def debug_cloudinary():
+    if not current_user.is_admin:
+        return "Unauthorized", 403
+    
+    # Test Cloudinary connection
+    test_result = cloudinary_service.get_signed_video_url('test', 3600)
+    
+    return jsonify({
+        'cloudinary_available': cloudinary_service.available,
+        'test_url_result': test_result,
+        'config_check': {
+            'cloud_name': app.config.get('CLOUDINARY_CLOUD_NAME'),
+            'has_api_key': bool(app.config.get('CLOUDINARY_API_KEY')),
+            'has_api_secret': bool(app.config.get('CLOUDINARY_API_SECRET')),
+        }
+    })
+
+
 @app.route('/subject/<int:subject_id>')
 @login_required
 def view_subject(subject_id):
+    """View all lessons in a subject with progress tracking"""
     subject = Subject.query.get_or_404(subject_id)
 
-    # ✅ ADMINS CAN ACCESS EVERYTHING
+    # ADMINS CAN ACCESS EVERYTHING
     if current_user.is_admin:
         lessons = Lesson.query.filter_by(subject_id=subject_id).order_by(Lesson.order).all()
-        return render_template('subject.html', subject=subject, lessons=lessons)
+        # Add progress for admin view
+        for lesson in lessons:
+            progress = Progress.query.filter_by(
+                user_id=current_user.id,
+                lesson_id=lesson.id
+            ).first()
+            lesson.user_progress = progress.watch_time if progress else 0
+            lesson.user_completed = progress.completed if progress else False
+        return render_template('subject.html', subject=subject, lessons=lessons, all_completed=False)
 
     # Check access for regular users
     if not current_user.has_access(subject.form):
-        flash(f'Please subscribe to access Form {subject.form} lessons.', 'warning')
+        flash(f'Please subscribe to access Form {subject.form} content.', 'warning')
         return redirect(url_for('pricing'))
 
+    # Get all lessons for this subject
     lessons = Lesson.query.filter_by(subject_id=subject_id).order_by(Lesson.order).all()
-    return render_template('subject.html', subject=subject, lessons=lessons)
+    
+    # Add user's progress for each lesson
+    for lesson in lessons:
+        progress = Progress.query.filter_by(
+            user_id=current_user.id,
+            lesson_id=lesson.id
+        ).first()
+        
+        if progress:
+            # Calculate progress percentage
+            if lesson.duration and lesson.duration > 0:
+                total_seconds = lesson.duration * 60
+                lesson.user_progress = min(100, int((progress.watch_time / total_seconds) * 100))
+            else:
+                lesson.user_progress = 50 if progress.watch_time > 0 else 0
+            lesson.user_completed = progress.completed
+            lesson.user_watch_time = progress.watch_time
+        else:
+            lesson.user_progress = 0
+            lesson.user_completed = False
+            lesson.user_watch_time = 0
+    
+    # Check if all lessons are completed
+    all_completed = True
+    for lesson in lessons:
+        if not lesson.user_completed:
+            all_completed = False
+            break
+
+    return render_template('subject.html', 
+                        subject=subject, 
+                        lessons=lessons,
+                        all_completed=all_completed)
+
+
 
 
 @app.route('/lesson/<int:lesson_id>')
 @login_required
 def view_lesson(lesson_id):
+    """Gateway page - shows lesson info and link to watch"""
     lesson = Lesson.query.get_or_404(lesson_id)
-
-    # ✅ ADMINS CAN ACCESS EVERY LESSON
+    
+    # ✅ ADMINS CAN ACCESS EVERYTHING
     if current_user.is_admin:
         subject_lessons = Lesson.query.filter_by(
             subject_id=lesson.subject_id
         ).order_by(Lesson.order).all()
-
-        # Get next and previous lessons
-        prev_lesson = None
-        next_lesson = None
-        for i, l in enumerate(subject_lessons):
-            if l.id == lesson.id:
-                if i > 0:
-                    prev_lesson = subject_lessons[i - 1]
-                if i < len(subject_lessons) - 1:
-                    next_lesson = subject_lessons[i + 1]
-                break
-
+        
         return render_template('lesson.html',
                                lesson=lesson,
-                               prev_lesson=prev_lesson,
-                               next_lesson=next_lesson,
-                               subject_lessons=subject_lessons)
+                               subject_lessons=subject_lessons,
+                               progress_percent=0,
+                               completed=False)
 
     # Check access for regular users
     if not current_user.has_access(lesson.form) and not lesson.is_free:
         flash('Please subscribe to access this lesson.', 'warning')
         return redirect(url_for('pricing'))
-
-    # ✅ Get or create progress record for this user and lesson
-    from models import Progress
-    from datetime import datetime
-
+    
+    # Get all lessons in same subject for "More Lessons" section
+    subject_lessons = Lesson.query.filter_by(
+        subject_id=lesson.subject_id
+    ).order_by(Lesson.order).all()
+    
+    # Get user's progress for THIS lesson
     progress = Progress.query.filter_by(
         user_id=current_user.id,
         lesson_id=lesson.id
     ).first()
-
-    # If no progress record exists, create one
-    if not progress:
-        progress = Progress(
-            user_id=current_user.id,
-            lesson_id=lesson.id,
-            watch_time=0,
-            completed=False,
-            last_watched=datetime.utcnow()
-        )
-        db.session.add(progress)
-        db.session.commit()
-    else:
-        # Update last_watched timestamp
-        progress.last_watched = datetime.utcnow()
-        db.session.commit()
-
-    # Calculate current progress percentage for display
-    if lesson.duration and lesson.duration > 0:
-        total_seconds = lesson.duration * 60
-        current_progress = min(100, int((progress.watch_time / total_seconds) * 100))
-    else:
-        current_progress = 0
-
-    # Get all lessons in same subject with their progress
-    subject_lessons = Lesson.query.filter_by(
-        subject_id=lesson.subject_id
-    ).order_by(Lesson.order).all()
-
-    # Enhance subject lessons with progress data
+    
+    progress_percent = 0
+    completed = False
+    
+    if progress:
+        if lesson.duration and lesson.duration > 0:
+            total_seconds = lesson.duration * 60
+            progress_percent = min(100, int((progress.watch_time / total_seconds) * 100))
+        completed = progress.completed
+    
+    # Get progress for each lesson in the list (for showing completion status)
     for l in subject_lessons:
-        # Get progress for each lesson
         l_progress = Progress.query.filter_by(
             user_id=current_user.id,
             lesson_id=l.id
         ).first()
-
+        
         if l_progress:
             if l.duration and l.duration > 0:
                 total_seconds = l.duration * 60
                 l.user_progress = min(100, int((l_progress.watch_time / total_seconds) * 100))
-                l.user_watch_time = l_progress.watch_time
                 l.user_completed = l_progress.completed
             else:
                 l.user_progress = 50 if l_progress.watch_time > 0 else 0
-                l.user_watch_time = l_progress.watch_time
                 l.user_completed = l_progress.completed
         else:
             l.user_progress = 0
-            l.user_watch_time = 0
             l.user_completed = False
-
-    # Get next and previous lessons with their progress
-    prev_lesson = None
-    next_lesson = None
-    for i, l in enumerate(subject_lessons):
-        if l.id == lesson.id:
-            if i > 0:
-                prev_lesson = subject_lessons[i - 1]
-            if i < len(subject_lessons) - 1:
-                next_lesson = subject_lessons[i + 1]
-            break
-
+    
     return render_template('lesson.html',
                            lesson=lesson,
-                           prev_lesson=prev_lesson,
-                           next_lesson=next_lesson,
                            subject_lessons=subject_lessons,
-                           user_progress=current_progress,
-                           watch_time=progress.watch_time if progress else 0,
-                           completed=progress.completed if progress else False,
-                           last_watched=progress.last_watched if progress else None)
-
-
-
-
-
-
+                           progress_percent=progress_percent,
+                           completed=completed)
 
 @app.route('/search')
 @login_required
 def search():
-    """Dedicated search results page"""
+    """Advanced search with filters"""
     query = request.args.get('q', '').strip()
-
-    if len(query) < 2:
-        flash('Please enter at least 2 characters to search', 'info')
-        return redirect(url_for('dashboard'))
-
-    # Search in subjects
-    subjects = Subject.query.filter(
-        Subject.name.ilike(f'%{query}%')
-    ).order_by(Subject.form, Subject.order).all()
-
-    # Search in lessons
-    lessons = Lesson.query.filter(
-        Lesson.title.ilike(f'%{query}%')
-    ).order_by(Lesson.created_at.desc()).all()
-
-    # Calculate total results
-    total_results = len(subjects) + len(lessons)
-
+    form_filter = request.args.get('form', 'all')
+    subject_filter = request.args.get('subject', 'all')
+    type_filter = request.args.get('type', 'all')
+    
+    # Base queries
+    subjects_query = Subject.query
+    lessons_query = Lesson.query
+    
+    # Apply text search
+    if query and len(query) >= 2:
+        subjects_query = subjects_query.filter(Subject.name.ilike(f'%{query}%'))
+        lessons_query = lessons_query.filter(Lesson.title.ilike(f'%{query}%'))
+    
+    # Apply form filter
+    if form_filter != 'all':
+        form_num = int(form_filter)
+        subjects_query = subjects_query.filter_by(form=form_num)
+        lessons_query = lessons_query.filter(Lesson.form == form_num)
+    
+    # Apply subject filter (for lessons only)
+    if subject_filter != 'all':
+        lessons_query = lessons_query.filter_by(subject_id=int(subject_filter))
+    
+    # Apply type filter
+    if type_filter != 'all':
+        lessons_query = lessons_query.filter_by(content_type=type_filter)
+    
+    # Execute queries
+    subjects = subjects_query.order_by(Subject.form, Subject.order).all()
+    lessons = lessons_query.order_by(Lesson.created_at.desc()).all()
+    
     # Get lesson counts for subjects
     for subject in subjects:
         subject.lesson_count = Lesson.query.filter_by(subject_id=subject.id).count()
-
+    
+    # Get all subjects for filter dropdown
+    all_subjects = Subject.query.order_by(Subject.form, Subject.name).all()
+    
     return render_template('search_results.html',
-                           query=query,
-                           subjects=subjects,
-                           lessons=lessons,
-                           total_results=total_results)
+                         query=query,
+                         subjects=subjects,
+                         lessons=lessons,
+                         total_results=len(subjects) + len(lessons),
+                         form_filter=form_filter,
+                         subject_filter=subject_filter,
+                         type_filter=type_filter,
+                         all_subjects=all_subjects)
 
 @app.route('/api/lesson/<int:lesson_id>/complete', methods=['POST'])
 @login_required
@@ -845,30 +1841,41 @@ def subscribe(form_type, duration):
         flash('Please verify your email before subscribing.', 'warning')
         return redirect(url_for('verify_email_reminder'))
 
-    # Real prices
     real_prices = {
         'form3': {'daily': 1030, 'weekly': 6695, 'monthly': 12500},
         'form4': {'daily': 1030, 'weekly': 6695, 'monthly': 12500},
         'combined': {'daily': 1545, 'weekly': 8500, 'monthly': 19500}
     }
 
-    # ✅ CHECK FOR EXISTING ACTIVE SUBSCRIPTION
-    # BUT skip if this is a confirmed upgrade
-    if not session.get('confirmed_upgrade', False) and current_user.is_active_subscriber:
-        # Check if it's not expired
-        if current_user.subscription_expiry and current_user.subscription_expiry > datetime.utcnow():
-            # User already has active subscription
+    # ===== SMARTER UPGRADE LOGIC =====
+    # If user already has active subscription, suggest combined plan
+    if current_user.is_active_subscriber and current_user.subscription_expiry and current_user.subscription_expiry > datetime.utcnow():
+        
+        # If already on combined, just extend
+        if current_user.subscription_form == 'combined':
+            # Can just extend - show normal payment
+            pass
+        # If buying different form than current, suggest combined
+        elif current_user.subscription_form != form_type:
             days_left = current_user.get_subscription_days_left()
-
-            # Store subscription info in session for the confirmation page
-            session['pending_subscription'] = {
-                'form_type': form_type,
-                'duration': duration,
-                'amount': real_prices[form_type][duration]
-            }
-
-            # Redirect to confirmation page
-            return redirect(url_for('confirm_subscription_upgrade'))
+            
+            # Calculate discounted price (only pay difference)
+            current_plan_value = {'form3': 12500, 'form4': 12500, 'combined': 19500}
+            current_value = current_plan_value.get(current_user.subscription_form, 0)
+            new_value = current_plan_value.get(form_type, 0)
+            
+            # For combined plan, suggest upgrade price
+            if form_type != 'combined':
+                flash(f'You currently have {current_user.subscription_form.upper()}. For access to both, upgrade to Combined plan.', 'info')
+                return redirect(url_for('pricing'))
+        
+        # Store in session for confirmation
+        session['pending_subscription'] = {
+            'form_type': form_type,
+            'duration': duration,
+            'amount': real_prices[form_type][duration]
+        }
+        return redirect(url_for('confirm_subscription_upgrade'))
 
     # ✅ Clear the confirmed_upgrade flag after using it
     if session.get('confirmed_upgrade'):
@@ -959,6 +1966,7 @@ def process_upgrade():
 
 @app.route('/process-payment/<int:payment_id>', methods=['POST'])
 @login_required
+@limiter.limit("2 per minute")
 def process_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
 
@@ -1079,53 +2087,135 @@ def admin_activate_payment_by_ref(reference):
     return jsonify({
         'success': True,
         'message': f'Payment {reference} activated for user {user.username}',
+
         'expiry': user.subscription_expiry.isoformat()
     })
+
+@app.route('/api/find-payment-by-charge/<charge_id>')
+def find_payment_by_charge(charge_id):
+    """Find payment by charge_id (for return URL handling)"""
+    payment = Payment.query.filter_by(charge_id=charge_id).first()
+    if payment:
+        return jsonify({'payment_id': payment.id})
+    return jsonify({'error': 'Not found'}), 404
+
+@app.route('/api/auto-verify/<int:payment_id>')
+@login_required
+def auto_verify_payment(payment_id):
+    """Auto-verify payment and activate subscription instantly"""
+    payment = Payment.query.get_or_404(payment_id)
+    
+    # Check if user owns this payment
+    if payment.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    # If already completed, return success
+    if payment.status == 'completed':
+        return jsonify({
+            'status': 'completed',
+            'message': 'Payment already verified',
+            'redirect': url_for('payment_success')
+        })
+    
+    # Call PayChangu to verify
+    paychangu = PayChangu(mode=app.config['PAYCHANGU_MODE'])
+    result = paychangu.verify_payment(payment.charge_id)
+    
+    if result.get('success') and result.get('completed'):
+        # Activate subscription
+        payment.status = 'completed'
+        payment.completed_at = datetime.utcnow()
+        
+        # Update user subscription
+        user = User.query.get(payment.user_id)
+        days_map = {'daily': 1, 'weekly': 7, 'monthly': 30}
+        days = days_map.get(payment.subscription_type, 1)
+        
+        # Set subscription details
+        user.is_active_subscriber = True
+        user.subscription_form = payment.subscription_form
+        user.subscription_type = payment.subscription_type
+        
+        # Update expiry
+        if user.subscription_expiry and user.subscription_expiry > datetime.utcnow():
+            user.subscription_expiry += timedelta(days=days)
+        else:
+            user.subscription_expiry = datetime.utcnow() + timedelta(days=days)
+        
+        db.session.commit()
+        
+        # Send confirmation email
+        try:
+            send_payment_confirmation_email(user, payment)
+        except Exception as e:
+            print(f"Email error: {e}")
+        
+        return jsonify({
+            'status': 'completed',
+            'message': 'Payment verified and subscription activated!',
+            'redirect': url_for('payment_success')
+        })
+    elif result.get('success') and not result.get('completed'):
+        # Still pending
+        return jsonify({
+            'status': 'pending',
+            'message': 'Payment still processing...',
+            'payment_status': result.get('status', 'pending')
+        })
+    else:
+        # Verification failed
+        return jsonify({
+            'status': 'error',
+            'message': result.get('message', 'Verification failed')
+        }), 400
 
 
 @app.route('/paychangu-webhook', methods=['POST'])
 @app.route('/paychangu-webhook/', methods=['POST'])
-@app.route('/paychange-webhook', methods=['POST'])
-@app.route('/paychange-webhook/', methods=['POST'])
 def paychangu_webhook():
-    """PayChangu Webhook Handler"""
+    """PayChangu Webhook Handler with signature verification"""
     import json
     from datetime import datetime
-
+    import hmac
+    import hashlib
+    
     print("\n" + "🔔" * 50)
     print(f"WEBHOOK RECEIVED at {datetime.utcnow()}")
-    print(f"Request method: {request.method}")
-    print(f"Request headers: {dict(request.headers)}")
-
-    # Log the raw payload
+    
+    # Get the raw payload for signature verification
     payload = request.get_data()
-    print(f"Raw payload: {payload}")
-
-    # Also save to a file for debugging
-    try:
-        with open('/tmp/webhook_log.txt', 'a') as f:
-            f.write(f"\n{datetime.utcnow()}: {payload}\n")
-    except:
-        pass
-
+    signature = request.headers.get('X-PayChangu-Signature', '')
+    
+    # Verify webhook signature (if configured)
+    webhook_secret = app.config.get('PAYCHANGU_WEBHOOK_SECRET')
+    if webhook_secret:
+        expected_signature = hmac.new(
+            webhook_secret.encode('utf-8'),
+            payload,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(expected_signature, signature):
+            print("❌ Invalid webhook signature - rejecting request")
+            return jsonify({'error': 'Invalid signature'}), 401
+    
     try:
         data = request.json
         print(f"Parsed JSON data: {json.dumps(data, indent=2)}")
     except Exception as e:
         print(f"❌ Failed to parse JSON: {e}")
         data = {}
-
-    # Always return 200 to acknowledge receipt
-    # Process in background
+    
+    # Process webhook in background
     try:
-        # Process the webhook
         process_webhook_payment(data)
     except Exception as e:
         print(f"Error processing webhook: {e}")
         import traceback
         traceback.print_exc()
-
+    
     return jsonify({'status': 'received'}), 200
+
 
 def process_webhook_payment(data):
     """Helper function to process payment from webhook data"""
@@ -1137,17 +2227,14 @@ def process_webhook_payment(data):
     print(f"Raw data type: {type(data)}")
     print(f"Raw data: {data}")
 
-    # Check if data is None or empty
     if not data:
         print("❌ No data received")
         return
 
-    # Check if data is a dictionary
     if not isinstance(data, dict):
         print(f"❌ Data is not a dictionary: {type(data)}")
         return
 
-    # Get references from webhook - try multiple possible locations
     webhook_reference = data.get('reference') or data.get('data', {}).get('reference')
     charge_id = data.get('charge_id') or data.get('data', {}).get('charge_id')
     tx_ref = data.get('tx_ref') or data.get('data', {}).get('tx_ref')
@@ -1161,25 +2248,21 @@ def process_webhook_payment(data):
 
     payment = None
 
-    # Method 1: Try to find payment by our reference
     if webhook_reference and not payment:
         payment = Payment.query.filter_by(reference=webhook_reference).first()
         if payment:
             print(f"✅ Found payment by reference: {webhook_reference}")
 
-    # Method 2: Try by charge_id (THIS SHOULD WORK!)
     if charge_id and not payment:
         payment = Payment.query.filter_by(charge_id=charge_id).first()
         if payment:
             print(f"✅ Found payment by charge_id: {charge_id}")
 
-    # Method 3: Try by tx_ref (transaction reference)
     if tx_ref and not payment:
         payment = Payment.query.filter_by(transaction_id=tx_ref).first()
         if payment:
             print(f"✅ Found payment by tx_ref: {tx_ref}")
 
-    # Method 4: More aggressive JSON search
     if not payment:
         print("🔍 AGGRESSIVE SEARCH in paychangu_response...")
         all_payments = Payment.query.filter_by(status='pending').all()
@@ -1189,74 +2272,53 @@ def process_webhook_payment(data):
             if p.paychangu_response:
                 try:
                     response_data = json.loads(p.paychangu_response)
-
-                    # Check if this payment's charge_id matches ANYWHERE
                     if charge_id and charge_id == response_data.get('data', {}).get('charge_id'):
                         payment = p
                         print(f"✅ Found payment {p.id} by charge_id in response")
                         break
-
-                    # Check if webhook reference appears in response
                     if webhook_reference and webhook_reference in p.paychangu_response:
                         payment = p
                         print(f"✅ Found payment {p.id} by reference string")
                         break
-
-                    # Check if the ref_id matches
                     if ref_id and ref_id == response_data.get('data', {}).get('ref_id'):
                         payment = p
                         print(f"✅ Found payment {p.id} by ref_id")
                         break
-
-                    # Also check if charge_id exists anywhere in the raw string
                     if charge_id and charge_id in p.paychangu_response:
                         payment = p
                         print(f"✅ Found payment {p.id} by charge_id string match")
                         break
-
                 except Exception as e:
                     print(f"⚠️ Error parsing JSON for payment {p.id}: {e}")
                     continue
 
-    # If still not found, try direct charge_id match (THIS SHOULD WORK!)
     if not payment and charge_id:
         print(f"🔍 Direct charge_id search: {charge_id}")
         payment = Payment.query.filter_by(charge_id=charge_id).first()
         if payment:
             print(f"✅ Found payment by direct charge_id: {payment.id}")
 
-    # RETRY LOGIC: If payment not found, wait and retry MULTIPLE times
     if not payment:
         print("⏳ Payment not found - will retry up to 3 times with delays...")
-
         for attempt in range(1, 4):
             print(f"⏳ Retry attempt {attempt}/3...")
-            time.sleep(2)  # Wait 2 seconds
-
-            # Clear session cache and get fresh session
+            time.sleep(2)
             db.session.remove()
-
-            # Try direct charge_id search again
             if charge_id:
                 payment = Payment.query.filter_by(charge_id=charge_id).first()
                 if payment:
                     print(f"✅ Found payment on retry attempt {attempt}: {payment.id}")
                     break
-
-            # Also try reference search again
             if not payment and webhook_reference:
                 payment = Payment.query.filter_by(reference=webhook_reference).first()
                 if payment:
                     print(f"✅ Found payment by reference on retry attempt {attempt}: {payment.id}")
                     break
-
-            # Also try tx_ref search
             if not payment and tx_ref:
                 payment = Payment.query.filter_by(transaction_id=tx_ref).first()
                 if payment:
                     print(f"✅ Found payment by tx_ref on retry attempt {attempt}: {payment.id}")
                     break
-
         if not payment:
             print("❌ Payment still not found after 3 retries")
 
@@ -1266,26 +2328,36 @@ def process_webhook_payment(data):
         if payment.status == 'pending':
             print("✅ Payment is pending - activating now...")
 
-            # Get user
             user = User.query.get(payment.user_id)
             if not user:
                 print(f"❌ User not found for payment {payment.id}")
                 return
 
-            # ✅ CRITICAL - Set ALL subscription fields
-            user.is_active_subscriber = True
-            user.subscription_form = payment.subscription_form    # ← This was missing!
-            user.subscription_type = payment.subscription_type    # ← This was missing!
-
             # Calculate days based on subscription type
             days = {'daily': 1, 'weekly': 7, 'monthly': 30}.get(payment.subscription_type, 1)
 
-            # Update expiry
-            if user.subscription_expiry and user.subscription_expiry > datetime.utcnow():
+            # ===== SMARTER SUBSCRIPTION LOGIC =====
+            user.is_active_subscriber = True
+            user.subscription_type = payment.subscription_type
+
+            # Check if user already has an active subscription
+            has_active = user.subscription_expiry and user.subscription_expiry > datetime.utcnow()
+
+            if has_active:
+                # User has active subscription - extend expiry
                 user.subscription_expiry += timedelta(days=days)
                 print(f"📅 Extended existing subscription by {days} days")
+                
+                # If buying a different form, upgrade to combined
+                if user.subscription_form != payment.subscription_form and user.subscription_form != 'combined':
+                    user.subscription_form = 'combined'
+                    print(f"🔄 Upgraded to combined plan")
+                else:
+                    print(f"📋 Keeping existing form: {user.subscription_form}")
             else:
+                # New subscription
                 user.subscription_expiry = datetime.utcnow() + timedelta(days=days)
+                user.subscription_form = payment.subscription_form
                 print(f"📅 New subscription for {days} days")
 
             # Update payment
@@ -1294,13 +2366,11 @@ def process_webhook_payment(data):
             if tx_ref:
                 payment.transaction_id = tx_ref
 
-            # Commit all changes
             db.session.commit()
 
             print(f"✅✅✅ ACTIVATED: {user.username}")
             print(f"📊 Form: {user.subscription_form}, Type: {user.subscription_type}, Expiry: {user.subscription_expiry}")
 
-            # Send email
             try:
                 send_payment_confirmation_email(user, payment)
                 print(f"📧 Confirmation email sent to {user.email}")
@@ -1314,8 +2384,6 @@ def process_webhook_payment(data):
         print(f"   - charge_id: {charge_id}")
         print(f"   - tx_ref: {tx_ref}")
         print(f"   - ref_id: {ref_id}")
-
-
 
 
 
@@ -1438,15 +2506,30 @@ def verify_payment(reference):
 @login_required
 def profile():
     payments = Payment.query.filter_by(user_id=current_user.id).order_by(Payment.created_at.desc()).all()
-    return render_template('profile.html', payments=payments)
-
-
+    analytics = get_user_analytics(current_user.id)
+    
+    # Get subscription info
+    subscription_info = {
+        'is_active': current_user.is_active_subscriber,
+        'form': current_user.subscription_form if current_user.is_active_subscriber else None,
+        'type': current_user.subscription_type if current_user.is_active_subscriber else None,
+        'days_left': current_user.get_subscription_days_left() if current_user.is_active_subscriber else 0,
+        'expiry': current_user.subscription_expiry.strftime('%d %B %Y') if current_user.is_active_subscriber and current_user.subscription_expiry else None
+    }
+    
+    return render_template('profile.html', 
+                         payments=payments, 
+                         analytics=analytics,
+                         user=current_user,
+                         subscription_info=subscription_info)
 @app.route('/verify-email-reminder')
 @login_required
 def verify_email_reminder():
     if current_user.email_verified:
         return redirect(url_for('dashboard'))
-    return render_template('verify_email_reminder.html')
+    
+    # Generate and send new code if needed
+    return render_template('verify_email_reminder.html', user=current_user)
 
 
 @app.route('/resend-verification')
@@ -1548,29 +2631,6 @@ def admin_dashboard():
                            test_mode=test_mode)
 
 
-@app.route('/watch/<int:lesson_id>')
-@login_required
-def watch_lesson(lesson_id):
-    """Dedicated YouTube player page"""
-    lesson = Lesson.query.get_or_404(lesson_id)
-
-    # Check access
-    if not current_user.has_access(lesson.form) and not lesson.is_free and not current_user.is_admin:
-        flash('Please subscribe to access this lesson.', 'warning')
-        return redirect(url_for('pricing'))
-
-    # Extract YouTube ID
-    video_id = lesson.video_url
-    if 'youtu.be' in video_id:
-        video_id = video_id.split('youtu.be/')[1].split('?')[0]
-    elif 'v=' in video_id:
-        video_id = video_id.split('v=')[1].split('&')[0]
-    elif 'embed' in video_id:
-        video_id = video_id.split('embed/')[1].split('?')[0]
-
-    return render_template('watch.html',
-                           lesson=lesson,
-                           video_id=video_id)
 
 
 
@@ -1724,7 +2784,6 @@ def admin_lessons():
     lessons = Lesson.query.order_by(Lesson.created_at.desc()).all()
     return render_template('admin/lessons.html', lessons=lessons)
 
-
 @app.route('/admin/lesson/create', methods=['GET', 'POST'])
 @login_required
 def admin_create_lesson():
@@ -1735,50 +2794,52 @@ def admin_create_lesson():
 
     if request.method == 'POST':
         subject = Subject.query.get(request.form.get('subject_id'))
-
-        # Handle file upload
-        file = request.files.get('file')
-        file_path = None
-        file_name = None
-        file_size = 0
-        file_extension = None
-
-        if file and file.filename and allowed_file(file.filename):
-            # Secure the filename
-            filename = secure_filename(file.filename)
-            # Add timestamp to avoid duplicates
-            timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-            new_filename = f"{timestamp}_{filename}"
-
-            # Save file
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
-
-            file_path = new_filename
-            file_name = filename
-            file_size = os.path.getsize(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
-            file_extension = filename.rsplit('.', 1)[1].lower()
-
-        # Determine content type
         content_type = request.form.get('content_type', 'video')
-
+        
+        # Handle file upload to Cloudinary
+        file = request.files.get('file')
+        cloudinary_data = None
+        
+        if file and file.filename and allowed_file(file.filename):
+            # Determine file type for Cloudinary
+            file_ext = file.filename.rsplit('.', 1)[1].lower()
+            
+            if file_ext in ['mp4', 'avi', 'mov', 'mkv']:
+                upload_type = 'video'
+            elif file_ext in ['mp3', 'wav', 'm4a', 'ogg']:
+                upload_type = 'audio'
+            else:
+                upload_type = 'raw'
+            
+            # Upload to Cloudinary
+            result = cloudinary_service.upload_file(
+                file, 
+                file_type=upload_type,
+                folder=f'mymsce_lessons/{subject.name}'
+            )
+            
+            if result['success']:
+                cloudinary_data = result
+        
+        # In admin_create_lesson, when creating the lesson
         lesson = Lesson(
             title=request.form.get('title'),
             description=request.form.get('description'),
             content=request.form.get('content'),
             content_type=content_type,
-            file_path=file_path,
-            file_name=file_name,
-            file_size=file_size,
-            file_extension=file_extension,
+            cloudinary_public_id=cloudinary_data['public_id'] if cloudinary_data else None,
+            cloudinary_url=cloudinary_data['url'] if cloudinary_data else None,
+            file_name=file.filename if file else None,
+            file_size=cloudinary_data['bytes'] if cloudinary_data else 0,
+            file_extension=file.filename.rsplit('.', 1)[1].lower() if file else None,
             video_url=request.form.get('video_url') if content_type == 'youtube' else None,
-            video_type='youtube' if content_type == 'youtube' else None,
             subject_id=subject.id,
             form=subject.form,
             order=request.form.get('order', 0),
             is_free=request.form.get('is_free') == 'on',
-            downloadable=request.form.get('downloadable') == 'on' if content_type != 'youtube' else False
+            downloadable=request.form.get('downloadable') == 'on' or content_type == 'document'  # Documents are downloadable by default
         )
-
+        
         db.session.add(lesson)
         db.session.commit()
         flash('Lesson created successfully', 'success')
@@ -1808,46 +2869,85 @@ def debug_db():
         }), 500
 
 
-
 @app.route('/admin/lesson/<int:lesson_id>/edit', methods=['GET', 'POST'])
 @login_required
 def admin_edit_lesson(lesson_id):
     if not current_user.is_admin:
         return redirect(url_for('dashboard'))
-
+    
     lesson = Lesson.query.get_or_404(lesson_id)
     subjects = Subject.query.all()
-
+    
     if request.method == 'POST':
         lesson.title = request.form.get('title')
         lesson.description = request.form.get('description')
-        lesson.content = request.form.get('content')
-        lesson.video_url = request.form.get('video_url')
-        lesson.video_type = request.form.get('video_type', 'youtube')
-        lesson.order = request.form.get('order', 0)
+        lesson.content_type = request.form.get('content_type')
+        lesson.order = int(request.form.get('order', 0))
         lesson.is_free = request.form.get('is_free') == 'on'
-
+        lesson.downloadable = request.form.get('downloadable') == 'on'
+        
+        # Handle subject update
         subject = Subject.query.get(request.form.get('subject_id'))
-        lesson.subject_id = subject.id
-        lesson.form = subject.form
-
+        if subject:
+            lesson.subject_id = subject.id
+            lesson.form = subject.form
+        
+        # Handle file upload based on content type
+        if lesson.content_type == 'video':
+            video_file = request.files.get('video')
+            if video_file and video_file.filename:
+                result = cloudinary_service.upload_video(video_file)
+                if result['success']:
+                    lesson.cloudinary_public_id = result['public_id']
+                    lesson.cloudinary_url = result['url']
+                    lesson.duration = int(result.get('duration', 0)) // 60
+        
+        elif lesson.content_type == 'audio':
+            audio_file = request.files.get('audio')
+            if audio_file and audio_file.filename:
+                result = cloudinary_service.upload_file(audio_file, 'audio')
+                if result['success']:
+                    lesson.cloudinary_public_id = result['public_id']
+                    lesson.cloudinary_url = result['url']
+        
+        elif lesson.content_type == 'document':
+            doc_file = request.files.get('document')
+            if doc_file and doc_file.filename:
+                result = cloudinary_service.upload_file(doc_file, 'raw')
+                if result['success']:
+                    lesson.cloudinary_public_id = result['public_id']
+                    lesson.cloudinary_url = result['url']
+                    lesson.file_name = doc_file.filename
+                    lesson.file_size = result['bytes']
+        
+        elif lesson.content_type == 'youtube':
+            lesson.video_url = request.form.get('video_url')
+        
         db.session.commit()
         flash('Lesson updated successfully', 'success')
         return redirect(url_for('admin_lessons'))
-
+    
     return render_template('admin/edit_lesson.html', lesson=lesson, subjects=subjects)
-
 
 @app.route('/admin/lesson/<int:lesson_id>/delete')
 @login_required
 def admin_delete_lesson(lesson_id):
     if not current_user.is_admin:
+        flash('Access denied', 'danger')
         return redirect(url_for('dashboard'))
-
+    
     lesson = Lesson.query.get_or_404(lesson_id)
-    db.session.delete(lesson)
-    db.session.commit()
-    flash('Lesson deleted successfully', 'success')
+    lesson_title = lesson.title
+    
+    try:
+        # With CASCADE, this automatically deletes all related progress records
+        db.session.delete(lesson)
+        db.session.commit()
+        flash(f'Lesson "{lesson_title}" deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting lesson: {str(e)}', 'danger')
+    
     return redirect(url_for('admin_lessons'))
 
 
@@ -2206,65 +3306,81 @@ def test_paychangu_simple():
     except Exception as e:
         return f"Error connecting to PayChangu: {str(e)}"
 
-
 @app.route('/stream/<int:lesson_id>')
 @login_required
 def stream_lesson(lesson_id):
-    """Stream video/audio files"""
+    """Stream video/audio from Cloudinary"""
     lesson = Lesson.query.get_or_404(lesson_id)
-
-    # Check access
-    if not current_user.has_access(lesson.form) and not lesson.is_free:
+    
+    if not current_user.has_access(lesson.form) and not lesson.is_free and not current_user.is_admin:
         abort(403)
-
-    if not lesson.file_path or lesson.content_type not in ['video', 'audio']:
-        abort(404)
-
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], lesson.file_path)
-    if not os.path.exists(file_path):
-        abort(404)
-
-    # Determine mime type
-    mime_types = {
-        'mp4': 'video/mp4', 'avi': 'video/x-msvideo', 'mov': 'video/quicktime',
-        'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'm4a': 'audio/mp4',
-        'pdf': 'application/pdf', 'doc': 'application/msword',
-        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    }
-    mime = mime_types.get(lesson.file_extension, 'application/octet-stream')
-
-    return send_file(
-        file_path,
-        mimetype=mime,
-        as_attachment=False,
-        download_name=lesson.file_name
-    )
-
+    
+    # Use the stored Cloudinary URL from the database
+    if lesson.cloudinary_url:
+        print(f"🔗 STREAM URL (from DB): {lesson.cloudinary_url}")
+        return redirect(lesson.cloudinary_url)
+    
+    flash('File not available', 'danger')
+    return redirect(url_for('view_lesson', lesson_id=lesson.id))
 
 @app.route('/download/<int:lesson_id>')
 @login_required
 def download_lesson(lesson_id):
-    """Download files (only if downloadable=True)"""
+    """Download files from Cloudinary with proper filename"""
     lesson = Lesson.query.get_or_404(lesson_id)
-
-    if not current_user.has_access(lesson.form) and not lesson.is_free:
+    
+    if not current_user.has_access(lesson.form) and not lesson.is_free and not current_user.is_admin:
         abort(403)
-
-    if not lesson.downloadable or not lesson.file_path:
+    
+    if not lesson.downloadable:
         flash('This file is not available for download', 'danger')
         return redirect(url_for('view_lesson', lesson_id=lesson.id))
-
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], lesson.file_path)
-    if not os.path.exists(file_path):
-        abort(404)
-
-    return send_file(
-        file_path,
-        as_attachment=True,
-        download_name=lesson.file_name,
-        mimetype='application/octet-stream'
-    )
-
+    
+    if not lesson.cloudinary_url:
+        flash('File not available', 'danger')
+        return redirect(url_for('view_lesson', lesson_id=lesson.id))
+    
+    # Get the file from Cloudinary
+    import requests
+    import io
+    
+    try:
+        response = requests.get(lesson.cloudinary_url)
+        if response.status_code != 200:
+            flash('File could not be downloaded', 'danger')
+            return redirect(url_for('view_lesson', lesson_id=lesson.id))
+        
+        # Determine proper filename
+        if lesson.file_name:
+            # Use stored original filename
+            filename = lesson.file_name
+        else:
+            # Create a clean filename from lesson title
+            safe_title = re.sub(r'[^\w\s-]', '', lesson.title).strip().replace(' ', '_')
+            ext = lesson.file_extension or 'pdf'
+            filename = f"{safe_title}.{ext}"
+        
+        # Get the file extension from Cloudinary URL if needed
+        if '.' not in filename and lesson.cloudinary_url:
+            url_path = lesson.cloudinary_url.split('/')[-1]
+            if '.' in url_path:
+                ext = url_path.split('.')[-1]
+                filename = f"{filename}.{ext}"
+        
+        print(f"📄 Downloading with filename: {filename}")
+        
+        # Send file with proper name
+        return send_file(
+            io.BytesIO(response.content),
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/octet-stream'
+        )
+        
+    except Exception as e:
+        print(f"Download error: {e}")
+        flash('Error downloading file', 'danger')
+        return redirect(url_for('view_lesson', lesson_id=lesson.id))
 
 @app.route('/test-email')
 def test_email():
@@ -2361,33 +3477,144 @@ def get_lesson_progress(lesson_id):
         print(f"Error getting progress: {e}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/user/progress', methods=['GET'])
+@app.route('/watch/<int:lesson_id>')
 @login_required
-def get_user_progress():
-    """Get all progress for current user"""
-    progress_entries = Progress.query.filter_by(user_id=current_user.id).all()
-
-    result = []
-    for p in progress_entries:
-        lesson = Lesson.query.get(p.lesson_id)
-        if lesson:
-            percentage = 0
-            if lesson.duration > 0:
-                percentage = min(100, int((p.watch_time / (lesson.duration * 60)) * 100))
-
-            result.append({
-                'lesson_id': p.lesson_id,
-                'lesson_title': lesson.title,
-                'subject': lesson.subject.name,
-                'progress': percentage,
-                'completed': p.completed,
-                'last_watched': p.last_watched.isoformat() if p.last_watched else None
-            })
-
-    return jsonify(result)
-
-
-
+def watch_lesson(lesson_id):
+    """Handle video playback (Cloudinary & YouTube)"""
+    lesson = Lesson.query.get_or_404(lesson_id)
+    
+    print("=" * 50)
+    print(f"VIEWING LESSON: {lesson_id}")
+    print(f"Title: {lesson.title}")
+    print(f"Content Type: {lesson.content_type}")
+    
+    # Check access
+    if not current_user.has_access(lesson.form) and not lesson.is_free and not current_user.is_admin:
+        flash('Please subscribe to access this lesson.', 'warning')
+        return redirect(url_for('pricing'))
+    
+    # Get navigation (prev/next lessons)
+    subject_lessons = Lesson.query.filter_by(
+        subject_id=lesson.subject_id
+    ).order_by(Lesson.order).all()
+    
+    prev_lesson = None
+    next_lesson = None
+    for i, l in enumerate(subject_lessons):
+        if l.id == lesson.id:
+            if i > 0:
+                prev_lesson = subject_lessons[i - 1]
+            if i < len(subject_lessons) - 1:
+                next_lesson = subject_lessons[i + 1]
+            break
+    
+    # Get progress
+    progress = Progress.query.filter_by(
+        user_id=current_user.id,
+        lesson_id=lesson.id
+    ).first()
+    
+    if not progress:
+        progress = Progress(
+            user_id=current_user.id,
+            lesson_id=lesson.id,
+            watch_time=0,
+            completed=False,
+            last_watched=datetime.utcnow()
+        )
+        db.session.add(progress)
+        db.session.commit()
+    
+    progress_percent = 0
+    if lesson.duration and lesson.duration > 0:
+        total_seconds = lesson.duration * 60
+        progress_percent = min(100, int((progress.watch_time / total_seconds) * 100))
+    
+    # Handle based on content type
+    if lesson.content_type == 'youtube' and lesson.video_url:
+        # YouTube video
+        video_id = extract_youtube_id(lesson.video_url)
+        if not video_id:
+            flash('Invalid YouTube URL', 'danger')
+            return redirect(url_for('view_lesson', lesson_id=lesson.id))
+        
+        # Increment view count
+        lesson.access_count = (lesson.access_count or 0) + 1
+        db.session.commit()
+        
+        return render_template('youtube_player.html',
+                             lesson=lesson,
+                             video_id=video_id,
+                             prev_lesson=prev_lesson,
+                             next_lesson=next_lesson,
+                             progress_percent=progress_percent,
+                             watch_time=progress.watch_time,
+                             completed=progress.completed)
+    
+    elif lesson.content_type == 'video' and lesson.cloudinary_public_id:
+        # Cloudinary video - USE STORED URL FROM DATABASE
+        if lesson.cloudinary_url:
+            video_url = lesson.cloudinary_url
+        else:
+            # Fallback to constructed URL
+            video_url = f"https://res.cloudinary.com/dtrz5zglt/video/upload/{lesson.cloudinary_public_id}.mp4"
+        
+        print(f"✅ Using video URL: {video_url}")
+        
+        # Increment view count
+        lesson.access_count = (lesson.access_count or 0) + 1
+        db.session.commit()
+        
+        return render_template('watch.html',
+                             lesson=lesson,
+                             video_url=video_url,
+                             prev_lesson=prev_lesson,
+                             next_lesson=next_lesson,
+                             progress_percent=progress_percent,
+                             watch_time=progress.watch_time,
+                             completed=progress.completed)
+        
+    elif lesson.content_type == 'audio':
+        # Audio file - use custom audio player (no download option)
+        audio_url = lesson.cloudinary_url
+        
+        return render_template('audio_player.html',
+                            lesson=lesson,
+                            audio_url=audio_url,
+                            prev_lesson=prev_lesson,
+                            next_lesson=next_lesson,
+                            progress_percent=progress_percent,
+                            watch_time=progress.watch_time,
+                            completed=progress.completed)
+    
+    elif lesson.content_type == 'document':
+        # Document - redirect to download or view
+        if lesson.downloadable:
+            return redirect(url_for('download_lesson', lesson_id=lesson.id))
+        else:
+            return redirect(url_for('stream_lesson', lesson_id=lesson.id))
+    
+    else:
+        flash('No content available for this lesson', 'danger')
+        return redirect(url_for('view_lesson', lesson_id=lesson.id))
+ 
+ 
+@app.route('/debug/lesson/<int:lesson_id>')
+@login_required
+def debug_lesson(lesson_id):
+    if not current_user.is_admin:
+        return "Admin only", 403
+    
+    lesson = Lesson.query.get_or_404(lesson_id)
+    
+    return jsonify({
+        'id': lesson.id,
+        'title': lesson.title,
+        'cloudinary_public_id': lesson.cloudinary_public_id,
+        'cloudinary_url': lesson.cloudinary_url,
+        'content_type': lesson.content_type,
+        'duration': lesson.duration
+    })
 
 
 # Error handlers

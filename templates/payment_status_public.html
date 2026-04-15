@@ -1,4 +1,4 @@
-<!-- templates/payment_status.html - GOLD ON NAVY WITH GLASS MORPHISM -->
+<!-- templates/payment_status.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +14,6 @@
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
         * {
             margin: 0;
             padding: 0;
@@ -24,368 +23,447 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a2b4c;
+            background: #EFF6FF;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            padding: 20px;
-            line-height: 1.5;
+            padding: 24px;
+            color: #0F172A;
         }
 
-        /* Subtle grain texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.15;
+        /* ===== COLOR SYSTEM (Matching Dashboard) ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --primary-glass: rgba(37, 99, 235, 0.12);
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER ===== */
+        /* ===== PAGE LOADER (Matching Dashboard) ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: #1a2b4c;
+            background: #EFF6FF;
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .glass-loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
+            background: rgba(37, 99, 235, 0.08);
+            backdrop-filter: blur(10px);
+            animation: pulseGlow 2s ease-in-out infinite;
         }
+        
+        .glass-loader::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .glass-loader::after {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            background: #EFF6FF;
+            border-radius: 50%;
+        }
+        
+        .glass-loader .inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.03) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(255, 255, 255, 0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
         }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-line {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-        .skeleton-line.w20 { width: 20%; }
-        .skeleton-line.w30 { width: 30%; }
-        .skeleton-line.w40 { width: 40%; }
-        .skeleton-line.w50 { width: 50%; }
-        .skeleton-line.w60 { width: 60%; }
-        .skeleton-line.w70 { width: 70%; }
-        .skeleton-line.w80 { width: 80%; }
-        .skeleton-line.w90 { width: 90%; }
 
         /* ===== MAIN CONTAINER ===== */
         .container {
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
             margin: 0 auto;
         }
 
-        /* ===== STATUS CARD - GLASS MORPHISM ===== */
-        .glass-card {
-            background: rgba(30, 58, 95, 0.3);
+        /* ===== STATUS CARD ===== */
+        .status-card {
+            background: var(--card-bg-glass);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 48px 32px;
-            text-align: center;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 0.6s ease;
-            position: relative;
+            border-radius: 36px;
+            border: 1px solid var(--border-light);
             overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+            position: relative;
         }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(251, 191, 36, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        .card-accent {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #2563EB, #16A34A);
         }
-
-        .glass-card::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            left: -30%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.03) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        .card-content {
+            padding: 40px 32px;
         }
-
+        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 480px) {
+            .card-content { padding: 32px 24px; }
         }
 
         /* ===== STATUS ICONS ===== */
         .icon-container {
             margin-bottom: 28px;
-            position: relative;
-            z-index: 2;
+            text-align: center;
         }
-
+        
         /* Pending Spinner */
         .pending-spinner {
             width: 80px;
             height: 80px;
             margin: 0 auto;
-            border: 3px solid rgba(251, 191, 36, 0.2);
-            border-top: 3px solid #fbbf24;
-            border-right: 3px solid #fbbf24;
+            border: 3px solid rgba(37, 99, 235, 0.15);
+            border-top: 3px solid #2563EB;
+            border-right: 3px solid #16A34A;
             border-radius: 50%;
             animation: spin 1s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
         }
-
+        
         /* Success Icon */
         .success-icon {
             width: 80px;
             height: 80px;
             margin: 0 auto;
-            background: rgba(16, 185, 129, 0.1);
-            backdrop-filter: blur(4px);
+            background: rgba(22, 163, 74, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(16, 185, 129, 0.3);
+            border: 2px solid rgba(22, 163, 74, 0.3);
             animation: scaleIn 0.5s ease;
         }
         .success-icon i {
             font-size: 3rem;
-            color: #10b981;
-            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
+            color: #16A34A;
+            filter: drop-shadow(0 0 10px rgba(22, 163, 74, 0.3));
         }
-
+        
         /* Failed Icon */
         .failed-icon {
             width: 80px;
             height: 80px;
             margin: 0 auto;
-            background: rgba(239, 68, 68, 0.1);
-            backdrop-filter: blur(4px);
+            background: rgba(220, 38, 38, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(239, 68, 68, 0.3);
+            border: 2px solid rgba(220, 38, 38, 0.3);
             animation: scaleIn 0.5s ease;
         }
         .failed-icon i {
             font-size: 3rem;
-            color: #ef4444;
-            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.3));
+            color: #DC2626;
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.3));
         }
-
+        
         @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-
+        
         /* Pending Pulse Dots */
         .pulse-dots {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
+            gap: 10px;
+            margin-top: 20px;
         }
         .pulse-dot {
             width: 8px;
             height: 8px;
-            background: #fbbf24;
+            background: #2563EB;
             border-radius: 50%;
-            animation: pulse 1.5s ease infinite;
+            animation: pulseDot 1.5s ease infinite;
         }
-        .pulse-dot:nth-child(2) { animation-delay: 0.2s; }
-        .pulse-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes pulse {
+        .pulse-dot:nth-child(2) { animation-delay: 0.2s; background: #16A34A; }
+        .pulse-dot:nth-child(3) { animation-delay: 0.4s; background: #F59E0B; }
+        @keyframes pulseDot {
             0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+            50% { opacity: 1; transform: scale(1.3); }
         }
 
         /* ===== TYPOGRAPHY ===== */
         h2 {
             font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
             margin-bottom: 12px;
-            position: relative;
-            z-index: 2;
+            letter-spacing: -0.5px;
         }
+        
         .text-gradient {
-            background: linear-gradient(135deg, #fbbf24, #2563eb);
+            background: linear-gradient(135deg, #2563EB, #16A34A);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .text-success { color: #10b981 !important; }
-        .text-danger { color: #ef4444 !important; }
-        .text-muted { color: rgba(255, 255, 255, 0.5) !important; }
-
+        
+        .text-success {
+            color: #16A34A !important;
+            background: none !important;
+            -webkit-text-fill-color: #16A34A !important;
+        }
+        
+        .text-danger {
+            color: #DC2626 !important;
+            background: none !important;
+            -webkit-text-fill-color: #DC2626 !important;
+        }
+        
+        .text-muted {
+            color: var(--text-tertiary) !important;
+        }
+        
         .message {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
             line-height: 1.6;
             margin-bottom: 28px;
-            position: relative;
-            z-index: 2;
         }
 
         /* ===== PAYMENT DETAILS CARD ===== */
         .details-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.4);
             border-radius: 24px;
             padding: 24px;
             margin-bottom: 28px;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            position: relative;
-            z-index: 2;
+            border: 1px solid var(--border-light);
         }
-
+        
         .detail-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+            border-bottom: 1px solid var(--border-light);
         }
         .detail-row:last-child { border-bottom: none; }
-
+        
         .detail-label {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.95rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
         }
         .detail-label i {
-            color: #fbbf24;
+            color: #2563EB;
             font-size: 1rem;
         }
-
+        
         .detail-value {
-            color: white;
+            color: var(--text-primary);
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
+        
         .amount-value {
-            color: #fbbf24;
-            font-size: 1.2rem;
+            color: #2563EB;
+            font-size: 1.1rem;
             font-weight: 700;
         }
+        
         .reference-value {
             font-family: monospace;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(37, 99, 235, 0.08);
             padding: 4px 12px;
             border-radius: 30px;
-            font-size: 0.85rem;
-            border: 1px solid rgba(251, 191, 36, 0.2);
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
         }
 
         /* ===== BUTTONS ===== */
         .btn {
+            width: 100%;
             padding: 16px 24px;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            width: 100%;
+            gap: 10px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+            transition: all 0.2s ease;
             border: none;
             text-decoration: none;
-            position: relative;
-            z-index: 2;
+            margin-bottom: 12px;
         }
         .btn:active { transform: scale(0.98); }
-
+        
         .btn-primary {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #1a2b4c;
+            background: #F59E0B;
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
-        .btn-primary:hover { background: #f59e0b; }
+        .btn-primary:active { background: #D97706; }
         .btn-primary i { transition: transform 0.2s; }
         .btn-primary:active i { transform: translateX(4px); }
-
+        
         .btn-outline {
-            background: transparent;
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.4);
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563EB;
+            border: 1px solid rgba(37, 99, 235, 0.25);
             margin-bottom: 16px;
         }
-        .btn-outline:hover {
-            background: rgba(251, 191, 36, 0.05);
-            border-color: #fbbf24;
+        .btn-outline:active {
+            background: rgba(37, 99, 235, 0.15);
         }
         .btn-outline i { transition: transform 0.3s; }
         .btn-outline:active i { transform: rotate(180deg); }
-
+        
         .btn-link {
             background: transparent;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-tertiary);
             text-decoration: none;
-            font-size: 0.9rem;
-            padding: 8px 16px;
-            display: inline-flex;
+            font-size: 0.85rem;
+            padding: 12px;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            border-radius: 40px;
+            margin-bottom: 0;
         }
         .btn-link:hover {
-            color: white;
-            background: rgba(251, 191, 36, 0.05);
-            border-radius: 30px;
+            color: #2563EB;
+            background: rgba(37, 99, 235, 0.05);
         }
+        .btn-link i {
+            color: #2563EB;
+        }
+        
+        .mt-3 { margin-top: 8px; }
 
         /* ===== SKELETON CARD ===== */
         .skeleton-card {
-            background: rgba(30, 58, 95, 0.3);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 48px 32px;
-            max-width: 500px;
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+        
+        .skeleton-accent {
+            height: 4px;
+            background: rgba(37, 99, 235, 0.15);
+        }
+        
+        .skeleton-content {
+            padding: 40px 32px;
+        }
+        
+        .skeleton-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50%;
+            margin: 0 auto 28px;
+        }
+        
+        .skeleton-line {
+            height: 16px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            width: 60%;
+            height: 32px;
+            margin: 0 auto 12px;
+        }
+        
+        .skeleton-line.subtitle {
+            width: 70%;
+            height: 20px;
+            margin: 0 auto 28px;
+        }
+        
+        .skeleton-details {
+            background: rgba(37, 99, 235, 0.04);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+        
+        .skeleton-button {
             width: 100%;
-            border: 1px solid rgba(251, 191, 36, 0.1);
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* ===== TOAST NOTIFICATIONS ===== */
@@ -401,33 +479,38 @@
             pointer-events: none;
             padding: 0 16px;
         }
+        
         .toast {
-            background: rgba(26, 43, 76, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-left: 4px solid #fbbf24;
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
             padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
             display: flex;
             align-items: center;
             gap: 12px;
-            color: white;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
             animation: toastIn 0.3s ease;
             pointer-events: auto;
-            margin-bottom: 8px;
-            max-width: 380px;
-            width: 100%;
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
         }
-        .toast i { color: #fbbf24; }
+        
+        .toast.error { border-left-color: #DC2626; }
+        .toast.success { border-left-color: #16A34A; }
+        .toast.warning { border-left-color: #F59E0B; }
+        
         .toast button {
-            background: none;
+            background: transparent;
             border: none;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
+            color: rgba(255,255,255,0.5);
             margin-left: auto;
-            font-size: 1.1rem;
+            cursor: pointer;
+            font-size: 1rem;
         }
+        
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -435,7 +518,7 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            .glass-card { padding: 32px 20px; }
+            .card-content { padding: 32px 24px; }
             h2 { font-size: 1.5rem; }
             .pending-spinner { width: 60px; height: 60px; }
             .success-icon, .failed-icon { width: 60px; height: 60px; }
@@ -445,10 +528,10 @@
         /* ===== SAFE AREAS ===== */
         @supports (padding: max(0px)) {
             body {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-top: max(20px, env(safe-area-inset-top));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+                padding-top: max(24px, env(safe-area-inset-top));
+                padding-bottom: max(24px, env(safe-area-inset-bottom));
             }
         }
     </style>
@@ -456,7 +539,9 @@
 <body>
     <!-- Page Loader -->
     <div class="page-loader" id="pageLoader">
-        <div class="spinner"></div>
+        <div class="glass-loader">
+            <div class="inner">M</div>
+        </div>
     </div>
 
     <!-- Toast Container -->
@@ -465,100 +550,104 @@
     <div class="container" id="mainContent">
         <!-- Skeleton Card (shown initially) -->
         <div class="skeleton-card" id="skeletonCard">
-            <div style="display: flex; justify-content: center; margin-bottom: 28px;">
-                <div class="skeleton" style="width: 80px; height: 80px; border-radius: 50%;"></div>
+            <div class="skeleton-accent shimmer"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-line title shimmer"></div>
+                <div class="skeleton-line subtitle shimmer"></div>
+                <div class="skeleton-details shimmer">
+                    <div class="skeleton-line" style="width: 100%; height: 20px;"></div>
+                    <div class="skeleton-line" style="width: 100%; height: 20px;"></div>
+                </div>
+                <div class="skeleton-button shimmer"></div>
             </div>
-            <div class="skeleton-line w50" style="height: 36px; margin: 0 auto 12px;"></div>
-            <div class="skeleton-line w70" style="height: 20px; margin: 0 auto 28px;"></div>
-            <div style="background: rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; margin-bottom: 28px;">
-                <div class="skeleton-line w90" style="height: 24px; margin-bottom: 16px;"></div>
-                <div class="skeleton-line w80" style="height: 24px;"></div>
-            </div>
-            <div class="skeleton-line w100" style="height: 50px;"></div>
         </div>
 
         <!-- Real Content (hidden initially) -->
-        <div class="glass-card" id="realCard" style="display: none;">
-            <!-- Status Icon -->
-            <div class="icon-container">
-                {% if status == 'completed' %}
-                    <div class="success-icon">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                {% elif status == 'pending' %}
-                    <div class="pending-spinner"></div>
-                    <div class="pulse-dots">
-                        <div class="pulse-dot"></div>
-                        <div class="pulse-dot"></div>
-                        <div class="pulse-dot"></div>
-                    </div>
-                {% else %}
-                    <div class="failed-icon">
-                        <i class="bi bi-x-circle-fill"></i>
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- Title -->
-            <h2>
-                {% if status == 'completed' %}
-                    Payment <span class="text-gradient">Successful!</span>
-                {% elif status == 'pending' %}
-                    Processing <span class="text-gradient">Payment</span>
-                {% else %}
-                    Payment <span class="text-danger">Failed</span>
-                {% endif %}
-            </h2>
-
-            <!-- Payment Details -->
-            <div class="details-card">
-                <div class="detail-row">
-                    <span class="detail-label">
-                        <i class="bi bi-upc-scan"></i>
-                        Reference
-                    </span>
-                    <span class="detail-value reference-value">{{ reference }}</span>
+        <div class="status-card" id="realCard" style="display: none;">
+            <div class="card-accent"></div>
+            <div class="card-content">
+                <!-- Status Icon -->
+                <div class="icon-container">
+                    {% if status == 'completed' %}
+                        <div class="success-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    {% elif status == 'pending' %}
+                        <div class="pending-spinner"></div>
+                        <div class="pulse-dots">
+                            <div class="pulse-dot"></div>
+                            <div class="pulse-dot"></div>
+                            <div class="pulse-dot"></div>
+                        </div>
+                    {% else %}
+                        <div class="failed-icon">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">
-                        <i class="bi bi-cash-stack"></i>
-                        Amount
-                    </span>
-                    <span class="detail-value amount-value">MWK {{ amount }}</span>
-                </div>
-            </div>
 
-            <!-- Message & Actions -->
-            <div class="message">
+                <!-- Title -->
+                <h2>
+                    {% if status == 'completed' %}
+                        Payment <span class="text-success">Successful!</span>
+                    {% elif status == 'pending' %}
+                        Processing <span class="text-gradient">Payment</span>
+                    {% else %}
+                        Payment <span class="text-danger">Failed</span>
+                    {% endif %}
+                </h2>
+
+                <!-- Payment Details -->
+                <div class="details-card">
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <i class="bi bi-upc-scan"></i>
+                            Reference
+                        </span>
+                        <span class="detail-value reference-value">{{ reference }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">
+                            <i class="bi bi-cash-stack"></i>
+                            Amount
+                        </span>
+                        <span class="detail-value amount-value">MWK {{ amount }}</span>
+                    </div>
+                </div>
+
+                <!-- Message & Actions -->
+                <div class="message">
+                    {% if status == 'pending' %}
+                        Please wait while we confirm your payment...
+                    {% elif status == 'completed' %}
+                        Your payment has been processed successfully! You can now access all your lessons.
+                    {% else %}
+                        There was an issue processing your payment. Please try again or contact support.
+                    {% endif %}
+                </div>
+
                 {% if status == 'pending' %}
-                    Please wait while we confirm your payment...
+                    <button onclick="checkStatus()" class="btn btn-outline">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Check Status Manually
+                    </button>
                 {% elif status == 'completed' %}
-                    Your payment has been processed successfully!
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                        Go to Dashboard <i class="bi bi-arrow-right"></i>
+                    </a>
                 {% else %}
-                    There was an issue processing your payment.
+                    <a href="{{ url_for('pricing') }}" class="btn btn-primary">
+                        Try Again <i class="bi bi-arrow-repeat"></i>
+                    </a>
                 {% endif %}
+
+                <!-- Dashboard Link (always available) -->
+                <a href="{{ url_for('dashboard') }}" class="btn-link mt-3">
+                    <i class="bi bi-house-door"></i>
+                    Return to Dashboard
+                </a>
             </div>
-
-            {% if status == 'pending' %}
-                <button onclick="checkStatus()" class="btn btn-outline">
-                    <i class="bi bi-arrow-repeat"></i>
-                    Check Status
-                </button>
-            {% elif status == 'completed' %}
-                <a href="{{ url_for('login') }}" class="btn btn-primary">
-                    Login to Continue <i class="bi bi-arrow-right"></i>
-                </a>
-            {% else %}
-                <a href="{{ url_for('pricing') }}" class="btn btn-primary">
-                    Try Again <i class="bi bi-arrow-repeat"></i>
-                </a>
-            {% endif %}
-
-            <!-- Dashboard Link (always available) -->
-            <a href="{{ url_for('dashboard') }}" class="btn-link mt-3">
-                <i class="bi bi-house"></i>
-                Return to Dashboard
-            </a>
         </div>
     </div>
 
@@ -573,10 +662,10 @@
             }
 
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle' :
-                      type === 'error' ? 'exclamation-circle' :
-                      type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'check-circle-fill' :
+                      type === 'error' ? 'exclamation-triangle-fill' :
+                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
 
             toast.innerHTML = `
                 <i class="bi bi-${icon}"></i>
@@ -590,18 +679,21 @@
             }, duration);
         }
 
-        // ===== PAGE LOAD SIMULATION =====
-        window.addEventListener('load', function() {
-            // Hide loader after 600ms
+        // ===== PAGE LOAD SIMULATION (Matching Dashboard Timing) =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loader after 800ms
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 800);
 
             // Show skeleton for 800ms, then real content
             setTimeout(() => {
-                document.getElementById('skeletonCard').style.display = 'none';
-                document.getElementById('realCard').style.display = 'block';
-            }, 800);
+                const skeleton = document.getElementById('skeletonCard');
+                const real = document.getElementById('realCard');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 1000);
 
             // Show any flashed messages
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -609,7 +701,7 @@
                     {% for category, message in messages %}
                         setTimeout(() => {
                             showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1000 }});
+                        }, {{ (loop.index0 * 200) + 1200 }});
                     {% endfor %}
                 {% endif %}
             {% endwith %}
@@ -617,16 +709,27 @@
 
         // ===== STATUS CHECKING FUNCTIONS =====
         function checkStatus() {
+            showToast('Checking payment status...', 'info');
             location.reload();
         }
 
+        // Make checkStatus available globally
+        window.checkStatus = checkStatus;
+
         // Auto-refresh every 5 seconds if pending
         {% if status == 'pending' %}
-        setTimeout(function() {
-            location.reload();
+        let refreshAttempts = 0;
+        const maxRefreshAttempts = 24; // 2 minutes at 5 second intervals
+        
+        // Auto page refresh every 5 seconds
+        const autoRefresh = setTimeout(function refresh() {
+            refreshAttempts++;
+            if (refreshAttempts < maxRefreshAttempts) {
+                location.reload();
+            }
         }, 5000);
 
-        // API polling every 3 seconds
+        // API polling every 3 seconds for faster detection
         const paymentId = "{{ payment_id }}";
         if (paymentId) {
             const checkInterval = setInterval(function() {
@@ -635,6 +738,7 @@
                     .then(data => {
                         if (data.status === 'completed' || data.status === 'failed') {
                             clearInterval(checkInterval);
+                            clearTimeout(autoRefresh);
                             location.reload();
                         }
                     })

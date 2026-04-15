@@ -1,4 +1,4 @@
-<!-- templates/lesson.html - POLISHED GATEWAY PAGE WITH GOLD-ON-NAVY BRANDING -->
+<!-- templates/lesson.html - PREMIUM REDESIGN with Proper Content Type Handling -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
     <title>{{ lesson.title }} - myMSCE</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,926 +13,775 @@
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        @layer reset, base, components, utilities, animations;
+
+        @layer base {
+            :root {
+                --primary-blue: #2563EB;
+                --primary-dark: #1D4ED8;
+                --primary-light: #DBEAFE;
+                --secondary-green: #16A34A;
+                --secondary-light: #DCFCE7;
+                --accent-orange: #F59E0B;
+                --accent-dark: #D97706;
+                --error-red: #DC2626;
+                --bg-main: #EFF6FF;
+                --card-bg-glass: rgba(219, 234, 254, 0.7);
+                --card-bg-glass-solid: rgba(219, 234, 254, 0.95);
+                --text-primary: #0F172A;
+                --text-secondary: #475569;
+                --text-tertiary: #64748B;
+                --border-light: rgba(37, 99, 235, 0.12);
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            }
+
+            * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                background: var(--bg-main);
+                min-height: 100vh;
+                color: var(--text-primary);
+                overflow-x: hidden;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            }
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
-            min-height: 100vh;
-            color: #1e293b;
-            line-height: 1.5;
+        /* ===== MODERN LOADER ===== */
+        @layer components {
+            .page-loader {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: var(--bg-main);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.5s ease, visibility 0.5s ease;
+            }
+            .page-loader.hidden { opacity: 0; visibility: hidden; }
+            .modern-loader {
+                position: relative;
+                width: 70px;
+                height: 70px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .modern-loader .spinner-ring {
+                position: absolute;
+                width: 100%; height: 100%;
+                border-radius: 50%;
+                background: conic-gradient(from 0deg, transparent, var(--primary-blue), var(--secondary-green), transparent);
+                animation: spin 1.2s cubic-bezier(0.2, 0.9, 0.4, 1) infinite;
+            }
+            .modern-loader .spinner-ring::before {
+                content: '';
+                position: absolute;
+                top: 5px; left: 5px; right: 5px; bottom: 5px;
+                background: var(--bg-main);
+                border-radius: 50%;
+            }
+            .modern-loader .spinner-logo {
+                position: relative;
+                z-index: 2;
+                font-size: 1.4rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
         }
 
-        /* ===== PAGE LOADER ===== */
-        .page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #1a2b4c;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.4s ease;
-        }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(203, 213, 225, 0.3) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(203, 213, 225, 0.3) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+        /* ===== NAVBAR ===== */
+        @layer components {
+            .navbar {
+                background: var(--primary-blue);
+                padding: 14px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .logo { font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.5px; }
+            .nav-actions { display: flex; gap: 12px; align-items: center; }
+            .menu-btn {
+                width: 42px; height: 42px;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(4px);
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+            .menu-btn i { font-size: 1.3rem; color: white; }
         }
 
-        .skeleton-line {
-            height: 16px;
-            background: rgba(203, 213, 225, 0.3);
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-        .skeleton-line.w20 { width: 20%; }
-        .skeleton-line.w30 { width: 30%; }
-        .skeleton-line.w40 { width: 40%; }
-        .skeleton-line.w50 { width: 50%; }
-        .skeleton-line.w60 { width: 60%; }
-        .skeleton-line.w70 { width: 70%; }
-        .skeleton-line.w80 { width: 80%; }
-        .skeleton-line.w90 { width: 90%; }
-
-        .skeleton-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid #e2e8f0;
-        }
-
-        .skeleton-icon {
-            width: 64px;
-            height: 64px;
-            background: #e2e8f0;
-            border-radius: 16px;
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            background: #1a2b4c; /* Light navy */
-            color: white;
-            padding: 2rem 2rem 3rem;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #fbbf24, #2563eb);
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .breadcrumb {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            flex-wrap: wrap;
-        }
-
-        .breadcrumb a {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            transition: color 0.2s;
-            padding: 0.25rem 0.5rem;
-            border-radius: 30px;
-        }
-
-        .breadcrumb a:hover {
-            color: #fbbf24;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .breadcrumb span {
-            color: rgba(255,255,255,0.3);
-        }
-
-        .badge-wrapper {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            padding: 0.5rem 1rem;
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            letter-spacing: 0.3px;
-        }
-
-        .badge-free {
-            background: #fbbf24;
-            color: #0f172a;
-            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
-        }
-
-        .badge-form {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            word-break: break-word;
-        }
-
-        .description {
-            color: rgba(255,255,255,0.8);
-            font-size: 1.1rem;
-            max-width: 600px;
-            word-break: break-word;
+        /* ===== SLIDE MENU ===== */
+        @layer components {
+            .slide-menu {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                padding: 24px 0;
+                border-right: 1px solid rgba(37, 99, 235, 0.1);
+            }
+            .slide-menu.open { left: 0; }
+            .menu-overlay {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            }
+            .menu-overlay.active { opacity: 1; visibility: visible; }
+            .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+            .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+            .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+            .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+            .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+            .menu-section { padding: 0 20px; margin-bottom: 24px; }
+            .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+            .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+            .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+            .menu-item i { width: 22px; color: #94A3B8; }
+            .menu-item:hover i { color: var(--primary-blue); }
+            .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
         }
 
         /* ===== MAIN CONTENT ===== */
-        .main-content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
+        @layer components {
+            .main-content {
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 24px 24px 60px;
+            }
+            @media (max-width: 768px) { .main-content { padding: 20px 20px 40px; } }
+        }
+
+        /* ===== BACK BUTTON ===== */
+        @layer components {
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(37, 99, 235, 0.1);
+                border: 1px solid var(--border-light);
+                padding: 10px 20px;
+                border-radius: 40px;
+                color: var(--primary-blue);
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: 500;
+                margin-bottom: 24px;
+                transition: all 0.2s;
+            }
+            .back-link:active { transform: scale(0.97); background: rgba(37, 99, 235, 0.15); }
+        }
+
+        /* ===== LESSON CARD ===== */
+        @layer components {
+            .lesson-card {
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(12px);
+                border-radius: 32px;
+                border: 1px solid var(--border-light);
+                overflow: hidden;
+                margin-bottom: 24px;
+                box-shadow: var(--shadow-sm);
+            }
+            .card-accent { height: 4px; width: 100%; background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green)); }
+            .card-content { padding: 32px; }
+            @media (max-width: 640px) { .card-content { padding: 24px; } }
+            .badge-wrapper { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+            .badge {
+                padding: 6px 14px;
+                border-radius: 40px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .badge-free { background: var(--secondary-light); color: var(--secondary-green); }
+            .badge-form { background: var(--primary-light); color: var(--primary-blue); }
+            .content-type-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 12px;
+                border-radius: 30px;
+                font-size: 0.7rem;
+                font-weight: 600;
+            }
+            .content-type-badge.video { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+            .content-type-badge.audio { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+            .content-type-badge.document { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+            .content-type-badge.youtube { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+            .lesson-title { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.5px; line-height: 1.2; }
+            .lesson-description { color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; }
+            @media (max-width: 640px) { .lesson-title { font-size: 1.5rem; } }
+        }
+
+        /* ===== META GRID ===== */
+        @layer components {
+            .meta-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+            .meta-item {
+                background: rgba(37, 99, 235, 0.06);
+                border-radius: 20px;
+                padding: 16px;
+                text-align: center;
+                border: 1px solid var(--border-light);
+            }
+            .meta-item i { font-size: 1.3rem; color: var(--primary-blue); margin-bottom: 8px; }
+            .meta-value { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+            .meta-label { font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+            @media (max-width: 640px) {
+                .meta-grid { grid-template-columns: 1fr; gap: 10px; }
+                .meta-item { padding: 12px; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+                .meta-item i { margin-bottom: 0; }
+                .meta-item div:first-child { display: flex; align-items: center; gap: 12px; }
+            }
         }
 
         /* ===== PROGRESS SECTION ===== */
-        .progress-section {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            animation: fadeInUp 0.5s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-            color: #475569;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .progress-header i { color: #fbbf24; margin-right: 0.25rem; }
-
-        .progress-bar {
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 100px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #fbbf24, #2563eb);
-            width: 0%;
-            transition: width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
-        }
-
-        .complete-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-top: 1rem;
-            cursor: pointer;
-            padding: 0.5rem 0;
-        }
-
-        .complete-toggle input { display: none; }
-
-        .toggle-slider {
-            width: 48px;
-            height: 24px;
-            background: #cbd5e1;
-            border-radius: 100px;
-            position: relative;
-            transition: background 0.2s;
-        }
-
-        .toggle-slider::before {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .complete-toggle input:checked + .toggle-slider {
-            background: #10b981;
-        }
-
-        .complete-toggle input:checked + .toggle-slider::before {
-            transform: translateX(24px);
-        }
-
-        .toggle-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #475569;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .toggle-label i { color: #10b981; }
-
-        /* ===== ACTION CARDS ===== */
-        .action-grid {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .action-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-            border: 1px solid #e2e8f0;
-            animation: fadeInUp 0.5s ease 0.1s both;
-            max-width: 100%;
-            overflow: hidden;
-        }
-
-        .action-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px -8px rgba(0,0,0,0.1);
-            border-color: #fbbf24;
-        }
-
-        .action-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 18px;
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #1a2b4c;
-            flex-shrink: 0;
-        }
-
-        .action-icon.video { background: #fee2e2; color: #dc2626; }
-        .action-icon.audio { background: #dbeafe; color: #2563eb; }
-        .action-icon.document { background: #dcfce7; color: #16a34a; }
-        .action-icon.youtube { background: #fee2e2; color: #dc2626; }
-
-        .action-info {
-            flex: 1;
-            min-width: 0; /* Enables text truncation */
-        }
-
-        .action-info h3 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: #0f172a;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .action-info p {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .action-meta {
-            display: flex;
-            gap: 1.5rem;
-            font-size: 0.8rem;
-            color: #94a3b8;
-            flex-wrap: wrap;
-        }
-
-        .action-meta i { margin-right: 0.25rem; color: #fbbf24; }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            flex-shrink: 0;
-        }
-
-        .action-button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: none;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .action-button:active { transform: scale(0.97); }
-
-        .action-button.watch {
-            background: #1a2b4c;
-            color: white;
-        }
-        .action-button.watch:hover {
-            background: #fbbf24;
-            color: #0f172a;
-        }
-        .action-button.watch i { transition: transform 0.2s; }
-        .action-button.watch:hover i { transform: translateX(4px); }
-
-        .action-button.download {
-            background: #e2e8f0;
-            color: #334155;
-        }
-        .action-button.download:hover {
-            background: #cbd5e1;
-        }
-        .action-button.download i { transition: transform 0.2s; }
-        .action-button.download:hover i { transform: translateY(2px); }
-
-        .action-button.icon-only {
-            padding: 0.75rem;
-        }
-
-        /* ===== INFO CARDS ===== */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .info-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.25rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-            animation: fadeInUp 0.5s ease 0.2s both;
-            overflow: hidden;
-        }
-
-        .info-card h4 {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .info-card h4 i { color: #fbbf24; }
-
-        .info-card .value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #0f172a;
-            word-break: break-word;
-        }
-
-        /* ===== LESSON LIST ===== */
-        .lesson-list {
-            margin-top: 2rem;
-            animation: fadeInUp 0.5s ease 0.3s both;
-        }
-
-        .lesson-list h3 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #0f172a;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .lesson-list h3 i { color: #fbbf24; }
-
-        .lesson-items {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-
-        .lesson-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid #f1f5f9;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .lesson-item:last-child { border-bottom: none; }
-        .lesson-item:hover { background: #f8fafc; }
-
-        .lesson-item.active {
-            background: #fef3c7;
-            border-left: 4px solid #fbbf24;
-            margin-left: -4px;
-        }
-
-        .lesson-number {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #475569;
-            flex-shrink: 0;
-        }
-
-        .lesson-item.active .lesson-number {
-            background: #fbbf24;
-            color: #0f172a;
-        }
-
-        .lesson-info {
-            flex: 1;
-            min-width: 0; /* Enables text truncation */
-        }
-
-        .lesson-title {
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .lesson-meta {
-            font-size: 0.75rem;
-            color: #64748b;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .lesson-meta i { margin-right: 0.25rem; color: #fbbf24; }
-
-        .lesson-status {
-            color: #fbbf24;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        /* ===== SKELETON CARD ===== */
-        .skeleton-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 1rem;
-        }
-
-        /* ===== TOAST NOTIFICATIONS ===== */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 0;
-            right: 0;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
-            padding: 0 16px;
-        }
-
-        .toast {
-            background: #1e293b;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.9rem;
-            animation: toastIn 0.3s ease;
-            pointer-events: auto;
-            margin-bottom: 8px;
-            max-width: 380px;
-            width: 100%;
-            border-left: 4px solid #fbbf24;
-        }
-        .toast i { color: #fbbf24; }
-        .toast button {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.5);
-            cursor: pointer;
-            margin-left: auto;
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 640px) {
-            .header { padding: 1.5rem 1rem 2rem; }
-            .container { padding: 0 1rem; }
-            h1 { font-size: 1.8rem; }
-
-            .action-card {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
+        @layer components {
+            .progress-card {
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 24px;
+                padding: 24px;
+                margin-bottom: 24px;
+                border: 1px solid var(--border-light);
             }
+            .progress-header { display: flex; justify-content: space-between; margin-bottom: 12px; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
+            .progress-bar-bg { height: 8px; background: rgba(37, 99, 235, 0.15); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+            .progress-fill { height: 100%; background: linear-gradient(90deg, var(--secondary-green), #22C55E); border-radius: 10px; transition: width 0.5s ease; }
+            .completion-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(22, 163, 74, 0.12); color: var(--secondary-green); padding: 8px 16px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; }
+        }
 
-            .action-info h3,
-            .action-info p {
-                white-space: normal;
-                word-break: break-word;
-            }
-
-            .action-meta {
-                justify-content: center;
-            }
-
-            .action-buttons {
+        /* ===== ACTION BUTTONS - DYNAMIC ===== */
+        @layer components {
+            .action-section { margin-bottom: 24px; }
+            .action-btn {
                 width: 100%;
+                padding: 18px;
+                border: none;
+                border-radius: 60px;
+                font-size: 1rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
                 justify-content: center;
+                gap: 12px;
+                cursor: pointer;
+                text-decoration: none;
+                transition: all 0.2s ease;
             }
+            .action-btn:active { transform: scale(0.98); }
+            .action-btn.video { background: var(--accent-orange); color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+            .action-btn.video:active { background: var(--accent-dark); }
+            .action-btn.audio { background: var(--secondary-green); color: white; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3); }
+            .action-btn.audio:active { background: #0f8a3e; }
+            .action-btn.document { background: var(--primary-blue); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+            .action-btn.document:active { background: var(--primary-dark); }
+            .action-btn.youtube { background: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+            .action-btn.youtube:active { background: #dc2626; }
+        }
 
-            .info-grid {
-                grid-template-columns: 1fr;
+        /* ===== MORE LESSONS SECTION ===== */
+        @layer components {
+            .more-section { margin-top: 8px; }
+            .more-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+            .more-title i { color: var(--primary-blue); font-size: 1.2rem; }
+            .lesson-list { display: flex; flex-direction: column; gap: 12px; }
+            .lesson-list-item {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                padding: 16px;
+                background: rgba(219, 234, 254, 0.4);
+                border-radius: 20px;
+                text-decoration: none;
+                transition: all 0.2s;
+                border: 1px solid transparent;
+            }
+            .lesson-list-item:active { transform: scale(0.98); background: rgba(219, 234, 254, 0.6); }
+            .lesson-list-item.active { background: rgba(37, 99, 235, 0.1); border-color: rgba(37, 99, 235, 0.3); }
+            .lesson-list-item:hover { background: rgba(219, 234, 254, 0.6); }
+            .lesson-num {
+                width: 36px; height: 36px;
+                background: rgba(37, 99, 235, 0.12);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                color: var(--primary-blue);
+                font-size: 0.9rem;
+            }
+            .lesson-list-info { flex: 1; }
+            .lesson-list-info h4 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+            .lesson-list-info p { font-size: 0.7rem; color: var(--text-tertiary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+            .lesson-list-info p i { font-size: 0.65rem; }
+            .lesson-status-icon { color: var(--primary-blue); font-size: 1.2rem; }
+            .lesson-arrow-icon { color: #94A3B8; font-size: 1rem; }
+        }
+
+        /* ===== SKELETON ===== */
+        @layer components {
+            .skeleton-container { max-width: 1000px; margin: 0 auto; padding: 24px 24px 60px; }
+            .skeleton-card { background: rgba(219, 234, 254, 0.5); backdrop-filter: blur(8px); border-radius: 32px; overflow: hidden; border: 1px solid rgba(37, 99, 235, 0.1); }
+            .skeleton-accent { height: 4px; background: rgba(37, 99, 235, 0.15); }
+            .skeleton-content { padding: 32px; }
+            .skeleton-line { height: 16px; background: rgba(37, 99, 235, 0.08); border-radius: 8px; margin-bottom: 12px; }
+            .skeleton-line.title { width: 70%; height: 36px; }
+            .skeleton-line.desc { width: 90%; }
+            .skeleton-line.desc.short { width: 60%; }
+            .skeleton-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+            .skeleton-meta-item { background: rgba(37, 99, 235, 0.06); border-radius: 20px; padding: 16px; text-align: center; }
+            .skeleton-icon { width: 32px; height: 32px; background: rgba(37, 99, 235, 0.08); border-radius: 12px; margin: 0 auto 8px; }
+            .skeleton-button { height: 56px; background: rgba(37, 99, 235, 0.08); border-radius: 60px; margin: 24px 0; }
+            .shimmer {
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+            @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        }
+
+        /* ===== TOAST ===== */
+        @layer components {
+            .toast-container {
+                position: fixed;
+                top: 20px;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+                padding: 0 16px;
+            }
+            .toast {
+                background: #1E293B;
+                border-left: 4px solid var(--primary-blue);
+                padding: 14px 20px;
+                border-radius: 16px;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                width: 100%;
+                max-width: 380px;
+                animation: toastIn 0.3s ease;
+                pointer-events: auto;
+                font-weight: 500;
+                box-shadow: var(--shadow-lg);
+            }
+            .toast.error { border-left-color: var(--error-red); }
+            .toast.success { border-left-color: var(--secondary-green); }
+            .toast.warning { border-left-color: var(--accent-orange); }
+            .toast button {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                margin-left: auto;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+            @keyframes toastIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
         }
 
-        /* ===== SAFE AREAS ===== */
-        @supports (padding: max(0px)) {
-            body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-            .header { padding-top: max(2rem, env(safe-area-inset-top)); }
-            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+        /* ===== UTILITIES ===== */
+        @layer utilities {
+            ::-webkit-scrollbar { width: 5px; }
+            ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+            @supports (padding: max(0px)) {
+                .main-content {
+                    padding-left: max(24px, env(safe-area-inset-left));
+                    padding-right: max(24px, env(safe-area-inset-right));
+                    padding-top: max(24px, env(safe-area-inset-top));
+                    padding-bottom: max(60px, env(safe-area-inset-bottom));
+                }
+                .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            }
         }
+
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- MODERN LOADER -->
     <div class="page-loader" id="pageLoader">
-        <div class="spinner"></div>
+        <div class="modern-loader">
+            <div class="spinner-ring"></div>
+            <div class="spinner-logo">M</div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'User' }}</h4>
+                    <p>{{ current_user.email if current_user else '' }}</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge">
+                {% if subscription_info and subscription_info.is_active %}
+                <i class="bi bi-star-fill"></i> {{ subscription_info.form|upper }} {{ subscription_info.type|title }}
+                {% else %}
+                <i class="bi bi-gift-fill"></i> Free Plan
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Menu</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('pricing') }}" class="menu-item"><i class="bi bi-tag-fill"></i><span>Pricing</span></a>
+            <a href="{{ url_for('profile') }}" class="menu-item"><i class="bi bi-person-fill"></i><span>Profile</span></a>
+            <a href="{{ url_for('user_menu') }}" class="menu-item"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+            </form>
+        </div>
     </div>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="container">
-            <div class="breadcrumb">
-                <a href="{{ url_for('dashboard') }}"><i class="bi bi-house-door"></i> Dashboard</a>
-                <span>/</span>
-                <a href="{{ url_for('view_subject', subject_id=lesson.subject.id) }}">
-                    <i class="bi bi-{{ lesson.subject.icon }}"></i> {{ lesson.subject.name }}
-                </a>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="nav-actions">
+            <div class="menu-btn" id="menuBtn">
+                <i class="bi bi-list"></i>
             </div>
-
-            <div class="badge-wrapper">
-                {% if lesson.is_free %}
-                    <span class="badge badge-free"><i class="bi bi-gift-fill"></i> Free Sample</span>
-                {% endif %}
-                <span class="badge badge-form">Form {{ lesson.form }}</span>
-            </div>
-
-            <h1>{{ lesson.title }}</h1>
-            {% if lesson.description %}
-                <p class="description">{{ lesson.description }}</p>
-            {% endif %}
         </div>
     </div>
 
-    <!-- Main Content with Skeleton -->
-    <div class="main-content" id="mainContent">
-        <!-- Real Content -->
-        <div id="realContent">
-            <!-- Progress Section -->
-            <div class="progress-section">
-                <div class="progress-header">
-                    <span><i class="bi bi-bar-chart-fill"></i> Your Progress</span>
-                    <span id="progressPercentage">{{ user_progress|default(0) }}%</span>
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <!-- Back Button -->
+            <a href="{{ url_for('subjects_by_form', form=lesson.form) }}" class="back-link">
+                <i class="bi bi-arrow-left"></i> Back to Subjects
+            </a>
+
+            <!-- Lesson Card -->
+            <div class="lesson-card">
+                <div class="card-accent"></div>
+                <div class="card-content">
+                    <div class="badge-wrapper">
+                        {% if lesson.is_free %}
+                        <span class="badge badge-free"><i class="bi bi-gift-fill"></i> Free Preview</span>
+                        {% endif %}
+                        <span class="badge badge-form">Form {{ lesson.form }}</span>
+                        <span class="content-type-badge {{ lesson.content_type }}">
+                            {% if lesson.content_type == 'video' %}
+                                <i class="bi bi-camera-reel-fill"></i> Video Lesson
+                            {% elif lesson.content_type == 'audio' %}
+                                <i class="bi bi-mic-fill"></i> Audio Lesson
+                            {% elif lesson.content_type == 'document' %}
+                                <i class="bi bi-file-text-fill"></i> Document
+                            {% elif lesson.content_type == 'youtube' %}
+                                <i class="bi bi-youtube"></i> YouTube Video
+                            {% else %}
+                                <i class="bi bi-question-circle"></i> Unknown
+                            {% endif %}
+                        </span>
+                    </div>
+                    <h1 class="lesson-title">{{ lesson.title }}</h1>
+                    <p class="lesson-description">{{ lesson.description or 'No description available.' }}</p>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="lessonProgress" style="width: {{ user_progress|default(0) }}%;"></div>
-                </div>
-                <label class="complete-toggle">
-                    <input type="checkbox" id="markComplete" {% if completed %}checked{% endif %}>
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">
-                        <i class="bi bi-check-circle"></i> Mark as completed
-                    </span>
-                </label>
             </div>
 
-            <!-- Action Cards - UPDATED with proper width control -->
-            <div class="action-grid">
-                {% if lesson.content_type == 'video' and lesson.file_path %}
-                    <!-- Video Card -->
-                    <div class="action-card">
-                        <div class="action-icon video">
-                            <i class="bi bi-camera-reel-fill"></i>
-                        </div>
-                        <div class="action-info">
-                            <h3>Video Lesson</h3>
-                            <p>{{ lesson.file_name or 'Video content' }}</p>
-                            <div class="action-meta">
-                                <span><i class="bi bi-clock"></i> {{ lesson.duration }} min</span>
-                                <span><i class="bi bi-file-earmark"></i> {{ (lesson.file_size / 1024 / 1024)|round(1) }} MB</span>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="action-button watch" target="_blank">
-                                <i class="bi bi-play-circle"></i> Watch
-                            </a>
-                            {% if lesson.downloadable %}
-                                <a href="{{ url_for('download_lesson', lesson_id=lesson.id) }}" class="action-button download icon-only" title="Download">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            {% endif %}
-                        </div>
+            <!-- Lesson Meta Grid -->
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div>
+                        <i class="bi bi-clock"></i>
+                        <div class="meta-value">{{ lesson.duration }} min</div>
                     </div>
+                    <div class="meta-label">Duration</div>
+                </div>
+                <div class="meta-item">
+                    <div>
+                        <i class="bi bi-eye"></i>
+                        <div class="meta-value">{{ lesson.access_count or 0 }}</div>
+                    </div>
+                    <div class="meta-label">Views</div>
+                </div>
+                <div class="meta-item">
+                    <div>
+                        <i class="bi bi-calendar3"></i>
+                        <div class="meta-value">{{ lesson.created_at.strftime('%d %b %Y') if lesson.created_at else 'Recent' }}</div>
+                    </div>
+                    <div class="meta-label">Added</div>
+                </div>
+            </div>
 
-                {% elif lesson.content_type == 'audio' and lesson.file_path %}
-                    <!-- Audio Card - FIXED WIDTH -->
-                    <div class="action-card">
-                        <div class="action-icon audio">
-                            <i class="bi bi-mic-fill"></i>
-                        </div>
-                        <div class="action-info">
-                            <h3>{{ lesson.file_name or 'Audio Lesson' }}</h3>
-                            <p>Audio content</p>
-                            <div class="action-meta">
-                                <span><i class="bi bi-clock"></i> {{ lesson.duration }} min</span>
-                                <span><i class="bi bi-file-earmark"></i> {{ (lesson.file_size / 1024 / 1024)|round(1) }} MB</span>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="action-button watch" target="_blank">
-                                <i class="bi bi-play-circle"></i> Listen
-                            </a>
-                            {% if lesson.downloadable %}
-                                <a href="{{ url_for('download_lesson', lesson_id=lesson.id) }}" class="action-button download icon-only" title="Download">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            {% endif %}
-                        </div>
+            <!-- Progress Section -->
+            <div class="progress-card">
+                <div class="progress-header">
+                    <span><i class="bi bi-graph-up"></i> Your Progress</span>
+                    <span id="progressPercent">{{ progress_percent|default(0) }}%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-fill" id="progressFill" style="width: {{ progress_percent|default(0) }}%"></div>
+                </div>
+                <div id="completionBadge" style="{% if not completed %}display: none;{% endif %}">
+                    <div class="completion-badge">
+                        <i class="bi bi-check-circle-fill"></i> Lesson Completed!
                     </div>
+                </div>
+            </div>
 
-                {% elif lesson.content_type == 'document' and lesson.file_path %}
-                    <!-- Document Card - FIXED WIDTH with proper containment -->
-                    <div class="action-card">
-                        <div class="action-icon document">
-                            {% if lesson.file_extension == 'pdf' %}
-                                <i class="bi bi-file-pdf-fill"></i>
-                            {% elif lesson.file_extension in ['doc', 'docx'] %}
-                                <i class="bi bi-file-word-fill"></i>
-                            {% elif lesson.file_extension in ['ppt', 'pptx'] %}
-                                <i class="bi bi-file-ppt-fill"></i>
-                            {% else %}
-                                <i class="bi bi-file-earmark-text-fill"></i>
-                            {% endif %}
-                        </div>
-                        <div class="action-info">
-                            <h3>{{ lesson.file_name }}</h3>
-                            <p>{{ lesson.file_extension|upper }} Document</p>
-                            <div class="action-meta">
-                                <span><i class="bi bi-file-earmark"></i> {{ (lesson.file_size / 1024 / 1024)|round(1) }} MB</span>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            {% if lesson.downloadable %}
-                                <a href="{{ url_for('download_lesson', lesson_id=lesson.id) }}" class="action-button download">
-                                    <i class="bi bi-download"></i> Download
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                {% elif lesson.content_type == 'youtube' and lesson.video_url %}
-                    <!-- YouTube Card -->
-                    <div class="action-card">
-                        <div class="action-icon youtube">
-                            <i class="bi bi-youtube"></i>
-                        </div>
-                        <div class="action-info">
-                            <h3>YouTube Video</h3>
-                            <p>{{ lesson.title }}</p>
-                            <div class="action-meta">
-                                <span><i class="bi bi-clock"></i> {{ lesson.duration }} min</span>
-                                <span><i class="bi bi-play-circle"></i> External player</span>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="action-button watch">
-                                <i class="bi bi-play-circle"></i> Watch
-                            </a>
-                        </div>
-                    </div>
+            <!-- ACTION BUTTON - DYNAMIC BASED ON CONTENT TYPE -->
+            <div class="action-section">
+                {% if lesson.content_type == 'video' %}
+                    <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="action-btn video">
+                        <i class="bi bi-play-circle-fill"></i> Watch Video
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% elif lesson.content_type == 'audio' %}
+                    <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="action-btn audio">
+                        <i class="bi bi-headphones-fill"></i> Listen to Audio
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% elif lesson.content_type == 'document' %}
+                    {% if lesson.downloadable %}
+                        <a href="{{ url_for('download_lesson', lesson_id=lesson.id) }}" class="action-btn document">
+                            <i class="bi bi-download-fill"></i> Download Document
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="action-btn document">
+                            <i class="bi bi-eye-fill"></i> View Document
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                {% elif lesson.content_type == 'youtube' %}
+                    <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="action-btn youtube">
+                        <i class="bi bi-youtube"></i> Watch on YouTube
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="action-btn video">
+                        <i class="bi bi-play-circle-fill"></i> Start Lesson
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
                 {% endif %}
             </div>
 
-            <!-- Info Cards - Ensure they don't stretch -->
-            <div class="info-grid">
-                <div class="info-card">
-                    <h4><i class="bi bi-info-circle"></i> Type</h4>
-                    <div class="value">{{ lesson.content_type|upper }}</div>
-                </div>
-                <div class="info-card">
-                    <h4><i class="bi bi-clock"></i> Duration</h4>
-                    <div class="value">{{ lesson.duration }} minutes</div>
-                </div>
-                <div class="info-card">
-                    <h4><i class="bi bi-calendar"></i> Added</h4>
-                    <div class="value">{{ lesson.created_at.strftime('%d %b %Y') }}</div>
-                </div>
-            </div>
-
-            <!-- More Lessons -->
+            <!-- More Lessons in this Subject -->
             {% if subject_lessons and subject_lessons|length > 1 %}
-            <div class="lesson-list">
-                <h3><i class="bi bi-list-ul"></i> More in {{ lesson.subject.name }}</h3>
-                <div class="lesson-items">
+            <div class="more-section">
+                <div class="more-title">
+                    <i class="bi bi-list-ul"></i> More in {{ lesson.subject.name }}
+                </div>
+                <div class="lesson-list">
                     {% for l in subject_lessons %}
-                        <a href="{{ url_for('view_lesson', lesson_id=l.id) }}" class="lesson-item {% if l.id == lesson.id %}active{% endif %}">
-                            <div class="lesson-number">{{ loop.index }}</div>
-                            <div class="lesson-info">
-                                <div class="lesson-title">{{ l.title }}</div>
-                                <div class="lesson-meta">
-                                    <span><i class="bi bi-clock"></i> {{ l.duration }} min</span>
-                                    <span><i class="bi bi-tag"></i> {{ l.content_type|upper }}</span>
-                                </div>
-                            </div>
-                            {% if l.id == lesson.id %}
-                                <i class="bi bi-play-circle-fill lesson-status"></i>
-                            {% else %}
-                                <i class="bi bi-chevron-right" style="color: #94a3b8;"></i>
-                            {% endif %}
-                        </a>
+                    <a href="{{ url_for('view_lesson', lesson_id=l.id) }}" class="lesson-list-item {% if l.id == lesson.id %}active{% endif %}">
+                        <div class="lesson-num">{{ loop.index }}</div>
+                        <div class="lesson-list-info">
+                            <h4>{{ l.title }}</h4>
+                            <p>
+                                <span><i class="bi bi-clock"></i> {{ l.duration }} min</span>
+                                <span>
+                                    <i class="bi 
+                                        {% if l.content_type == 'video' %}bi-camera-reel-fill
+                                        {% elif l.content_type == 'audio' %}bi-mic-fill
+                                        {% elif l.content_type == 'document' %}bi-file-text-fill
+                                        {% elif l.content_type == 'youtube' %}bi-youtube
+                                        {% else %}bi-play-circle{% endif %}
+                                    "></i>
+                                    {{ l.content_type|upper }}
+                                </span>
+                            </p>
+                        </div>
+                        {% if l.id == lesson.id %}
+                        <i class="bi bi-play-circle-fill lesson-status-icon"></i>
+                        {% else %}
+                        <i class="bi bi-chevron-right lesson-arrow-icon"></i>
+                        {% endif %}
+                    </a>
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Skeleton Container -->
+    <div id="skeletonContent">
+        <div class="skeleton-container">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-accent shimmer"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line title shimmer"></div>
+                    <div class="skeleton-line desc shimmer"></div>
+                    <div class="skeleton-line desc short shimmer"></div>
+                    
+                    <div class="skeleton-meta-grid">
+                        <div class="skeleton-meta-item shimmer">
+                            <div class="skeleton-icon shimmer" style="margin: 0 auto 8px;"></div>
+                            <div class="skeleton-line shimmer" style="width: 60%; margin: 0 auto;"></div>
+                        </div>
+                        <div class="skeleton-meta-item shimmer">
+                            <div class="skeleton-icon shimmer" style="margin: 0 auto 8px;"></div>
+                            <div class="skeleton-line shimmer" style="width: 60%; margin: 0 auto;"></div>
+                        </div>
+                        <div class="skeleton-meta-item shimmer">
+                            <div class="skeleton-icon shimmer" style="margin: 0 auto 8px;"></div>
+                            <div class="skeleton-line shimmer" style="width: 60%; margin: 0 auto;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="skeleton-line shimmer" style="width: 100%; height: 8px; border-radius: 10px;"></div>
+                    <div class="skeleton-button shimmer"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // ===== TOAST FUNCTION =====
-        function showToast(message, type = 'info', duration = 3000) {
+        function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
+            if (container.children.length >= 3) container.children[0].remove();
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle-fill' :
-                      type === 'error' ? 'exclamation-circle-fill' : 'info-circle';
-
-            toast.innerHTML = `
-                <i class="bi bi-${icon}"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.remove()">✕</button>
-            `;
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), duration);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
         }
 
-        // ===== PAGE LOADER =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menu = document.getElementById('slideMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const menuBtn = document.getElementById('menuBtn');
+
+            function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+            function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+            if(menuBtn) menuBtn.addEventListener('click', openMenu);
+            if(overlay) overlay.addEventListener('click', closeMenu);
+            document.addEventListener('keydown', (e) => { 
+                if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); 
+            });
+        });
+
+        // Loading animation
         window.addEventListener('load', function() {
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
-        });
-
-        // ===== MAIN FUNCTIONALITY =====
-        document.addEventListener('DOMContentLoaded', function() {
-            const markComplete = document.getElementById('markComplete');
-            const lessonId = {{ lesson.id }};
-            const duration = {{ lesson.duration * 60 }};
-            const progressFill = document.getElementById('lessonProgress');
-            const progressPercent = document.getElementById('progressPercentage');
-
-            // Load progress
-            fetch(`/api/lesson/${lessonId}/progress`)
-                .then(response => response.json())
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+            
+            // Fetch progress from API
+            fetch('/api/lesson/{{ lesson.id }}/progress')
+                .then(r => r.json())
                 .then(data => {
-                    if (progressFill) progressFill.style.width = data.progress + '%';
-                    if (progressPercent) progressPercent.textContent = data.progress + '%';
-                })
-                .catch(() => {});
-
-            // Mark complete toggle
-            if (markComplete) {
-                markComplete.addEventListener('change', function() {
-                    fetch(`/api/lesson/${lessonId}/progress`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            watch_time: duration,
-                            duration: duration,
-                            completed: this.checked
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(() => {
-                        showToast(this.checked ? '🎉 Lesson completed!' : 'Progress updated', 'success');
-                        if (progressFill) progressFill.style.width = this.checked ? '100%' : '0%';
-                        if (progressPercent) progressPercent.textContent = this.checked ? '100%' : '0%';
-                    })
-                    .catch(() => showToast('Error updating progress', 'error'));
-                });
-            }
-
-            // Show any flashed messages
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1000 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+                    const percent = Math.min(100, Math.floor(data.progress || 0));
+                    const progressPercentElem = document.getElementById('progressPercent');
+                    const progressFillElem = document.getElementById('progressFill');
+                    if(progressPercentElem) progressPercentElem.textContent = percent + '%';
+                    if(progressFillElem) progressFillElem.style.width = percent + '%';
+                    if(data.completed) {
+                        const badge = document.getElementById('completionBadge');
+                        if(badge) badge.style.display = 'block';
+                    }
+                }).catch(e => console.error('Progress fetch error:', e));
         });
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/dashboard');
+                }
+            }
+        });
+
+        // Flash messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>

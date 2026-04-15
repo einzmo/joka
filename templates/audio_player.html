@@ -1,0 +1,1012 @@
+<!-- templates/audio_player.html - CUSTOM PLAYER (NO DOWNLOAD BUTTON) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>{{ lesson.title }} - myMSCE</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
+    <style>
+        /* ===== CSS LAYERS ===== */
+        @layer reset, base, components, utilities, animations;
+
+        /* ===== COLOR SYSTEM ===== */
+        @layer base {
+            :root {
+                --primary-blue: #2563EB;
+                --primary-dark: #1D4ED8;
+                --primary-light: #DBEAFE;
+                --secondary-green: #16A34A;
+                --secondary-light: #DCFCE7;
+                --accent-orange: #F59E0B;
+                --accent-dark: #D97706;
+                --error-red: #DC2626;
+                --bg-main: #EFF6FF;
+                --card-bg-glass: rgba(219, 234, 254, 0.7);
+                --text-primary: #0F172A;
+                --text-secondary: #475569;
+                --text-tertiary: #64748B;
+                --border-light: rgba(37, 99, 235, 0.12);
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                background: var(--bg-main);
+                min-height: 100vh;
+                color: var(--text-primary);
+                overflow-x: hidden;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
+        }
+
+        /* ===== PAGE LOADER - CENTERED DOTS ===== */
+        @layer components {
+            .page-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-main);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.5s ease, visibility 0.5s ease;
+            }
+            .page-loader.hidden { opacity: 0; visibility: hidden; }
+
+            .dots-loader {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .dot {
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                border-radius: 50%;
+                animation: bounce 0.6s ease-in-out infinite alternate;
+            }
+            .dot:nth-child(1) { animation-delay: 0s; }
+            .dot:nth-child(2) { animation-delay: 0.15s; }
+            .dot:nth-child(3) { animation-delay: 0.3s; }
+
+            @keyframes bounce {
+                from { transform: translateY(0); opacity: 0.4; }
+                to { transform: translateY(-20px); opacity: 1; }
+            }
+        }
+
+        /* ===== NAVBAR ===== */
+        @layer components {
+            .navbar {
+                background: var(--primary-blue);
+                padding: 14px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .logo { font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.5px; }
+            .nav-actions { display: flex; gap: 12px; align-items: center; }
+            .menu-btn {
+                width: 42px; height: 42px;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(4px);
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+            .menu-btn i { font-size: 1.3rem; color: white; }
+        }
+
+        /* ===== SLIDE MENU ===== */
+        @layer components {
+            .slide-menu {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                padding: 24px 0;
+                border-right: 1px solid rgba(37, 99, 235, 0.1);
+            }
+            .slide-menu.open { left: 0; }
+            .menu-overlay {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            }
+            .menu-overlay.active { opacity: 1; visibility: visible; }
+            .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+            .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+            .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+            .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+            .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+            .menu-section { padding: 0 20px; margin-bottom: 24px; }
+            .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+            .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+            .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+            .menu-item i { width: 22px; color: #94A3B8; }
+            .menu-item:hover i { color: var(--primary-blue); }
+            .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        @layer components {
+            .audio-container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 40px 24px;
+                min-height: calc(100vh - 70px);
+                display: flex;
+                align-items: center;
+            }
+            @media (max-width: 768px) { .audio-container { padding: 24px 20px; } }
+        }
+
+        /* ===== AUDIO CARD ===== */
+        @layer components {
+            .audio-card {
+                width: 100%;
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(20px);
+                border-radius: 32px;
+                padding: 40px;
+                text-align: center;
+                border: 1px solid var(--border-light);
+                box-shadow: var(--shadow-xl);
+                animation: fadeInUp 0.6s ease;
+            }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @media (max-width: 640px) { .audio-card { padding: 28px 24px; } }
+            .card-accent {
+                height: 4px;
+                width: 100%;
+                background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green), var(--accent-orange));
+                background-size: 200% 100%;
+                animation: gradientShift 3s ease infinite;
+                margin-top: -40px;
+                margin-bottom: 40px;
+                border-radius: 2px;
+            }
+            @keyframes gradientShift {
+                0%, 100% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+            }
+        }
+
+        /* ===== AUDIO ICON ===== */
+        @layer components {
+            .audio-icon {
+                width: 100px;
+                height: 100px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 24px;
+                border: 2px solid var(--border-light);
+                animation: pulseIcon 2s ease-in-out infinite;
+            }
+            @keyframes pulseIcon {
+                0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.2); }
+                50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); }
+            }
+            .audio-icon i { font-size: 3rem; color: var(--primary-blue); }
+        }
+
+        /* ===== TITLE & META ===== */
+        @layer components {
+            .audio-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 8px;
+                letter-spacing: -0.3px;
+            }
+            .audio-meta {
+                color: var(--text-tertiary);
+                font-size: 0.85rem;
+                margin-bottom: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            .audio-meta span { display: inline-flex; align-items: center; gap: 6px; }
+            .audio-meta i { color: var(--primary-blue); }
+        }
+
+        /* ===== CUSTOM AUDIO PLAYER (NO DOWNLOAD BUTTON) ===== */
+        @layer components {
+            .custom-audio-player {
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 60px;
+                padding: 16px 20px;
+                margin-bottom: 24px;
+                border: 1px solid var(--border-light);
+            }
+
+            .player-controls {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .play-btn {
+                width: 52px;
+                height: 52px;
+                background: var(--accent-orange);
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                flex-shrink: 0;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+            }
+            .play-btn:active { transform: scale(0.95); }
+            .play-btn i { font-size: 1.5rem; color: white; margin-left: 3px; }
+
+            .timeline-container {
+                flex: 1;
+                min-width: 180px;
+            }
+            .timeline-slider {
+                width: 100%;
+                height: 4px;
+                -webkit-appearance: none;
+                background: rgba(37, 99, 235, 0.2);
+                border-radius: 2px;
+                outline: none;
+                cursor: pointer;
+            }
+            .timeline-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 14px;
+                height: 14px;
+                background: var(--accent-orange);
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 0 4px rgba(0,0,0,0.2);
+            }
+
+            .time-display {
+                font-size: 0.8rem;
+                color: var(--text-tertiary);
+                min-width: 100px;
+                text-align: center;
+                font-family: monospace;
+            }
+
+            .volume-control {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+            .volume-control i {
+                color: var(--primary-blue);
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .volume-control i:active { transform: scale(0.95); }
+            .volume-slider {
+                width: 70px;
+                height: 4px;
+                -webkit-appearance: none;
+                background: rgba(37, 99, 235, 0.2);
+                border-radius: 2px;
+                outline: none;
+                cursor: pointer;
+            }
+            .volume-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 12px;
+                height: 12px;
+                background: var(--primary-blue);
+                border-radius: 50%;
+                cursor: pointer;
+            }
+
+            @media (max-width: 550px) {
+                .player-controls { flex-direction: column; }
+                .timeline-container { width: 100%; }
+                .time-display { order: 2; }
+                .volume-control { order: 3; }
+                .custom-audio-player { border-radius: 28px; }
+            }
+        }
+
+        /* ===== PROGRESS SECTION ===== */
+        @layer components {
+            .progress-section {
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 20px;
+                padding: 16px;
+                margin-top: 20px;
+                border: 1px solid var(--border-light);
+            }
+            .progress-header {
+                display: flex;
+                justify-content: space-between;
+                color: var(--text-tertiary);
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+            }
+            .progress-bar-bg {
+                height: 6px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, var(--secondary-green), #22C55E);
+                border-radius: 10px;
+                transition: width 0.3s ease;
+            }
+            .completion-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(22, 163, 74, 0.12);
+                color: var(--secondary-green);
+                padding: 8px 16px;
+                border-radius: 40px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                margin-top: 12px;
+                width: 100%;
+                justify-content: center;
+                border: 1px solid rgba(22, 163, 74, 0.2);
+            }
+        }
+
+        /* ===== NAVIGATION BUTTONS ===== */
+        @layer components {
+            .nav-buttons {
+                display: flex;
+                gap: 12px;
+                margin-top: 24px;
+                flex-wrap: wrap;
+            }
+            .nav-btn {
+                flex: 1;
+                padding: 12px 20px;
+                background: rgba(37, 99, 235, 0.1);
+                border: 1px solid var(--border-light);
+                border-radius: 40px;
+                color: var(--primary-blue);
+                text-decoration: none;
+                text-align: center;
+                font-weight: 600;
+                font-size: 0.85rem;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            .nav-btn:active { transform: scale(0.98); }
+            .nav-btn:hover { background: rgba(37, 99, 235, 0.2); }
+            .nav-btn-primary {
+                background: var(--accent-orange);
+                color: white;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+            }
+            .nav-btn-primary:active { background: var(--accent-dark); }
+            @media (max-width: 640px) { .nav-buttons { flex-direction: column; } }
+        }
+
+        /* ===== TOAST ===== */
+        @layer components {
+            .toast-container {
+                position: fixed;
+                top: 20px;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+                padding: 0 16px;
+            }
+            .toast {
+                background: #1E293B;
+                border-left: 4px solid var(--primary-blue);
+                padding: 14px 20px;
+                border-radius: 16px;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                width: 100%;
+                max-width: 380px;
+                animation: toastIn 0.3s ease;
+                pointer-events: auto;
+                font-weight: 500;
+                box-shadow: var(--shadow-lg);
+            }
+            .toast.error { border-left-color: var(--error-red); }
+            .toast.success { border-left-color: var(--secondary-green); }
+            .toast.warning { border-left-color: var(--accent-orange); }
+            .toast button {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                margin-left: auto;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+            @keyframes toastIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+
+        /* ===== SKELETON ===== */
+        @layer components {
+            .skeleton-container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 40px 24px;
+            }
+            .skeleton-card {
+                background: rgba(219, 234, 254, 0.5);
+                backdrop-filter: blur(8px);
+                border-radius: 32px;
+                overflow: hidden;
+            }
+            .skeleton-accent { height: 4px; background: rgba(37, 99, 235, 0.15); margin-top: -40px; }
+            .skeleton-content { padding: 40px; }
+            .skeleton-icon {
+                width: 100px;
+                height: 100px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 50%;
+                margin: 0 auto 24px;
+            }
+            .skeleton-line {
+                height: 14px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 8px;
+                margin-bottom: 12px;
+            }
+            .skeleton-line.title { width: 60%; height: 28px; margin: 0 auto 12px; }
+            .skeleton-line.desc { width: 80%; margin: 0 auto 8px; }
+            .skeleton-player {
+                height: 84px;
+                background: rgba(37, 99, 235, 0.06);
+                border-radius: 60px;
+                margin: 24px 0;
+            }
+            .skeleton-buttons {
+                display: flex;
+                gap: 12px;
+                margin-top: 24px;
+            }
+            .skeleton-btn {
+                flex: 1;
+                height: 48px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 40px;
+            }
+            .shimmer {
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+            @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+        }
+
+        /* ===== UTILITIES ===== */
+        @layer utilities {
+            ::-webkit-scrollbar { width: 5px; }
+            ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+            @supports (padding: max(0px)) {
+                .audio-container {
+                    padding-left: max(24px, env(safe-area-inset-left));
+                    padding-right: max(24px, env(safe-area-inset-right));
+                    padding-top: max(40px, env(safe-area-inset-top));
+                    padding-bottom: max(40px, env(safe-area-inset-bottom));
+                }
+                .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            }
+        }
+
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
+    </style>
+</head>
+<body>
+    <!-- PAGE LOADER - CENTERED DOTS -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'User' }}</h4>
+                    <p>{{ current_user.email if current_user else '' }}</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge">
+                {% if subscription_info and subscription_info.is_active %}
+                <i class="bi bi-star-fill"></i> {{ subscription_info.form|upper }} {{ subscription_info.type|title }}
+                {% else %}
+                <i class="bi bi-gift-fill"></i> Free Plan
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Menu</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('pricing') }}" class="menu-item"><i class="bi bi-tag-fill"></i><span>Pricing</span></a>
+            <a href="{{ url_for('profile') }}" class="menu-item"><i class="bi bi-person-fill"></i><span>Profile</span></a>
+            <a href="{{ url_for('user_menu') }}" class="menu-item"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="nav-actions">
+            <div class="menu-btn" id="menuBtn">
+                <i class="bi bi-list"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="audio-container">
+            <div class="audio-card">
+                <div class="card-accent"></div>
+                
+                <div class="audio-icon">
+                    <i class="bi bi-mic-fill"></i>
+                </div>
+                
+                <h1 class="audio-title">{{ lesson.title }}</h1>
+                <div class="audio-meta">
+                    <span><i class="bi bi-clock"></i> {{ lesson.duration }} min</span>
+                    <span><i class="bi bi-mic-fill"></i> Audio Lesson</span>
+                    <span><i class="bi bi-earbuds"></i> Listen & Learn</span>
+                </div>
+                
+                <!-- CUSTOM AUDIO PLAYER (NO DOWNLOAD BUTTON) -->
+                <div class="custom-audio-player">
+                    <div class="player-controls">
+                        <button class="play-btn" id="playBtn">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                        
+                        <div class="timeline-container">
+                            <input type="range" id="progressSlider" class="timeline-slider" value="0" step="0.01">
+                        </div>
+                        
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                        </div>
+                        
+                        <div class="volume-control">
+                            <i class="bi bi-volume-up-fill" id="volumeIcon"></i>
+                            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.7">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span><i class="bi bi-graph-up"></i> Your Progress</span>
+                        <span id="progressPercent">{{ progress_percent|default(0) }}%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill" id="progressFill" style="width: {{ progress_percent|default(0) }}%"></div>
+                    </div>
+                    <div id="completionBadge" style="{% if not completed %}display: none;{% endif %}">
+                        <div class="completion-badge">
+                            <i class="bi bi-check-circle-fill"></i> Lesson Completed!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nav-buttons">
+                    {% if prev_lesson %}
+                    <a href="{{ url_for('watch_lesson', lesson_id=prev_lesson.id) }}" class="nav-btn">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="nav-btn">
+                        <i class="bi bi-info-circle"></i> Lesson Info
+                    </a>
+                    
+                    {% if next_lesson %}
+                    <a href="{{ url_for('watch_lesson', lesson_id=next_lesson.id) }}" class="nav-btn nav-btn-primary">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skeleton Container -->
+    <div id="skeletonContent">
+        <div class="skeleton-container">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-accent shimmer"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-icon shimmer"></div>
+                    <div class="skeleton-line title shimmer"></div>
+                    <div class="skeleton-line desc shimmer"></div>
+                    <div class="skeleton-line desc shimmer" style="width: 60%;"></div>
+                    <div class="skeleton-player shimmer"></div>
+                    <div class="skeleton-buttons">
+                        <div class="skeleton-btn shimmer"></div>
+                        <div class="skeleton-btn shimmer"></div>
+                        <div class="skeleton-btn shimmer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            if (container.children.length >= 3) container.children[0].remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+        });
+
+        // ===== CUSTOM AUDIO PLAYER (NO DOWNLOAD OPTION) =====
+        const audio = new Audio("{{ audio_url }}");
+        let isPlaying = false;
+        let saveInterval = null;
+        let lastSavedTime = 0;
+        let hasMarkedComplete = {{ 'true' if completed else 'false' }};
+        const lessonId = {{ lesson.id }};
+        
+        // DOM elements
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = playBtn.querySelector('i');
+        const progressSlider = document.getElementById('progressSlider');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const durationSpan = document.getElementById('duration');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeIcon = document.getElementById('volumeIcon');
+        
+        // Load saved progress
+        fetch(`/api/lesson/${lessonId}/progress`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.watch_time > 0 && !data.completed) {
+                    audio.currentTime = data.watch_time;
+                    updateProgressSlider();
+                }
+                const percent = Math.min(100, Math.floor(data.progress || 0));
+                document.getElementById('progressPercent').textContent = percent + '%';
+                document.getElementById('progressFill').style.width = percent + '%';
+                if (data.completed) {
+                    document.getElementById('completionBadge').style.display = 'block';
+                    hasMarkedComplete = true;
+                }
+            })
+            .catch(e => console.error(e));
+        
+        // Play/Pause
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                playIcon.className = 'bi bi-play-fill';
+            } else {
+                audio.play();
+                playIcon.className = 'bi bi-pause-fill';
+            }
+            isPlaying = !isPlaying;
+        });
+        
+        // Update progress slider and time
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration && !isNaN(audio.duration)) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressSlider.value = percent;
+                currentTimeSpan.textContent = formatTime(audio.currentTime);
+                updateProgressFill();
+            }
+        });
+        
+        // Seek
+        progressSlider.addEventListener('input', () => {
+            const seekTime = (progressSlider.value / 100) * audio.duration;
+            audio.currentTime = seekTime;
+            updateProgressFill();
+        });
+        
+        // Duration
+        audio.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(audio.duration);
+        });
+        
+        // Volume
+        volumeSlider.addEventListener('input', () => {
+            audio.volume = volumeSlider.value;
+            updateVolumeIcon();
+        });
+        
+        volumeIcon.addEventListener('click', () => {
+            if (audio.volume > 0) {
+                audio.volume = 0;
+                volumeSlider.value = 0;
+            } else {
+                audio.volume = 0.7;
+                volumeSlider.value = 0.7;
+            }
+            updateVolumeIcon();
+        });
+        
+        function updateVolumeIcon() {
+            if (audio.volume === 0) {
+                volumeIcon.className = 'bi bi-volume-mute-fill';
+            } else if (audio.volume < 0.5) {
+                volumeIcon.className = 'bi bi-volume-down-fill';
+            } else {
+                volumeIcon.className = 'bi bi-volume-up-fill';
+            }
+        }
+        
+        function updateProgressSlider() {
+            if (audio.duration && !isNaN(audio.duration)) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressSlider.value = percent;
+                currentTimeSpan.textContent = formatTime(audio.currentTime);
+            }
+        }
+        
+        function updateProgressFill() {
+            if (audio.duration && !isNaN(audio.duration)) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                const progressPercentElem = document.getElementById('progressPercent');
+                const progressFillElem = document.getElementById('progressFill');
+                if (progressPercentElem) progressPercentElem.textContent = Math.floor(percent) + '%';
+                if (progressFillElem) progressFillElem.style.width = percent + '%';
+            }
+        }
+        
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Save progress every 10 seconds
+        saveInterval = setInterval(() => {
+            if (audio.currentTime > 0 && audio.duration > 0 && !isNaN(audio.duration)) {
+                const ct = audio.currentTime;
+                const dur = audio.duration;
+                const percent = (ct / dur) * 100;
+                const isComplete = percent >= 90;
+                
+                if (Math.abs(ct - lastSavedTime) > 5) {
+                    lastSavedTime = ct;
+                    fetch(`/api/lesson/${lessonId}/progress`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ watch_time: ct, duration: dur, completed: isComplete })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        const pct = Math.min(100, Math.floor(data.progress || 0));
+                        const progressPercentElem = document.getElementById('progressPercent');
+                        const progressFillElem = document.getElementById('progressFill');
+                        if (progressPercentElem) progressPercentElem.textContent = pct + '%';
+                        if (progressFillElem) progressFillElem.style.width = pct + '%';
+                        if (data.completed && !hasMarkedComplete) {
+                            hasMarkedComplete = true;
+                            const badge = document.getElementById('completionBadge');
+                            if (badge) badge.style.display = 'block';
+                            showToast('🎉 Lesson completed! Great job!', 'success');
+                        }
+                    })
+                    .catch(e => console.error(e));
+                }
+            }
+        }, 10000);
+        
+        // Save on pause
+        audio.addEventListener('pause', () => {
+            if (audio.currentTime > 0 && audio.duration > 0) {
+                fetch(`/api/lesson/${lessonId}/progress`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ watch_time: audio.currentTime, duration: audio.duration, completed: false })
+                }).catch(e => console.error(e));
+            }
+        });
+        
+        // Auto-mark complete at 90%
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration && !isNaN(audio.duration)) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                if (percent >= 90 && !hasMarkedComplete && audio.currentTime > 0) {
+                    hasMarkedComplete = true;
+                    fetch(`/api/lesson/${lessonId}/progress`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ watch_time: audio.currentTime, duration: audio.duration, completed: true })
+                    }).then(() => {
+                        const badge = document.getElementById('completionBadge');
+                        if (badge) badge.style.display = 'block';
+                        showToast('🎉 Lesson completed!', 'success');
+                    }).catch(e => console.error(e));
+                }
+            }
+        });
+        
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (saveInterval) clearInterval(saveInterval);
+            if (audio.currentTime > 0 && audio.duration > 0) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                fetch(`/api/lesson/${lessonId}/progress`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ watch_time: audio.currentTime, duration: audio.duration, completed: percent >= 90 })
+                }).catch(e => console.error(e));
+            }
+        });
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/dashboard');
+                }
+            }
+        });
+
+        // Flash messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

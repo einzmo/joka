@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h2>Video Management</h2>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Lessons with Cloudinary Videos</h4>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Lesson</th>
+                            <th>Subject</th>
+                            <th>Cloudinary ID</th>
+                            <th>Duration</th>
+                            <th>Views</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in lessons %}
+                        <tr>
+                            <td>{{ lesson.title }}</td>
+                            <td>{{ lesson.subject.name }}</td>
+                            <td><code>{{ lesson.cloudinary_public_id[:50] }}...</code></td>
+                            <td>{{ lesson.duration }} min</td>
+                            <td>{{ lesson.access_count or 0 }}</td>
+                            <td>
+                                <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-info">Watch</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

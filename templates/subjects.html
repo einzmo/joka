@@ -1,0 +1,761 @@
+<!-- templates/subjects.html - FULLY ENHANCED with Centered Dot Loader & Modern Glassmorphism -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>Form {{ form }} Subjects - myMSCE</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
+    <style>
+        @layer reset, base, components, utilities, animations;
+
+        @layer base {
+            :root {
+                --primary-blue: #2563EB;
+                --primary-dark: #1D4ED8;
+                --primary-light: #DBEAFE;
+                --secondary-green: #16A34A;
+                --secondary-light: #DCFCE7;
+                --accent-orange: #F59E0B;
+                --accent-dark: #D97706;
+                --error-red: #DC2626;
+                --bg-main: #EFF6FF;
+                --card-bg-glass: rgba(219, 234, 254, 0.7);
+                --card-bg-glass-hover: rgba(219, 234, 254, 0.85);
+                --text-primary: #0F172A;
+                --text-secondary: #475569;
+                --text-tertiary: #64748B;
+                --border-light: rgba(37, 99, 235, 0.12);
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+                --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                background: var(--bg-main);
+                min-height: 100vh;
+                color: var(--text-primary);
+                overflow-x: hidden;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            }
+        }
+
+        /* ===== PAGE LOADER - CENTERED DOTS ===== */
+        @layer components {
+            .page-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-main);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.5s ease, visibility 0.5s ease;
+            }
+            .page-loader.hidden { opacity: 0; visibility: hidden; }
+
+            .dots-loader {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .dot {
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                border-radius: 50%;
+                animation: bounce 0.6s ease-in-out infinite alternate;
+            }
+            .dot:nth-child(1) { animation-delay: 0s; }
+            .dot:nth-child(2) { animation-delay: 0.15s; }
+            .dot:nth-child(3) { animation-delay: 0.3s; }
+
+            @keyframes bounce {
+                from { transform: translateY(0); opacity: 0.4; }
+                to { transform: translateY(-20px); opacity: 1; }
+            }
+        }
+
+        /* ===== NAVBAR ===== */
+        @layer components {
+            .navbar {
+                background: var(--primary-blue);
+                padding: 14px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .logo { font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.5px; }
+            .nav-actions { display: flex; gap: 12px; align-items: center; }
+            .menu-btn {
+                width: 42px; height: 42px;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(4px);
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+            .menu-btn i { font-size: 1.3rem; color: white; }
+        }
+
+        /* ===== SLIDE MENU ===== */
+        @layer components {
+            .slide-menu {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                padding: 24px 0;
+                border-right: 1px solid rgba(37, 99, 235, 0.1);
+            }
+            .slide-menu.open { left: 0; }
+            .menu-overlay {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            }
+            .menu-overlay.active { opacity: 1; visibility: visible; }
+            .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+            .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+            .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+            .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+            .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+            .menu-section { padding: 0 20px; margin-bottom: 24px; }
+            .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+            .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+            .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+            .menu-item i { width: 22px; color: #94A3B8; }
+            .menu-item:hover i { color: var(--primary-blue); }
+            .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        @layer components {
+            .main-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 32px 24px 60px;
+            }
+            @media (max-width: 768px) { .main-content { padding: 24px 20px 40px; } }
+        }
+
+        /* ===== HERO SECTION ===== */
+        @layer components {
+            .hero-section {
+                text-align: center;
+                margin-bottom: 40px;
+                animation: fadeInUp 0.5s ease;
+            }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(37, 99, 235, 0.1);
+                padding: 6px 14px;
+                border-radius: 40px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: var(--primary-blue);
+                margin-bottom: 20px;
+            }
+            .hero-title {
+                font-size: 2.5rem;
+                font-weight: 800;
+                color: var(--text-primary);
+                margin-bottom: 12px;
+                letter-spacing: -0.5px;
+            }
+            .hero-title span {
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .hero-subtitle {
+                color: var(--text-secondary);
+                font-size: 0.95rem;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            @media (max-width: 640px) { .hero-title { font-size: 1.8rem; } }
+        }
+
+        /* ===== SUBJECTS GRID ===== */
+        @layer components {
+            .subjects-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 24px;
+            }
+
+            .subject-card {
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(16px);
+                border-radius: 28px;
+                text-decoration: none;
+                border: 1px solid rgba(37, 99, 235, 0.15);
+                transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+                cursor: pointer;
+                display: block;
+                overflow: hidden;
+                box-shadow: var(--shadow-sm);
+                position: relative;
+                animation: fadeUpCard 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+                opacity: 0;
+            }
+
+            @keyframes fadeUpCard {
+                from { opacity: 0; transform: translateY(24px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .subject-card:nth-child(1) { animation-delay: 0.05s; }
+            .subject-card:nth-child(2) { animation-delay: 0.1s; }
+            .subject-card:nth-child(3) { animation-delay: 0.15s; }
+            .subject-card:nth-child(4) { animation-delay: 0.2s; }
+            .subject-card:nth-child(5) { animation-delay: 0.25s; }
+            .subject-card:nth-child(6) { animation-delay: 0.3s; }
+
+            .subject-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                transition: left 0.5s ease;
+                pointer-events: none;
+            }
+            .subject-card:hover::before { left: 100%; }
+            .subject-card:hover {
+                transform: translateY(-6px);
+                border-color: var(--primary-blue);
+                background: var(--card-bg-glass-hover);
+                box-shadow: var(--shadow-xl), var(--shadow-glow);
+            }
+            .subject-card:active { transform: translateY(-2px); }
+
+            .card-accent {
+                height: 4px;
+                width: 100%;
+                background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green), var(--accent-orange));
+                background-size: 200% 100%;
+                animation: gradientShift 4s ease infinite;
+            }
+            @keyframes gradientShift {
+                0%, 100% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+            }
+
+            .card-content { padding: 28px; }
+            @media (max-width: 480px) { .card-content { padding: 22px; } }
+
+            .subject-icon {
+                width: 60px;
+                height: 60px;
+                background: rgba(37, 99, 235, 0.12);
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 24px;
+                transition: all 0.3s;
+            }
+            .subject-card:hover .subject-icon {
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                transform: scale(1.05);
+            }
+            .subject-card:hover .subject-icon i { color: white; }
+            .subject-icon i {
+                font-size: 1.8rem;
+                color: var(--primary-blue);
+                transition: color 0.2s;
+            }
+            .subject-card h3 {
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 8px;
+                letter-spacing: -0.3px;
+            }
+            .subject-description {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                line-height: 1.5;
+                margin-bottom: 24px;
+            }
+            .subject-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 20px;
+                border-top: 1px solid rgba(37, 99, 235, 0.12);
+            }
+            .lesson-count {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: var(--text-tertiary);
+            }
+            .lesson-count i {
+                color: var(--secondary-green);
+                font-size: 1rem;
+            }
+            .arrow-indicator {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                color: var(--primary-blue);
+                font-size: 0.85rem;
+                font-weight: 600;
+                transition: transform 0.25s;
+            }
+            .subject-card:hover .arrow-indicator { transform: translateX(5px); }
+            .arrow-indicator i { font-size: 1rem; }
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        @layer components {
+            .skeleton-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 32px 24px 60px;
+            }
+            .skeleton-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 24px;
+            }
+            .skeleton-card {
+                background: rgba(219, 234, 254, 0.5);
+                backdrop-filter: blur(8px);
+                border-radius: 28px;
+                overflow: hidden;
+                border: 1px solid rgba(37, 99, 235, 0.1);
+            }
+            .skeleton-accent { height: 4px; background: rgba(37, 99, 235, 0.15); }
+            .skeleton-content { padding: 28px; }
+            .skeleton-icon {
+                width: 60px;
+                height: 60px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 20px;
+                margin-bottom: 24px;
+            }
+            .skeleton-line {
+                height: 14px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 8px;
+                margin-bottom: 12px;
+            }
+            .skeleton-line.title { width: 70%; height: 24px; }
+            .skeleton-line.desc { width: 90%; }
+            .skeleton-line.desc.short { width: 60%; }
+            .skeleton-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid rgba(37, 99, 235, 0.08);
+            }
+            .skeleton-badge { width: 80px; height: 24px; background: rgba(37, 99, 235, 0.08); border-radius: 20px; }
+            .skeleton-arrow { width: 60px; height: 20px; background: rgba(37, 99, 235, 0.08); border-radius: 20px; }
+            .shimmer {
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+            @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+        }
+
+        /* ===== EMPTY STATE ===== */
+        @layer components {
+            .empty-state {
+                text-align: center;
+                padding: 60px 32px;
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(16px);
+                border-radius: 32px;
+                margin: 40px auto;
+                max-width: 500px;
+                border: 1px solid var(--border-light);
+            }
+            .empty-state i {
+                font-size: 3.5rem;
+                color: #93C5FD;
+                margin-bottom: 20px;
+            }
+            .empty-state h3 {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 8px;
+            }
+            .empty-state p { color: var(--text-secondary); margin-bottom: 24px; }
+            .empty-state .btn-home {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--accent-orange);
+                color: white;
+                text-decoration: none;
+                padding: 12px 28px;
+                border-radius: 50px;
+                font-weight: 600;
+                transition: all 0.2s;
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            }
+            .empty-state .btn-home:active { transform: scale(0.96); background: var(--accent-dark); }
+        }
+
+        /* ===== TOAST ===== */
+        @layer components {
+            .toast-container {
+                position: fixed;
+                top: 20px;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+                padding: 0 16px;
+            }
+            .toast {
+                background: #1E293B;
+                border-left: 4px solid var(--primary-blue);
+                padding: 14px 20px;
+                border-radius: 16px;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                width: 100%;
+                max-width: 380px;
+                animation: toastIn 0.3s ease;
+                pointer-events: auto;
+                font-weight: 500;
+                box-shadow: var(--shadow-lg);
+            }
+            .toast.error { border-left-color: var(--error-red); }
+            .toast.success { border-left-color: var(--secondary-green); }
+            .toast.warning { border-left-color: var(--accent-orange); }
+            .toast button {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                margin-left: auto;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+            @keyframes toastIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+
+        /* ===== UTILITIES ===== */
+        @layer utilities {
+            ::-webkit-scrollbar { width: 5px; }
+            ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+            @supports (padding: max(0px)) {
+                .main-content {
+                    padding-left: max(24px, env(safe-area-inset-left));
+                    padding-right: max(24px, env(safe-area-inset-right));
+                    padding-top: max(32px, env(safe-area-inset-top));
+                    padding-bottom: max(60px, env(safe-area-inset-bottom));
+                }
+                .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            }
+        }
+
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
+    </style>
+</head>
+<body>
+    <!-- PAGE LOADER - CENTERED DOTS -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'User' }}</h4>
+                    <p>{{ current_user.email if current_user else '' }}</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge">
+                {% if subscription_info and subscription_info.is_active %}
+                <i class="bi bi-star-fill"></i> {{ subscription_info.form|upper }} {{ subscription_info.type|title }}
+                {% else %}
+                <i class="bi bi-gift-fill"></i> Free Plan
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Menu</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('pricing') }}" class="menu-item"><i class="bi bi-tag-fill"></i><span>Pricing</span></a>
+            <a href="{{ url_for('profile') }}" class="menu-item"><i class="bi bi-person-fill"></i><span>Profile</span></a>
+            <a href="{{ url_for('user_menu') }}" class="menu-item"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="nav-actions">
+            <div class="menu-btn" id="menuBtn">
+                <i class="bi bi-list"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-badge">
+                    <i class="bi bi-{{ '3' if form == 3 else '4' }}-circle-fill"></i> FORM {{ form }}
+                </div>
+                <h1 class="hero-title">
+                    <span>Form {{ form }}</span> Subjects
+                </h1>
+                <p class="hero-subtitle">
+                    Choose a subject to begin your learning journey
+                </p>
+            </div>
+
+            <!-- Subjects Grid -->
+            <div class="subjects-grid" id="subjectsGrid">
+                {% for subject in subjects %}
+                <a href="{{ url_for('view_subject', subject_id=subject.id) }}" class="subject-card">
+                    <div class="card-accent"></div>
+                    <div class="card-content">
+                        <div class="subject-icon">
+                            <i class="bi bi-{{ subject.icon|default('book') }}-fill"></i>
+                        </div>
+                        <h3>{{ subject.name }}</h3>
+                        <div class="subject-description">
+                            {{ subject.description or 'Comprehensive lessons covering all topics for Form ' + form|string }}
+                        </div>
+                        <div class="subject-meta">
+                            <span class="lesson-count">
+                                <i class="bi bi-play-circle-fill"></i>
+                                {{ subject.lesson_count }} lessons
+                            </span>
+                            <span class="arrow-indicator">
+                                Explore <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Skeleton Container -->
+    <div id="skeletonContent">
+        <div class="skeleton-container">
+            <div class="skeleton-grid">
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-icon shimmer"></div>
+                        <div class="skeleton-line title shimmer"></div>
+                        <div class="skeleton-line desc shimmer"></div>
+                        <div class="skeleton-line desc short shimmer"></div>
+                        <div class="skeleton-meta">
+                            <div class="skeleton-badge shimmer"></div>
+                            <div class="skeleton-arrow shimmer"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-icon shimmer"></div>
+                        <div class="skeleton-line title shimmer"></div>
+                        <div class="skeleton-line desc shimmer"></div>
+                        <div class="skeleton-line desc short shimmer"></div>
+                        <div class="skeleton-meta">
+                            <div class="skeleton-badge shimmer"></div>
+                            <div class="skeleton-arrow shimmer"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-icon shimmer"></div>
+                        <div class="skeleton-line title shimmer"></div>
+                        <div class="skeleton-line desc shimmer"></div>
+                        <div class="skeleton-line desc short shimmer"></div>
+                        <div class="skeleton-meta">
+                            <div class="skeleton-badge shimmer"></div>
+                            <div class="skeleton-arrow shimmer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            if (container.children.length >= 3) container.children[0].remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+        });
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/dashboard');
+                }
+            }
+        });
+
+        // Flash messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

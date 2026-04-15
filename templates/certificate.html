@@ -1,0 +1,839 @@
+<!-- templates/certificate.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>Certificate - {{ subject.name }} - myMSCE</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #EFF6FF;
+            min-height: 100vh;
+            color: #0F172A;
+            overflow-x: hidden;
+        }
+
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== PAGE LOADER ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #EFF6FF;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .glass-loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.08);
+            backdrop-filter: blur(10px);
+            animation: pulseGlow 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .glass-loader::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .glass-loader::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            background: #EFF6FF;
+            border-radius: 50%;
+        }
+        
+        .glass-loader .inner {
+            position: relative;
+            z-index: 2;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #2563EB;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .menu-btn i { font-size: 1.3rem; color: white; }
+
+        /* ===== SLIDE MENU ===== */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            padding: 24px 0;
+            border-right: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .slide-menu.open { left: 0; }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #2563EB, #16A34A); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: #0F172A; }
+        .menu-user-info p { font-size: 0.7rem; color: #64748B; }
+        .menu-plan-badge { background: #DBEAFE; color: #2563EB; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        
+        .menu-section { padding: 0 20px; margin-bottom: 24px; }
+        .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #475569; text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .menu-item:hover, .menu-item:active { background: #DBEAFE; color: #2563EB; }
+        .menu-item i { width: 22px; color: #94A3B8; }
+        .menu-item:hover i { color: #2563EB; }
+        .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px 24px 60px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 24px 20px 40px; }
+        }
+
+        /* ===== CERTIFICATE PREVIEW ===== */
+        .certificate-wrapper {
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            border-radius: 32px;
+            padding: 24px;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .certificate-inner {
+            background: white;
+            border-radius: 24px;
+            padding: 48px 40px;
+            position: relative;
+            color: var(--text-primary);
+            text-align: center;
+        }
+        
+        @media (max-width: 600px) {
+            .certificate-wrapper { padding: 16px; }
+            .certificate-inner { padding: 32px 24px; }
+        }
+        
+        /* Decorative border */
+        .certificate-inner::before {
+            content: '';
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            border: 2px dashed rgba(37, 99, 235, 0.15);
+            border-radius: 16px;
+            pointer-events: none;
+        }
+        
+        /* Seal/Stamp */
+        .certificate-seal {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(22, 163, 74, 0.1);
+            border: 2px solid #16A34A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+        }
+        
+        .certificate-seal i {
+            font-size: 2rem;
+            color: #16A34A;
+        }
+        
+        @media (max-width: 600px) {
+            .certificate-seal { width: 60px; height: 60px; bottom: 20px; right: 20px; }
+            .certificate-seal i { font-size: 1.5rem; }
+        }
+        
+        /* Certificate Header */
+        .certificate-header {
+            margin-bottom: 32px;
+        }
+        
+        .certificate-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        
+        .certificate-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2563EB;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .certificate-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+        
+        /* Recipient Name */
+        .recipient-name {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 32px 0;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(22, 163, 74, 0.04));
+            border-radius: 20px;
+            letter-spacing: 2px;
+        }
+        
+        @media (max-width: 600px) {
+            .recipient-name { font-size: 1.6rem; margin: 24px 0; padding: 12px 16px; }
+        }
+        
+        /* Course Info */
+        .course-info {
+            margin: 24px 0;
+        }
+        
+        .course-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .course-form {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563EB;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Stats Grid */
+        .certificate-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin: 32px 0;
+            padding: 24px;
+            background: rgba(37, 99, 235, 0.04);
+            border-radius: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat .label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        @media (max-width: 500px) {
+            .certificate-stats { gap: 24px; padding: 20px; }
+            .stat .value { font-size: 1.4rem; }
+        }
+        
+        /* Signature Line */
+        .signature-line {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+        
+        .signature {
+            text-align: center;
+        }
+        
+        .signature .line {
+            width: 180px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #2563EB, transparent);
+            margin-bottom: 8px;
+        }
+        
+        .signature .name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+        
+        .signature .title {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+        }
+        
+        /* Certificate ID */
+        .certificate-id {
+            margin-top: 32px;
+            padding-top: 20px;
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            font-family: monospace;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #F59E0B;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .download-btn:active {
+            transform: scale(0.97);
+            background: #D97706;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            padding: 14px 32px;
+            border-radius: 50px;
+            color: #2563EB;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:active {
+            transform: scale(0.97);
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px 24px 60px;
+        }
+        
+        .skeleton-wrapper {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 32px;
+            padding: 24px;
+        }
+        
+        .skeleton-inner {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 48px 40px;
+        }
+        
+        .skeleton-line {
+            height: 14px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            width: 30%;
+            height: 20px;
+            margin: 0 auto 16px;
+        }
+        
+        .skeleton-line.recipient {
+            width: 50%;
+            height: 48px;
+            margin: 32px auto;
+        }
+        
+        .skeleton-line.course {
+            width: 40%;
+            height: 28px;
+            margin: 0 auto;
+        }
+        
+        .skeleton-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin: 32px 0;
+        }
+        
+        .skeleton-stat {
+            text-align: center;
+        }
+        
+        .skeleton-number {
+            width: 60px;
+            height: 28px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin: 0 auto 4px;
+        }
+        
+        .skeleton-label {
+            width: 50px;
+            height: 12px;
+            background: rgba(37, 99, 235, 0.06);
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+        
+        .skeleton-button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        
+        .skeleton-button {
+            width: 160px;
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 50px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+        
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
+            padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="glass-loader">
+            <div class="inner">M</div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ user.username[0]|upper if user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ user.username if user else 'User' }}</h4>
+                    <p>{{ user.email if user else '' }}</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge">
+                {% if subscription_info and subscription_info.is_active %}
+                <i class="bi bi-star-fill"></i> {{ subscription_info.form|upper }} {{ subscription_info.type|title }}
+                {% else %}
+                <i class="bi bi-gift-fill"></i> Free Plan
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Menu</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('pricing') }}" class="menu-item"><i class="bi bi-tag-fill"></i><span>Pricing</span></a>
+            <a href="{{ url_for('profile') }}" class="menu-item"><i class="bi bi-person-fill"></i><span>Profile</span></a>
+            <a href="{{ url_for('user_menu') }}" class="menu-item"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
+        </div>
+    </div>
+
+    <!-- Real Content (hidden initially) -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <div class="certificate-wrapper">
+                <div class="certificate-inner">
+                    <!-- Decorative Seal -->
+                    <div class="certificate-seal">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    
+                    <!-- Certificate Header -->
+                    <div class="certificate-header">
+                        <div class="certificate-icon">🎓</div>
+                        <div class="certificate-title">CERTIFICATE OF COMPLETION</div>
+                        <div class="certificate-subtitle">This certificate is proudly presented to</div>
+                    </div>
+                    
+                    <!-- Recipient Name -->
+                    <div class="recipient-name">
+                        {{ user.username.upper() }}
+                    </div>
+                    
+                    <!-- Course Info -->
+                    <div class="course-info">
+                        <div class="course-name">{{ subject.name }}</div>
+                        <span class="course-form">Form {{ subject.form }}</span>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="certificate-stats">
+                        <div class="stat">
+                            <div class="value">{{ completion_data.completed_lessons }}/{{ completion_data.total_lessons }}</div>
+                            <div class="label">Lessons Completed</div>
+                        </div>
+                        <div class="stat">
+                            <div class="value">{{ completion_data.total_hours }}</div>
+                            <div class="label">Hours Studied</div>
+                        </div>
+                        <div class="stat">
+                            <div class="value">{{ completion_data.completion_date.strftime('%d %b %Y') }}</div>
+                            <div class="label">Date Completed</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Signature -->
+                    <div class="signature-line">
+                        <div class="signature">
+                            <div class="line"></div>
+                            <div class="name">myMSCE Team</div>
+                            <div class="title">Education Partner</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Certificate ID -->
+                    <div class="certificate-id">
+                        Certificate ID: {{ completion_data.certificate_id }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="button-group">
+                <a href="{{ url_for('download_certificate', subject_id=subject.id) }}" class="download-btn">
+                    <i class="bi bi-download"></i> Download PDF
+                </a>
+                <a href="{{ url_for('view_subject', subject_id=subject.id) }}" class="back-btn">
+                    <i class="bi bi-arrow-left"></i> Back to Subject
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skeleton Container (visible initially) -->
+    <div class="skeleton-container" id="skeletonContainer">
+        <div class="skeleton-wrapper shimmer">
+            <div class="skeleton-inner">
+                <div class="skeleton-line title shimmer"></div>
+                <div class="skeleton-line" style="width: 40%; height: 16px; margin: 0 auto;"></div>
+                <div class="skeleton-line recipient shimmer"></div>
+                <div class="skeleton-line course shimmer"></div>
+                <div class="skeleton-stats">
+                    <div class="skeleton-stat">
+                        <div class="skeleton-number shimmer"></div>
+                        <div class="skeleton-label shimmer"></div>
+                    </div>
+                    <div class="skeleton-stat">
+                        <div class="skeleton-number shimmer"></div>
+                        <div class="skeleton-label shimmer"></div>
+                    </div>
+                    <div class="skeleton-stat">
+                        <div class="skeleton-number shimmer"></div>
+                        <div class="skeleton-label shimmer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="skeleton-button-group">
+            <div class="skeleton-button shimmer"></div>
+            <div class="skeleton-button shimmer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Toast function
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}-fill"></i><span>${message}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
+        }
+
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation (matching dashboard timing)
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContainer');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+        });
+
+        // Flash messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

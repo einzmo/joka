@@ -1,0 +1,1264 @@
+<!-- templates/admin/upload_video.html - RENOVATED with Dynamic Content Type Support -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>Upload {{ lesson.content_type|capitalize }} - {{ lesson.title }} | myMSCE Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
+    <style>
+        /* ===== CSS LAYERS ===== */
+        @layer reset, base, components, utilities, animations;
+
+        /* ===== COLOR SYSTEM ===== */
+        @layer base {
+            :root {
+                --primary-blue: #2563EB;
+                --primary-dark: #1D4ED8;
+                --primary-light: #DBEAFE;
+                --secondary-green: #16A34A;
+                --secondary-light: #DCFCE7;
+                --accent-orange: #F59E0B;
+                --accent-dark: #D97706;
+                --error-red: #DC2626;
+                --bg-main: #EFF6FF;
+                --card-bg-glass: rgba(219, 234, 254, 0.7);
+                --card-bg-glass-solid: rgba(219, 234, 254, 0.95);
+                --text-primary: #0F172A;
+                --text-secondary: #475569;
+                --text-tertiary: #64748B;
+                --border-light: rgba(37, 99, 235, 0.12);
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                background: var(--bg-main);
+                color: var(--text-primary);
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
+        }
+
+        /* ===== PAGE LOADER - CENTERED DOTS ===== */
+        @layer components {
+            .page-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-main);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.5s ease, visibility 0.5s ease;
+            }
+
+            .page-loader.hidden {
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            .dots-loader {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .dot {
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+                border-radius: 50%;
+                animation: bounce 0.6s ease-in-out infinite alternate;
+            }
+
+            .dot:nth-child(1) { animation-delay: 0s; }
+            .dot:nth-child(2) { animation-delay: 0.15s; }
+            .dot:nth-child(3) { animation-delay: 0.3s; }
+
+            @keyframes bounce {
+                from { transform: translateY(0); opacity: 0.4; }
+                to { transform: translateY(-20px); opacity: 1; }
+            }
+        }
+
+        /* ===== NAVBAR ===== */
+        @layer components {
+            .navbar {
+                background: var(--primary-blue);
+                padding: 14px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+
+            .logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: white;
+                letter-spacing: -0.5px;
+            }
+
+            .nav-actions {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .menu-btn {
+                width: 42px;
+                height: 42px;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(4px);
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+
+            .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+            .menu-btn i { font-size: 1.3rem; color: white; }
+        }
+
+        /* ===== SLIDE MENU ===== */
+        @layer components {
+            .slide-menu {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+                box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+                padding: 24px 0;
+                border-right: 1px solid rgba(37, 99, 235, 0.1);
+            }
+
+            .slide-menu.open { left: 0; }
+
+            .menu-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+            }
+
+            .menu-overlay.active { opacity: 1; visibility: visible; }
+
+            .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+            .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
+            .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+            .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+            .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+
+            .menu-section { padding: 0 20px; margin-bottom: 24px; }
+            .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+            .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+            .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+            .menu-item i { width: 22px; color: #94A3B8; }
+            .menu-item:hover i { color: var(--primary-blue); }
+            .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        }
+
+        /* ===== MAIN APP CONTAINER ===== */
+        @layer components {
+            .app {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 32px 24px 60px;
+                min-height: calc(100vh - 70px);
+            }
+
+            @media (max-width: 768px) {
+                .app { padding: 24px 20px 40px; }
+            }
+        }
+
+        /* ===== PAGE HEADER ===== */
+        @layer components {
+            .page-header {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 28px;
+                flex-wrap: wrap;
+            }
+
+            .back-btn {
+                width: 48px;
+                height: 48px;
+                background: rgba(37, 99, 235, 0.1);
+                border: 1px solid var(--border-light);
+                border-radius: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--primary-blue);
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+
+            .back-btn:hover {
+                background: var(--primary-blue);
+                color: white;
+                transform: translateX(-4px);
+            }
+
+            .page-header h1 {
+                font-size: 1.6rem;
+                font-weight: 800;
+                color: var(--text-primary);
+                letter-spacing: -0.5px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header h1 i {
+                color: var(--primary-blue);
+                background: rgba(37, 99, 235, 0.1);
+                padding: 8px;
+                border-radius: 16px;
+            }
+        }
+
+        /* ===== CONTENT LAYOUT ===== */
+        @layer components {
+            .content-layout {
+                display: grid;
+                grid-template-columns: 1fr 360px;
+                gap: 24px;
+            }
+
+            @media (max-width: 900px) {
+                .content-layout { grid-template-columns: 1fr; gap: 24px; }
+            }
+        }
+
+        /* ===== FORM CARD ===== */
+        @layer components {
+            .form-card {
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(12px);
+                border-radius: 28px;
+                border: 1px solid var(--border-light);
+                overflow: hidden;
+                box-shadow: var(--shadow-sm);
+            }
+
+            .card-accent {
+                height: 4px;
+                width: 100%;
+                background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green));
+            }
+
+            .form-section {
+                padding: 28px;
+            }
+
+            .section-title {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .section-title i {
+                color: var(--primary-blue);
+            }
+
+            @media (max-width: 480px) {
+                .form-section { padding: 20px; }
+            }
+        }
+
+        /* ===== UPLOAD AREA ===== */
+        @layer components {
+            .upload-area {
+                border: 2px dashed rgba(37, 99, 235, 0.3);
+                border-radius: 24px;
+                padding: 48px 24px;
+                text-align: center;
+                background: rgba(37, 99, 235, 0.04);
+                backdrop-filter: blur(4px);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .upload-area:hover {
+                border-color: var(--primary-blue);
+                background: rgba(37, 99, 235, 0.08);
+                transform: translateY(-4px);
+            }
+
+            .upload-area i {
+                font-size: 3rem;
+                color: var(--primary-blue);
+                margin-bottom: 16px;
+            }
+
+            .upload-area h4 {
+                color: var(--text-primary);
+                margin-bottom: 8px;
+                font-weight: 600;
+            }
+
+            .upload-area p {
+                color: var(--text-tertiary);
+                margin-bottom: 20px;
+            }
+
+            .btn-primary {
+                background: var(--accent-orange);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 40px;
+                font-weight: 600;
+                font-size: 0.85rem;
+                border: none;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+            }
+
+            .btn-primary:active { transform: scale(0.97); background: var(--accent-dark); }
+
+            .text-muted {
+                color: var(--text-tertiary);
+                font-size: 0.7rem;
+                margin-top: 16px;
+            }
+
+            .text-muted i {
+                color: var(--primary-blue);
+            }
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        @layer components {
+            .progress-container {
+                margin-top: 24px;
+                padding: 20px;
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 20px;
+            }
+
+            .progress-bar-bg {
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 30px;
+                height: 10px;
+                overflow: hidden;
+            }
+
+            .progress-fill {
+                background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green));
+                height: 100%;
+                border-radius: 30px;
+                transition: width 0.3s ease;
+                width: 0%;
+            }
+
+            .status-text {
+                text-align: center;
+                margin-top: 12px;
+                color: var(--text-tertiary);
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .spin {
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        }
+
+        /* ===== PREVIEW AREA ===== */
+        @layer components {
+            .preview-container {
+                margin-top: 24px;
+            }
+
+            .preview-video {
+                width: 100%;
+                border-radius: 20px;
+                background: rgba(0, 0, 0, 0.1);
+                margin-top: 12px;
+            }
+
+            .preview-audio {
+                width: 100%;
+                margin-top: 12px;
+            }
+
+            .preview-document {
+                text-align: center;
+                padding: 40px;
+                background: rgba(37, 99, 235, 0.04);
+                border-radius: 20px;
+                margin-top: 12px;
+            }
+
+            .preview-document i {
+                font-size: 3rem;
+                color: var(--primary-blue);
+                margin-bottom: 12px;
+            }
+
+            .preview-document p {
+                color: var(--text-tertiary);
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ===== INFO BOX ===== */
+        @layer components {
+            .info-box {
+                margin-top: 20px;
+                padding: 16px 20px;
+                background: rgba(37, 99, 235, 0.06);
+                border-radius: 16px;
+                border-left: 3px solid var(--primary-blue);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .info-box i {
+                color: var(--primary-blue);
+                font-size: 1.2rem;
+            }
+
+            .info-box small {
+                color: var(--text-tertiary);
+                font-size: 0.75rem;
+                line-height: 1.5;
+                flex: 1;
+            }
+
+            .info-box strong {
+                color: var(--primary-blue);
+            }
+        }
+
+        /* ===== PREVIEW CARD ===== */
+        @layer components {
+            .preview-card {
+                background: var(--card-bg-glass);
+                backdrop-filter: blur(12px);
+                border-radius: 28px;
+                border: 1px solid var(--border-light);
+                overflow: hidden;
+                height: fit-content;
+            }
+
+            .preview-header {
+                background: rgba(37, 99, 235, 0.04);
+                border-bottom: 1px solid var(--border-light);
+                padding: 16px 20px;
+            }
+
+            .preview-header h5 {
+                color: var(--text-primary);
+                font-size: 0.9rem;
+                font-weight: 600;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .preview-header h5 i {
+                color: var(--primary-blue);
+            }
+
+            .preview-body {
+                padding: 20px;
+            }
+
+            .lesson-preview {
+                text-align: center;
+            }
+
+            .preview-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 16px;
+            }
+
+            .preview-icon i {
+                font-size: 2rem;
+                color: var(--primary-blue);
+            }
+
+            .preview-title {
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 12px;
+            }
+
+            .preview-badges {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 16px;
+            }
+
+            .badge {
+                padding: 4px 12px;
+                border-radius: 30px;
+                font-size: 0.65rem;
+                font-weight: 600;
+            }
+
+            .badge-subject {
+                background: rgba(37, 99, 235, 0.1);
+                color: var(--primary-blue);
+            }
+
+            .badge-type {
+                background: rgba(139, 92, 246, 0.1);
+                color: #8b5cf6;
+            }
+
+            .badge-free {
+                background: var(--accent-orange);
+                color: white;
+            }
+
+            .preview-desc {
+                font-size: 0.8rem;
+                color: var(--text-tertiary);
+                line-height: 1.5;
+            }
+        }
+
+        /* ===== TOAST ===== */
+        @layer components {
+            .toast-container {
+                position: fixed;
+                top: 20px;
+                left: 0;
+                right: 0;
+                z-index: 99999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+                padding: 0 16px;
+            }
+
+            .toast {
+                background: #1E293B;
+                border-left: 4px solid var(--primary-blue);
+                padding: 14px 20px;
+                border-radius: 16px;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                width: 100%;
+                max-width: 380px;
+                animation: toastIn 0.3s ease;
+                pointer-events: auto;
+                font-weight: 500;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .toast.error { border-left-color: var(--error-red); }
+            .toast.success { border-left-color: var(--secondary-green); }
+            .toast.warning { border-left-color: var(--accent-orange); }
+
+            .toast button {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                margin-left: auto;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+
+            @keyframes toastIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        @layer components {
+            .skeleton-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 32px 24px 60px;
+            }
+
+            .skeleton-header {
+                display: flex;
+                gap: 16px;
+                margin-bottom: 28px;
+            }
+
+            .skeleton-back-btn {
+                width: 48px;
+                height: 48px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 30px;
+            }
+
+            .skeleton-title {
+                width: 300px;
+                height: 48px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 16px;
+            }
+
+            .skeleton-layout {
+                display: grid;
+                grid-template-columns: 1fr 360px;
+                gap: 24px;
+            }
+
+            .skeleton-card {
+                background: rgba(219, 234, 254, 0.5);
+                border-radius: 28px;
+                overflow: hidden;
+            }
+
+            .skeleton-accent {
+                height: 4px;
+                background: rgba(37, 99, 235, 0.1);
+            }
+
+            .skeleton-body {
+                padding: 28px;
+            }
+
+            .skeleton-upload {
+                height: 280px;
+                background: rgba(37, 99, 235, 0.06);
+                border-radius: 24px;
+            }
+
+            .skeleton-line {
+                height: 14px;
+                background: rgba(37, 99, 235, 0.08);
+                border-radius: 8px;
+                margin-bottom: 12px;
+            }
+
+            .skeleton-preview-card {
+                background: rgba(219, 234, 254, 0.5);
+                border-radius: 28px;
+                overflow: hidden;
+            }
+
+            .shimmer {
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+
+            @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+        }
+
+        /* ===== UTILITIES ===== */
+        @layer utilities {
+            ::-webkit-scrollbar { width: 5px; }
+            ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+            @supports (padding: max(0px)) {
+                .app {
+                    padding-left: max(24px, env(safe-area-inset-left));
+                    padding-right: max(24px, env(safe-area-inset-right));
+                    padding-top: max(32px, env(safe-area-inset-top));
+                    padding-bottom: max(60px, env(safe-area-inset-bottom));
+                }
+                .toast-container {
+                    top: max(20px, env(safe-area-inset-top));
+                }
+            }
+        }
+
+        /* ===== VIEW TRANSITIONS API ===== */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <!-- PAGE LOADER - CENTERED DOTS -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
+                    <p>Administrator</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Main</div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Account</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="nav-actions">
+            <div class="menu-btn" id="menuBtn">
+                <i class="bi bi-list"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real Content (hidden initially) -->
+    <div id="realContent" style="display: none;">
+        <div class="app">
+            <!-- Page Header - Dynamic based on content type -->
+            <div class="page-header">
+                <a href="{{ url_for('admin_lessons') }}" class="back-btn">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h1>
+                    {% if lesson.content_type == 'video' %}
+                        <i class="bi bi-camera-reel-fill"></i>
+                        Upload Video to Cloudinary
+                    {% elif lesson.content_type == 'audio' %}
+                        <i class="bi bi-mic-fill"></i>
+                        Upload Audio File
+                    {% elif lesson.content_type == 'document' %}
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                        Upload Document
+                    {% else %}
+                        <i class="bi bi-cloud-upload-fill"></i>
+                        Upload File
+                    {% endif %}
+                </h1>
+            </div>
+
+            <div class="content-layout">
+                <!-- Left Column - Upload Form -->
+                <div class="form-card">
+                    <div class="card-accent"></div>
+                    <div class="form-section">
+                        <div class="section-title">
+                            {% if lesson.content_type == 'video' %}
+                                <i class="bi bi-camera-reel-fill"></i>
+                            {% elif lesson.content_type == 'audio' %}
+                                <i class="bi bi-mic-fill"></i>
+                            {% elif lesson.content_type == 'document' %}
+                                <i class="bi bi-file-earmark-text-fill"></i>
+                            {% else %}
+                                <i class="bi bi-file-earmark-fill"></i>
+                            {% endif %}
+                            Lesson: {{ lesson.title }}
+                        </div>
+
+                        <!-- Upload Area - Dynamic based on content type -->
+                        <div class="upload-area" id="dropZone">
+                            {% if lesson.content_type == 'video' %}
+                                <i class="bi bi-camera-reel-fill"></i>
+                                <h4>Drag & Drop Video Here</h4>
+                                <p>or click to select</p>
+                                <input type="file" id="fileInput" accept="video/*" style="display: none;">
+                                <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="bi bi-folder2-open"></i> Select Video
+                                </button>
+                                <p class="text-muted">
+                                    <i class="bi bi-info-circle"></i> MP4, MOV, AVI, MKV (Max 500MB)
+                                </p>
+                            {% elif lesson.content_type == 'audio' %}
+                                <i class="bi bi-mic-fill"></i>
+                                <h4>Drag & Drop Audio Here</h4>
+                                <p>or click to select</p>
+                                <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+                                <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="bi bi-folder2-open"></i> Select Audio
+                                </button>
+                                <p class="text-muted">
+                                    <i class="bi bi-info-circle"></i> MP3, WAV, M4A, OGG (Max 100MB)
+                                </p>
+                            {% elif lesson.content_type == 'document' %}
+                                <i class="bi bi-file-earmark-text-fill"></i>
+                                <h4>Drag & Drop Document Here</h4>
+                                <p>or click to select</p>
+                                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" style="display: none;">
+                                <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="bi bi-folder2-open"></i> Select Document
+                                </button>
+                                <p class="text-muted">
+                                    <i class="bi bi-info-circle"></i> PDF, DOC, PPT, XLS (Max 50MB)
+                                </p>
+                            {% else %}
+                                <i class="bi bi-file-earmark-fill"></i>
+                                <h4>Drag & Drop File Here</h4>
+                                <p>or click to select</p>
+                                <input type="file" id="fileInput" style="display: none;">
+                                <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="bi bi-folder2-open"></i> Select File
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Progress Container -->
+                        <div id="progressContainer" style="display: none;">
+                            <div class="progress-container">
+                                <div class="progress-bar-bg">
+                                    <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
+                                </div>
+                                <p id="statusText" class="status-text">
+                                    <i class="bi bi-arrow-repeat spin"></i> Uploading...
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Preview Container - Dynamic based on content type -->
+                        <div id="previewContainer" style="display: none;">
+                            <div class="section-title" style="margin-top: 24px;">
+                                <i class="bi bi-eye"></i>
+                                {% if lesson.content_type == 'video' %}
+                                    Video Preview
+                                {% elif lesson.content_type == 'audio' %}
+                                    Audio Preview
+                                {% elif lesson.content_type == 'document' %}
+                                    Document Preview
+                                {% else %}
+                                    File Preview
+                                {% endif %}
+                            </div>
+                            
+                            {% if lesson.content_type == 'video' %}
+                            <video id="previewMedia" controls class="preview-video"></video>
+                            {% elif lesson.content_type == 'audio' %}
+                            <audio id="previewMedia" controls class="preview-audio"></audio>
+                            {% elif lesson.content_type == 'document' %}
+                            <div id="previewDocument" class="preview-document">
+                                <i class="bi bi-file-earmark-text-fill"></i>
+                                <p id="documentName"></p>
+                            </div>
+                            {% else %}
+                            <div id="previewDocument" class="preview-document">
+                                <i class="bi bi-file-earmark-fill"></i>
+                                <p id="documentName"></p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Info Box - Dynamic based on content type -->
+                    <div class="info-box" style="margin: 0 28px 28px 28px;">
+                        <i class="bi bi-shield-lock"></i>
+                        <small>
+                            <strong>Security Features:</strong> 
+                            {% if lesson.content_type == 'video' %}
+                                Videos are stored privately on Cloudinary with signed URLs that expire after 1 hour. Only active subscribers can access them.
+                            {% elif lesson.content_type == 'audio' %}
+                                Audio files are stored securely on Cloudinary. Only active subscribers can access them.
+                            {% elif lesson.content_type == 'document' %}
+                                Documents are stored securely on Cloudinary. Only active subscribers can access them.
+                            {% else %}
+                                Files are stored securely on Cloudinary. Only active subscribers can access them.
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Right Column - Preview Card -->
+                <div class="preview-card">
+                    <div class="preview-header">
+                        <h5><i class="bi bi-info-circle"></i> 
+                            {% if lesson.content_type == 'video' %}Video Info
+                            {% elif lesson.content_type == 'audio' %}Audio Info
+                            {% elif lesson.content_type == 'document' %}Document Info
+                            {% else %}File Info{% endif %}
+                        </h5>
+                    </div>
+                    <div class="preview-body">
+                        <div class="lesson-preview">
+                            <div class="preview-icon">
+                                {% if lesson.content_type == 'video' %}
+                                    <i class="bi bi-camera-reel-fill"></i>
+                                {% elif lesson.content_type == 'audio' %}
+                                    <i class="bi bi-mic-fill"></i>
+                                {% elif lesson.content_type == 'document' %}
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-file-earmark-fill"></i>
+                                {% endif %}
+                            </div>
+                            <h6 class="preview-title">{{ lesson.title }}</h6>
+                            <div class="preview-badges">
+                                <span class="badge badge-subject">{{ lesson.subject.name }}</span>
+                                <span class="badge badge-type">{{ lesson.content_type|upper }}</span>
+                                {% if lesson.is_free %}
+                                <span class="badge badge-free">FREE</span>
+                                {% endif %}
+                            </div>
+                            <p class="preview-desc">{{ lesson.description or 'No description' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skeleton Container (visible initially) -->
+    <div id="skeletonContent">
+        <div class="skeleton-container">
+            <div class="skeleton-header">
+                <div class="skeleton-back-btn shimmer"></div>
+                <div class="skeleton-title shimmer"></div>
+            </div>
+            <div class="skeleton-layout">
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-accent shimmer"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-line" style="width: 40%; height: 24px;"></div>
+                        <div class="skeleton-upload shimmer" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+                <div class="skeleton-preview-card shimmer">
+                    <div class="skeleton-line" style="height: 60px; margin: 0;"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-line" style="width: 60%; height: 20px; margin: 0 auto 16px;"></div>
+                        <div class="skeleton-line" style="width: 80%; margin: 0 auto 8px;"></div>
+                        <div class="skeleton-line" style="width: 70%; margin: 0 auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== TOAST FUNCTION =====
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            if (container.children.length >= 3) {
+                container.children[0].remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== MENU FUNCTIONALITY =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const menu = document.getElementById('slideMenu');
+            const overlay = document.getElementById('menuOverlay');
+            const menuBtn = document.getElementById('menuBtn');
+
+            function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+            function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+            if(menuBtn) menuBtn.addEventListener('click', openMenu);
+            if(overlay) overlay.addEventListener('click', closeMenu);
+            document.addEventListener('keydown', (e) => { 
+                if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); 
+            });
+        });
+
+        // ===== LOADING ANIMATION =====
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+        });
+
+        // ===== UPLOAD FUNCTIONALITY =====
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
+        const previewContainer = document.getElementById('previewContainer');
+        
+        // Get content type from lesson
+        const contentType = '{{ lesson.content_type }}';
+        
+        // Setup preview elements
+        let previewMedia = null;
+        if (contentType === 'video' || contentType === 'audio') {
+            previewMedia = document.getElementById('previewMedia');
+        }
+
+        if (dropZone) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#2563EB';
+                dropZone.style.background = 'rgba(37, 99, 235, 0.08)';
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = 'rgba(37, 99, 235, 0.3)';
+                dropZone.style.background = 'rgba(37, 99, 235, 0.04)';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'rgba(37, 99, 235, 0.3)';
+                dropZone.style.background = 'rgba(37, 99, 235, 0.04)';
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    validateAndUpload(file);
+                }
+            });
+
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    validateAndUpload(file);
+                }
+            });
+        }
+
+        function validateAndUpload(file) {
+            // Validate file type based on content type
+            let isValid = false;
+            let acceptedTypes = [];
+            
+            if (contentType === 'video') {
+                isValid = file.type.startsWith('video/');
+                acceptedTypes = ['MP4', 'MOV', 'AVI', 'MKV'];
+            } else if (contentType === 'audio') {
+                isValid = file.type.startsWith('audio/');
+                acceptedTypes = ['MP3', 'WAV', 'M4A', 'OGG'];
+            } else if (contentType === 'document') {
+                const validExtensions = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx'];
+                const fileName = file.name.toLowerCase();
+                isValid = validExtensions.some(ext => fileName.endsWith(ext));
+                acceptedTypes = ['PDF', 'DOC', 'PPT', 'XLS'];
+            }
+            
+            if (!isValid) {
+                showToast(`Please upload a valid ${contentType} file (${acceptedTypes.join(', ')})`, 'error');
+                return;
+            }
+            
+            uploadFile(file);
+        }
+
+        function uploadFile(file) {
+            // Preview based on content type
+            if (contentType === 'video' || contentType === 'audio') {
+                if (previewMedia) {
+                    const url = URL.createObjectURL(file);
+                    previewMedia.src = url;
+                }
+            } else if (contentType === 'document') {
+                const documentNameElem = document.getElementById('documentName');
+                if (documentNameElem) {
+                    documentNameElem.textContent = file.name;
+                }
+            }
+            
+            previewContainer.style.display = 'block';
+            
+            // Upload
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('lesson_id', {{ lesson.id }});
+            formData.append('content_type', contentType);
+            
+            progressContainer.style.display = 'block';
+            statusText.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Uploading to Cloudinary...';
+            
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    statusText.innerHTML = `<i class="bi bi-arrow-repeat spin"></i> Uploading: ${percent}%`;
+                }
+            });
+            
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        progressBar.style.width = '100%';
+                        statusText.innerHTML = '<i class="bi bi-check-circle-fill"></i> Upload complete! File is now private and secure.';
+                        showToast(`${contentType.charAt(0).toUpperCase() + contentType.slice(1)} uploaded successfully!`, 'success');
+                        setTimeout(() => {
+                            window.location.href = '/admin/lessons';
+                        }, 2000);
+                    } else {
+                        statusText.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Upload failed: ' + response.error;
+                        showToast('Upload failed: ' + response.error, 'error');
+                    }
+                } else {
+                    statusText.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Upload failed. Please try again.';
+                    showToast('Upload failed', 'error');
+                }
+            });
+            
+            xhr.addEventListener('error', () => {
+                statusText.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Network error. Please try again.';
+                showToast('Network error', 'error');
+            });
+            
+            xhr.open('POST', '/admin/upload-cloudinary-file');
+            xhr.send(formData);
+        }
+
+        // ===== BACK BUTTON FIX =====
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/admin/lessons');
+                }
+            }
+        });
+
+        // ===== FLASH MESSAGES =====
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

@@ -233,16 +233,11 @@ def send_welcome_email(user):
         print(f"❌ {error_msg}")
         logger.error(error_msg)
 
-
-def send_password_reset_email(user, token):
-    """Send password reset link with error handling"""
+def send_password_reset_code_email(user, code):
+    """Send password reset code via email"""
     try:
         base_url = get_base_url()
-        reset_url = f"{base_url}/reset-password/{token}"
-
-        print(f"🔑 Sending password reset email to {user.email}")
-        logger.info(f"Sending password reset email to {user.email}")
-
+        
         html_content = f'''
         <!DOCTYPE html>
         <html>
@@ -251,49 +246,48 @@ def send_password_reset_email(user, token):
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0; font-size: 28px;">Password Reset Request</h1>
+            <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a2b4c; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0; font-size: 28px;">myMSCE</h1>
+                <p style="margin: 10px 0 0;">Password Reset Code</p>
             </div>
-
+            
             <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd; border-top: none;">
-                <h2 style="color: #2c3e50; margin-top: 0;">Hi {user.username}!</h2>
-
-                <p style="margin-bottom: 20px;">We received a request to reset your password. Click the button below to create a new password:</p>
-
+                <h2 style="color: #1a2b4c; margin-top: 0;">Hi {user.username}!</h2>
+                
+                <p style="margin-bottom: 20px;">Use the code below to reset your password. This code will expire in 15 minutes.</p>
+                
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{reset_url}" style="background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 2px solid #fbbf24; display: inline-block;">
+                        <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #1a2b4c;">{code}</span>
+                    </div>
                 </div>
-
-                <p style="color: #666; font-size: 14px;">Or copy and paste this link in your browser:</p>
-                <p style="background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; word-break: break-all; font-size: 12px;">{reset_url}</p>
-
-                <p style="color: #666; font-size: 14px; margin-top: 20px;">This link will expire in 1 hour for security reasons.</p>
-
-                <p style="color: #999; font-size: 12px;">If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>
-
+                
+                <p style="color: #666; font-size: 14px;">Enter this code on the password reset page to continue.</p>
+                
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-
-                <p style="color: #999; font-size: 12px; text-align: center;">Best regards,<br>The myMSCE Team</p>
+                
+                <p style="color: #999; font-size: 12px; text-align: center;">If you didn't request a password reset, please ignore this email.</p>
             </div>
         </body>
         </html>
         '''
-
+        
         if HAS_FLASK_MAIL:
             msg = Message(
-                subject='Reset your myMSCE password',
+                subject='Password Reset Code - myMSCE',
                 recipients=[user.email],
                 html=html_content
             )
             mail.send(msg)
-            print(f"✅ Password reset email sent to {user.email}")
-            logger.info(f"Password reset email sent to {user.email}")
-
+            print(f"✅ Reset code sent to {user.email}")
+            return True
+        else:
+            print(f"📧 [MOCK] Reset code for {user.email}: {code}")
+            return True
+            
     except Exception as e:
-        error_msg = f"Password reset email sending failed for {user.email}: {str(e)}"
-        print(f"❌ {error_msg}")
-        logger.error(error_msg)
-
+        print(f"❌ Failed to send reset code: {e}")
+        return False
 
 def send_payment_confirmation_email(user, payment):
     """Send payment confirmation email with error handling"""
@@ -374,6 +368,119 @@ def send_payment_confirmation_email(user, payment):
         print(f"❌ {error_msg}")
         logger.error(error_msg)
 
+
+def send_password_reset_code(user, code):
+    """Send 6-digit password reset code via email"""
+    try:
+        base_url = get_base_url()
+        
+        html_content = f'''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a2b4c; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0; font-size: 28px;">myMSCE</h1>
+                <p style="margin: 10px 0 0;">Password Reset Code</p>
+            </div>
+            
+            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd; border-top: none;">
+                <h2 style="color: #1a2b4c; margin-top: 0;">Hi {user.username}!</h2>
+                
+                <p>Use the code below to reset your password. This code expires in <strong>15 minutes</strong>.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 2px solid #fbbf24; display: inline-block;">
+                        <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #1a2b4c;">{code}</span>
+                    </div>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">Enter this code on the website to continue.</p>
+                
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                
+                <p style="color: #999; font-size: 12px; text-align: center;">If you didn't request this, please ignore this email.</p>
+            </div>
+        </body>
+        </html>
+        '''
+        
+        if HAS_FLASK_MAIL:
+            msg = Message(
+                subject='Password Reset Code - myMSCE',
+                recipients=[user.email],
+                html=html_content
+            )
+            mail.send(msg)
+            print(f"✅ Reset code sent to {user.email}")
+            return True
+        else:
+            print(f"\n📧 [MOCK] Reset code for {user.email}: {code}\n")
+            return True
+            
+    except Exception as e:
+        print(f"❌ Failed to send reset code: {e}")
+        return False
+
+
+def send_verification_code(user, code):
+    """Send 6-digit verification code via email"""
+    try:
+        base_url = get_base_url()
+        
+        html_content = f'''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a2b4c; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0; font-size: 28px;">myMSCE</h1>
+                <p style="margin: 10px 0 0;">Email Verification Code</p>
+            </div>
+            
+            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd; border-top: none;">
+                <h2 style="color: #1a2b4c; margin-top: 0;">Welcome, {user.username}!</h2>
+                
+                <p>Use the code below to verify your email address. This code expires in <strong>15 minutes</strong>.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 2px solid #fbbf24; display: inline-block;">
+                        <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #1a2b4c;">{code}</span>
+                    </div>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">Enter this code on the website to complete your registration.</p>
+                
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                
+                <p style="color: #999; font-size: 12px; text-align: center;">If you didn't create an account with myMSCE, please ignore this email.</p>
+            </div>
+        </body>
+        </html>
+        '''
+        
+        if HAS_FLASK_MAIL:
+            msg = Message(
+                subject='Verify your email - myMSCE',
+                recipients=[user.email],
+                html=html_content
+            )
+            mail.send(msg)
+            print(f"✅ Verification code sent to {user.email}")
+            return True
+        else:
+            print(f"\n📧 [MOCK] Verification code for {user.email}: {code}\n")
+            return True
+            
+    except Exception as e:
+        print(f"❌ Failed to send verification code: {e}")
+        return False
 
 def test_smtp_connection():
     """Test SMTP connection configuration"""

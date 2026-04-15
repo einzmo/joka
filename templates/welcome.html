@@ -1,15 +1,16 @@
-<!-- templates/welcome.html - CLEAN MINIMALIST WELCOME SCREEN -->
+<!-- templates/welcome.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Welcome to myMSCE</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
@@ -22,109 +23,266 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #ffffff;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
-            display: flex;
-            flex-direction: column;
+            background: #EFF6FF;
+            min-height: 100vh;
+            color: #0F172A;
+            overflow-x: hidden;
         }
 
-        /* Main container - iOS style */
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== PAGE LOADER ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #EFF6FF;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .glass-loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.08);
+            backdrop-filter: blur(10px);
+            animation: pulseGlow 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .glass-loader::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .glass-loader::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            background: #EFF6FF;
+            border-radius: 50%;
+        }
+        
+        .glass-loader .inner {
+            position: relative;
+            z-index: 2;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        }
+
+        /* ===== MAIN CONTAINER ===== */
         .app {
-            flex: 1;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background: white;
-            padding: 24px 24px 40px;
             position: relative;
         }
 
-        /* Skip button (optional - for returning users) */
+        /* ===== SKIP BUTTON ===== */
         .skip-btn {
             position: absolute;
-            top: 24px;
-            right: 24px;
-            color: #94a3b8;
+            top: 20px;
+            right: 20px;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563EB;
             text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            padding: 8px 16px;
+            padding: 8px 20px;
             border-radius: 40px;
-            transition: all 0.2s ease;
-            z-index: 10;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            z-index: 20;
         }
-
+        
         .skip-btn:active {
-            background: #f1f5f9;
+            transform: scale(0.96);
+            background: rgba(37, 99, 235, 0.2);
         }
 
-        /* Main content - flex column to push content down */
+        /* ===== MAIN CONTENT ===== */
         .content {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            max-width: 380px;
+            padding: 60px 24px 40px;
+            max-width: 500px;
             margin: 0 auto;
             width: 100%;
         }
 
-        /* Illustration container */
-        .illustration {
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 40px;
-            animation: floatUp 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+        @media (max-width: 480px) {
+            .content { padding: 40px 20px 30px; }
         }
 
-        /* SVG Illustration - Three people jumping in celebration */
+        /* ===== ILLUSTRATION ===== */
+        .illustration {
+            width: 100%;
+            max-width: 280px;
+            margin-bottom: 32px;
+            animation: floatUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+        }
+        
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .celebration-svg {
             width: 100%;
             height: auto;
-            filter: drop-shadow(0 10px 15px -3px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 10px 15px -3px rgba(0, 0, 0, 0.1));
         }
 
-        /* Typography */
+        /* ===== TYPOGRAPHY ===== */
         .welcome-header {
             text-align: center;
             margin-bottom: 16px;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
             animation-delay: 0.1s;
             opacity: 0;
             transform: translateY(10px);
         }
-
-        .welcome-header h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: #0f172a;
-            margin-bottom: 16px;
+        
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        .welcome-header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
         .welcome-header .highlight {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #2563EB, #16A34A);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
+        @media (max-width: 480px) {
+            .welcome-header h1 { font-size: 2.2rem; }
+        }
 
+        /* ===== DESCRIPTION ===== */
         .description {
             text-align: center;
-            color: #64748b;
-            font-size: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
             line-height: 1.6;
-            max-width: 280px;
-            margin: 0 auto 40px;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+            max-width: 300px;
+            margin: 0 auto 32px;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
             animation-delay: 0.2s;
             opacity: 0;
             transform: translateY(10px);
         }
 
-        /* CTA Button */
+        /* ===== FEATURES PREVIEW ===== */
+        .features-preview {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+            animation-delay: 0.25s;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .feature-preview-item {
+            text-align: center;
+            flex: 1;
+            min-width: 70px;
+        }
+        
+        .feature-preview-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+        }
+        
+        .feature-preview-icon i {
+            font-size: 1.5rem;
+            color: #2563EB;
+        }
+        
+        .feature-preview-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-tertiary);
+        }
+        
+        @media (max-width: 480px) {
+            .features-preview { gap: 16px; }
+            .feature-preview-icon { width: 44px; height: 44px; }
+            .feature-preview-icon i { font-size: 1.3rem; }
+        }
+
+        /* ===== CTA BUTTON ===== */
         .get-started-btn {
             display: flex;
             align-items: center;
@@ -132,158 +290,128 @@
             width: 100%;
             max-width: 320px;
             margin: 0 auto;
-            padding: 18px 32px;
-            background: #2563eb;
+            padding: 16px 32px;
+            background: #F59E0B;
             border: none;
             border-radius: 50px;
             color: white;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             letter-spacing: 0.5px;
             text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-            box-shadow: 0 10px 25px -5px rgba(37,99,235,0.3);
-            position: relative;
-            overflow: hidden;
-            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            gap: 8px;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
             animation-delay: 0.3s;
             opacity: 0;
             transform: translateY(10px);
         }
-
-        .get-started-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .get-started-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .get-started-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 30px -8px rgba(37,99,235,0.4);
-        }
-
+        
         .get-started-btn:active {
-            transform: translateY(-1px) scale(0.98);
+            transform: scale(0.97);
+            background: #D97706;
+        }
+        
+        .get-started-btn i {
+            transition: transform 0.2s;
+        }
+        
+        .get-started-btn:active i {
+            transform: translateX(4px);
         }
 
-        /* Login link for existing users */
+        /* ===== LOGIN LINK ===== */
         .login-link {
             text-align: center;
             margin-top: 24px;
-            color: #94a3b8;
-            font-size: 0.95rem;
-            animation: fadeIn 0.6s ease;
-            animation-delay: 0.4s;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            animation: fadeIn 0.6s ease forwards;
+            animation-delay: 0.35s;
             opacity: 0;
-            animation-fill-mode: forwards;
         }
-
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
         .login-link a {
-            color: #2563eb;
+            color: #2563EB;
             text-decoration: none;
             font-weight: 600;
-            margin-left: 4px;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 20px;
         }
-
+        
         .login-link a:active {
-            opacity: 0.8;
+            background: rgba(37, 99, 235, 0.1);
         }
 
-        /* Android soft keys simulation */
+        /* ===== SOFT KEYS (Android style) ===== */
         .soft-keys {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 12px 24px 8px;
-            background: white;
-            border-top: 1px solid #f1f5f9;
+            padding: 12px 24px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-light);
             margin-top: auto;
         }
-
+        
         .soft-key {
-            color: #94a3b8;
+            color: var(--text-tertiary);
             font-size: 1.2rem;
             padding: 8px 16px;
             border-radius: 40px;
-            transition: background 0.2s ease;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
+        
         .soft-key:active {
-            background: #f1f5f9;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563EB;
+        }
+        
+        @media (max-width: 480px) {
+            .soft-keys { padding: 8px 16px 16px; }
+            .soft-key { padding: 6px 12px; }
         }
 
-        /* Animations */
-        @keyframes floatUp {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 380px) {
-            .welcome-header h1 {
-                font-size: 2.5rem;
-            }
-
-            .description {
-                font-size: 0.9rem;
-            }
-
-            .get-started-btn {
-                padding: 16px 28px;
-                font-size: 1rem;
-            }
-        }
-
-        /* Handle safe areas for notched phones */
+        /* Safe Areas */
         @supports (padding: max(0px)) {
-            .app {
+            .content {
                 padding-left: max(24px, env(safe-area-inset-left));
                 padding-right: max(24px, env(safe-area-inset-right));
-                padding-top: max(24px, env(safe-area-inset-top));
+                padding-top: max(60px, env(safe-area-inset-top));
                 padding-bottom: max(40px, env(safe-area-inset-bottom));
+            }
+            .soft-keys {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+            .skip-btn {
+                top: max(20px, env(safe-area-inset-top));
+                right: max(20px, env(safe-area-inset-right));
             }
         }
     </style>
 </head>
 <body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="glass-loader">
+            <div class="inner">M</div>
+        </div>
+    </div>
+
     <div class="app">
         <!-- Skip button for returning users -->
-        <a href="{{ url_for('login') }}" class="skip-btn">Skip</a>
+        <a href="{{ url_for('login') }}" class="skip-btn">Skip →</a>
 
         <!-- Main Content -->
         <div class="content">
@@ -291,8 +419,8 @@
             <div class="illustration">
                 <svg class="celebration-svg" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Background elements -->
-                    <circle cx="100" cy="80" r="40" fill="#FEF3C7" opacity="0.3"/>
-                    <circle cx="220" cy="120" r="50" fill="#DBEAFE" opacity="0.3"/>
+                    <circle cx="100" cy="80" r="40" fill="#DBEAFE" opacity="0.4"/>
+                    <circle cx="220" cy="120" r="50" fill="#DCFCE7" opacity="0.3"/>
 
                     <!-- Person 1 - jumping (blue) -->
                     <circle cx="100" cy="120" r="25" fill="#2563EB" opacity="0.9"/>
@@ -302,52 +430,75 @@
                     <rect x="70" y="120" width="16" height="30" fill="#1E40AF" rx="8" transform="rotate(-20 70 120)"/>
                     <rect x="114" y="120" width="16" height="30" fill="#1E40AF" rx="8" transform="rotate(20 114 120)"/>
 
-                    <!-- Person 2 - jumping (purple) -->
-                    <circle cx="180" cy="100" r="25" fill="#7C3AED" opacity="0.9"/>
-                    <circle cx="180" cy="65" r="18" fill="#7C3AED"/>
-                    <rect x="172" y="120" width="16" height="40" fill="#5B21B6" rx="8"/>
+                    <!-- Person 2 - jumping (green) -->
+                    <circle cx="180" cy="100" r="25" fill="#16A34A" opacity="0.9"/>
+                    <circle cx="180" cy="65" r="18" fill="#16A34A"/>
+                    <rect x="172" y="120" width="16" height="40" fill="#059669" rx="8"/>
                     <!-- Arms -->
-                    <rect x="150" y="100" width="16" height="30" fill="#5B21B6" rx="8" transform="rotate(-20 150 100)"/>
-                    <rect x="194" y="100" width="16" height="30" fill="#5B21B6" rx="8" transform="rotate(20 194 100)"/>
+                    <rect x="150" y="100" width="16" height="30" fill="#059669" rx="8" transform="rotate(-20 150 100)"/>
+                    <rect x="194" y="100" width="16" height="30" fill="#059669" rx="8" transform="rotate(20 194 100)"/>
 
                     <!-- Person 3 - jumping (orange) -->
                     <circle cx="140" cy="80" r="25" fill="#F59E0B" opacity="0.9"/>
                     <circle cx="140" cy="45" r="18" fill="#F59E0B"/>
-                    <rect x="132" cy="100" width="16" height="40" fill="#B45309" rx="8" y="100"/>
+                    <rect x="132" y="100" width="16" height="40" fill="#D97706" rx="8"/>
                     <!-- Arms -->
-                    <rect x="110" y="80" width="16" height="30" fill="#B45309" rx="8" transform="rotate(-20 110 80)"/>
-                    <rect x="154" y="80" width="16" height="30" fill="#B45309" rx="8" transform="rotate(20 154 80)"/>
+                    <rect x="110" y="80" width="16" height="30" fill="#D97706" rx="8" transform="rotate(-20 110 80)"/>
+                    <rect x="154" y="80" width="16" height="30" fill="#D97706" rx="8" transform="rotate(20 154 80)"/>
 
                     <!-- Celebration confetti -->
                     <circle cx="50" cy="50" r="4" fill="#F59E0B"/>
                     <circle cx="260" cy="60" r="4" fill="#2563EB"/>
-                    <circle cx="280" cy="140" r="4" fill="#7C3AED"/>
-                    <circle cx="30" cy="160" r="4" fill="#10B981"/>
+                    <circle cx="280" cy="140" r="4" fill="#16A34A"/>
+                    <circle cx="30" cy="160" r="4" fill="#F59E0B"/>
+                    <circle cx="250" cy="170" r="3" fill="#2563EB"/>
+                    <circle cx="70" cy="30" r="3" fill="#16A34A"/>
 
                     <!-- Jump lines (motion effect) -->
                     <path d="M70 70 L40 40" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
                     <path d="M210 40 L240 20" stroke="#2563EB" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
-                    <path d="M160 140 L130 170" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+                    <path d="M160 140 L130 170" stroke="#16A34A" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
                 </svg>
             </div>
 
             <!-- Welcome Header -->
             <div class="welcome-header">
                 <h1>
-                    WELCOME
-                    <span class="highlight">TO</span>
-                    myMSCE
+                    Welcome to<br>
+                    <span class="highlight">myMSCE</span>
                 </h1>
             </div>
 
             <!-- Description / Value Proposition -->
             <div class="description">
-                Your ultimate MSCE preparation platform. Access quality video lessons, past papers, and revision materials for Forms 3 and 4. Join thousands of successful students already preparing with us.
+                Your ultimate MSCE preparation platform. Access quality video lessons, past papers, and revision materials for Forms 3 and 4.
+            </div>
+
+            <!-- Features Preview -->
+            <div class="features-preview">
+                <div class="feature-preview-item">
+                    <div class="feature-preview-icon">
+                        <i class="bi bi-camera-reel-fill"></i>
+                    </div>
+                    <span>Video Lessons</span>
+                </div>
+                <div class="feature-preview-item">
+                    <div class="feature-preview-icon">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <span>Past Papers</span>
+                </div>
+                <div class="feature-preview-item">
+                    <div class="feature-preview-icon">
+                        <i class="bi bi-phone-fill"></i>
+                    </div>
+                    <span>Mobile Money</span>
+                </div>
             </div>
 
             <!-- CTA Button -->
             <a href="{{ url_for('register') }}" class="get-started-btn">
-                GET STARTED
+                GET STARTED <i class="bi bi-arrow-right"></i>
             </a>
 
             <!-- Login Link for existing users -->
@@ -360,22 +511,25 @@
         <!-- Android soft keys simulation -->
         <div class="soft-keys">
             <div class="soft-key">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
+                <i class="bi bi-three-dots"></i>
             </div>
             <div class="soft-key">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="2.5"/>
-                    <circle cx="12" cy="12" r="8"/>
-                </svg>
+                <i class="bi bi-circle"></i>
             </div>
             <div class="soft-key">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
+                <i class="bi bi-chevron-left"></i>
             </div>
         </div>
     </div>
+
+    <script>
+        // Page loader
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 800);
+        });
+    </script>
 </body>
 </html>

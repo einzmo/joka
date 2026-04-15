@@ -1,870 +1,1057 @@
-<!-- templates/index.html - POLISHED WELCOME SCREEN WITH SWIPEABLE FEATURES -->
+<!-- templates/index.html - PREMIUM LANDING PAGE with Centered Dot Loader -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
-    <title>Welcome to myMSCE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="description" content="Ace your MSCE exams with myMSCE - 500+ video lessons, past papers, and practice tests for Form 3 & 4 students in Malawi.">
+    <title>myMSCE - Ace Your MSCE Exams | Malawi's #1 Exam Prep Platform</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* Gold on Navy with Morphism */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        /* ===== CSS LAYERS ===== */
+        @layer reset, base, components, utilities, animations;
+
+        /* ===== RESET & BASE ===== */
+        @layer reset {
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a2b4c; /* Light navy base */
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
-            color: rgba(255, 255, 255, 0.9);
+        @layer base {
+            :root {
+                --primary-blue: #2563EB;
+                --primary-dark: #1D4ED8;
+                --primary-light: #DBEAFE;
+                --secondary-green: #16A34A;
+                --secondary-light: #DCFCE7;
+                --accent-orange: #F59E0B;
+                --accent-dark: #D97706;
+                --text-primary: #0F172A;
+                --text-secondary: #475569;
+                --text-tertiary: #64748B;
+                --border-light: rgba(37, 99, 235, 0.12);
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            }
+
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                min-height: 100vh;
+                overflow-x: hidden;
+                position: relative;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
         }
 
-        /* Subtle grain texture */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.15;
+        /* ===== BACKGROUND IMAGE ===== */
+        @layer base {
+            .bg-image {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: 0;
+            }
+
+            .bg-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(10, 15, 26, 0.45) 0%, rgba(26, 43, 76, 0.35) 100%);
+                z-index: 1;
+            }
         }
 
-        /* ===== PAGE LOADER ===== */
-        .page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #1a2b4c;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-        .page-loader.hidden { opacity: 0; pointer-events: none; }
-        .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(251, 191, 36, 0.1);
-            border-top-color: #fbbf24;
-            border-right-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.2, 0.9, 0.3, 1) infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* ===== PAGE LOADER - CENTERED DOTS (FIXED) ===== */
+        @layer components {
+            .page-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #EFF6FF;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.5s ease, visibility 0.5s ease;
+            }
 
-        /* ===== SKELETON LOADING STATES ===== */
-        .skeleton {
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.03) 25%,
-                rgba(251, 191, 36, 0.1) 50%,
-                rgba(255, 255, 255, 0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 12px;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+            .page-loader.hidden {
+                opacity: 0;
+                visibility: hidden;
+            }
 
-        .skeleton-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            margin: 0 auto 30px;
+            .dots-loader {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .dot {
+                width: 16px;
+                height: 16px;
+                background: linear-gradient(135deg, #2563EB, #16A34A);
+                border-radius: 50%;
+                animation: bounce 0.6s ease-in-out infinite alternate;
+            }
+
+            .dot:nth-child(1) { animation-delay: 0s; }
+            .dot:nth-child(2) { animation-delay: 0.15s; }
+            .dot:nth-child(3) { animation-delay: 0.3s; }
+
+            @keyframes bounce {
+                from { transform: translateY(0); opacity: 0.4; }
+                to { transform: translateY(-20px); opacity: 1; }
+            }
         }
 
-        .skeleton-line {
-            height: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            margin-bottom: 12px;
-        }
-        .skeleton-line.w30 { width: 30%; }
-        .skeleton-line.w50 { width: 50%; }
-        .skeleton-line.w70 { width: 70%; }
-        .skeleton-line.w90 { width: 90%; }
+        /* ===== MAIN CONTENT ===== */
+        @layer components {
+            .main-content {
+                position: relative;
+                z-index: 10;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px 24px 60px;
+            }
 
-        /* ===== BACKGROUND ===== */
-        .background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
+            @media (max-width: 768px) {
+                .main-content { padding: 16px 20px 48px; }
+            }
         }
 
-        .background img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            opacity: 0;
-            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        /* ===== NAVBAR ===== */
+        @layer components {
+            .navbar {
+                position: relative;
+                z-index: 10;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                padding: 14px 24px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            .logo {
+                font-size: 1.5rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #2563EB, #16A34A);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                letter-spacing: -0.5px;
+            }
         }
 
-        .background img.loaded {
-            opacity: 0.2;
+        /* ===== HERO SECTION ===== */
+        @layer components {
+            .hero-section {
+                text-align: center;
+                margin-bottom: 60px;
+                animation: fadeInUp 0.6s ease;
+            }
+
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(8px);
+                padding: 6px 16px;
+                border-radius: 40px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: #2563EB;
+                margin-bottom: 24px;
+                border: 1px solid rgba(37, 99, 235, 0.15);
+            }
+
+            .hero-title {
+                font-size: 3.2rem;
+                font-weight: 800;
+                color: white;
+                margin-bottom: 20px;
+                letter-spacing: -0.02em;
+                line-height: 1.2;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .hero-title span {
+                background: linear-gradient(135deg, #fbbf24, #F59E0B);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+                color: rgba(255, 255, 255, 0.95);
+                max-width: 600px;
+                margin: 0 auto 32px;
+                line-height: 1.6;
+                background: rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(4px);
+                padding: 10px 24px;
+                border-radius: 50px;
+                display: inline-block;
+            }
+
+            @media (max-width: 768px) {
+                .hero-title { font-size: 2.2rem; }
+                .hero-subtitle { font-size: 0.9rem; padding: 8px 18px; }
+            }
+
+            .cta-buttons {
+                display: flex;
+                gap: 16px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .btn-primary {
+                background: #F59E0B;
+                color: white;
+                text-decoration: none;
+                padding: 14px 32px;
+                border-radius: 50px;
+                font-weight: 700;
+                font-size: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                transition: all 0.2s;
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            }
+
+            .btn-primary:active { transform: scale(0.97); background: #D97706; }
+
+            .btn-secondary {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(8px);
+                color: #2563EB;
+                text-decoration: none;
+                padding: 14px 32px;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                transition: all 0.2s;
+                border: 1px solid rgba(37, 99, 235, 0.25);
+            }
+
+            .btn-secondary:active { transform: scale(0.97); background: rgba(255, 255, 255, 0.85); }
         }
 
-        .background-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(26, 43, 76, 0.9) 0%, rgba(37, 99, 235, 0.7) 100%);
-            z-index: 1;
+        /* ===== FEATURES SECTION ===== */
+        @layer components {
+            .features-section {
+                margin-bottom: 60px;
+            }
+
+            .section-title {
+                text-align: center;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: white;
+                margin-bottom: 40px;
+                text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            .section-title span {
+                background: linear-gradient(135deg, #fbbf24, #F59E0B);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 24px;
+            }
+
+            .feature-card {
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: blur(8px);
+                border-radius: 28px;
+                padding: 28px 20px;
+                text-align: center;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-6px);
+                border-color: #F59E0B;
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: var(--shadow-md);
+            }
+
+            .feature-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+            }
+
+            .feature-icon i {
+                font-size: 2rem;
+                color: #2563EB;
+            }
+
+            .feature-card h3 {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 8px;
+            }
+
+            .feature-card p {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                line-height: 1.5;
+            }
         }
 
-        /* ===== MAIN CONTAINER ===== */
-        .app {
-            position: relative;
-            z-index: 10;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 24px 24px 40px;
-            color: white;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+        /* ===== STATS SECTION ===== */
+        @layer components {
+            .stats-section {
+                background: rgba(0, 0, 0, 0.35);
+                backdrop-filter: blur(10px);
+                border-radius: 40px;
+                padding: 40px 24px;
+                margin-bottom: 60px;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+                text-align: center;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #fbbf24, #F59E0B);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                line-height: 1;
+                margin-bottom: 8px;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+                color: rgba(255, 255, 255, 0.85);
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            @media (max-width: 600px) {
+                .stats-grid { grid-template-columns: 1fr; gap: 20px; }
+                .stat-number { font-size: 2rem; }
+            }
         }
 
-        /* ===== SKIP BUTTON ===== */
-        .skip-btn {
-            position: absolute;
-            top: 24px;
-            right: 24px;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 20px;
-            border-radius: 40px;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            transition: all 0.2s;
-            z-index: 20;
+        /* ===== CAROUSEL SECTION ===== */
+        @layer components {
+            .carousel-section {
+                margin-bottom: 48px;
+            }
+
+            .carousel-container {
+                position: relative;
+                overflow: hidden;
+                border-radius: 32px;
+            }
+
+            .carousel-slides {
+                display: flex;
+                transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1);
+            }
+
+            .carousel-slide {
+                flex-shrink: 0;
+                width: 100%;
+                padding: 48px 32px;
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: blur(8px);
+                border-radius: 32px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                text-align: center;
+            }
+
+            .carousel-icon {
+                width: 80px;
+                height: 80px;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 28px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 24px;
+            }
+
+            .carousel-icon i {
+                font-size: 2.5rem;
+                color: #2563EB;
+            }
+
+            .carousel-slide h3 {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 12px;
+            }
+
+            .carousel-slide p {
+                color: var(--text-secondary);
+                font-size: 0.95rem;
+                line-height: 1.6;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .carousel-dots {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                margin-top: 24px;
+            }
+
+            .carousel-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.5);
+                transition: all 0.3s;
+                cursor: pointer;
+            }
+
+            .carousel-dot.active {
+                width: 32px;
+                background: #F59E0B;
+            }
+
+            .swipe-hint {
+                text-align: center;
+                margin-top: 16px;
+                color: rgba(255, 255, 255, 0.85);
+                font-size: 0.7rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                padding: 6px 16px;
+                border-radius: 40px;
+                width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
+                transition: opacity 0.5s ease;
+            }
+
+            .swipe-hint.hide {
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            .swipe-hint i:first-child {
+                animation: bounceLeft 1.5s infinite;
+            }
+
+            .swipe-hint i:last-child {
+                animation: bounceRight 1.5s infinite;
+            }
+
+            @keyframes bounceLeft {
+                0%, 100% { transform: translateX(0); }
+                50% { transform: translateX(-5px); }
+            }
+
+            @keyframes bounceRight {
+                0%, 100% { transform: translateX(0); }
+                50% { transform: translateX(5px); }
+            }
         }
 
-        .skip-btn:hover {
-            background: rgba(251, 191, 36, 0.1);
-            color: #fbbf24;
-            border-color: #fbbf24;
+        /* ===== FOOTER ===== */
+        @layer components {
+            .footer {
+                text-align: center;
+                padding: 16px 24px;
+                background: rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(4px);
+                border-radius: 40px;
+                width: fit-content;
+                margin: 0 auto;
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 0.7rem;
+            }
         }
 
-        .skip-btn:active { transform: scale(0.97); }
+        /* ===== SKELETON LOADING ===== */
+        @layer components {
+            .skeleton-container {
+                position: relative;
+                z-index: 10;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px 24px 60px;
+            }
 
-        /* ===== CONTENT ===== */
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            max-width: 400px;
-            margin: 0 auto;
-            width: 100%;
+            .skeleton-hero {
+                text-align: center;
+                margin-bottom: 48px;
+            }
+
+            .skeleton-badge {
+                width: 160px;
+                height: 28px;
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 40px;
+                margin: 0 auto 24px;
+            }
+
+            .skeleton-title {
+                width: 60%;
+                height: 52px;
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 16px;
+                margin: 0 auto 16px;
+            }
+
+            .skeleton-subtitle {
+                width: 50%;
+                height: 20px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                margin: 0 auto 32px;
+            }
+
+            .skeleton-buttons {
+                display: flex;
+                gap: 16px;
+                justify-content: center;
+            }
+
+            .skeleton-btn {
+                width: 160px;
+                height: 52px;
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 50px;
+            }
+
+            .skeleton-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+                margin-top: 40px;
+            }
+
+            .skeleton-card {
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 28px;
+                padding: 28px;
+                text-align: center;
+            }
+
+            .skeleton-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 20px;
+                margin: 0 auto 20px;
+            }
+
+            .skeleton-text {
+                height: 16px;
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 8px;
+                margin-bottom: 8px;
+            }
+
+            .shimmer {
+                background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.35) 50%, rgba(255, 255, 255, 0.08) 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s ease-in-out infinite;
+            }
+
+            @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+
+            @media (max-width: 900px) {
+                .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+            }
+            @media (max-width: 500px) {
+                .skeleton-grid { grid-template-columns: 1fr; }
+            }
         }
-
-        /* ===== SWIPE CONTAINER ===== */
-        .swipe-container {
-            width: 100%;
-            overflow: hidden;
-            margin-bottom: 30px;
-        }
-
-        .slides-wrapper {
-            display: flex;
-            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
-        }
-
-        .slide {
-            flex: 0 0 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* ===== ILLUSTRATION ===== */
-        .illustration {
-            width: 100%;
-            max-width: 280px;
-            margin-bottom: 30px;
-            animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.3));
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .celebration-svg {
-            width: 100%;
-            height: auto;
-        }
-
-        /* ===== TYPOGRAPHY ===== */
-        .welcome-header {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .welcome-header h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .welcome-header .highlight {
-            background: linear-gradient(135deg, #fbbf24, #2563eb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .description {
-            text-align: center;
-            color: rgba(255,255,255,0.7);
-            font-size: 1rem;
-            line-height: 1.6;
-            max-width: 280px;
-            margin: 0 auto;
-        }
-
-        /* ===== FEATURES GRID ===== */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .feature-item {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 20px 12px;
-            text-align: center;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            transition: all 0.3s;
-        }
-
-        .feature-item:hover {
-            transform: translateY(-4px);
-            border-color: #fbbf24;
-            background: rgba(251, 191, 36, 0.05);
-        }
-
-        .feature-item i {
-            font-size: 2.2rem;
-            color: #fbbf24;
-            margin-bottom: 8px;
-        }
-
-        .feature-item span {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: white;
-        }
-
-        .feature-item small {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.5);
-        }
-
-        /* ===== STATS GRID ===== */
-        .stats-grid {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 24px 8px;
-            text-align: center;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: #fbbf24;
-        }
-
-        .stat-number {
-            display: block;
-            font-size: 2rem;
-            font-weight: 800;
-            color: #fbbf24;
-            line-height: 1;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== PROGRESS DOTS ===== */
-        .progress-dots {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 20px 0;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255,255,255,0.2);
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-            cursor: pointer;
-        }
-
-        .dot:hover {
-            background: rgba(251, 191, 36, 0.5);
-        }
-
-        .dot.active {
-            width: 24px;
-            background: #fbbf24;
-        }
-
-        /* ===== SWIPE HINT ===== */
-        .swipe-hint {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: rgba(255,255,255,0.3);
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-            transition: opacity 0.3s;
-        }
-
-        .swipe-hint i {
-            color: #fbbf24;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        .swipe-hint.hide {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* ===== CTA BUTTON ===== */
-        .get-started-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 18px 32px;
-            background: #fbbf24;
-            border: none;
-            border-radius: 50px;
-            color: #1a2b4c;
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-            box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .get-started-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(37, 99, 235, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .get-started-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .get-started-btn:hover {
-            background: #2563eb;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 20px 30px -8px rgba(37,99,235,0.4);
-        }
-
-        .get-started-btn:active {
-            transform: translateY(-1px) scale(0.98);
-        }
-
-        /* ===== LOGIN LINK ===== */
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.4);
-            font-size: 0.9rem;
-        }
-
-        .login-link a {
-            color: #fbbf24;
-            text-decoration: none;
-            font-weight: 600;
-            margin-left: 4px;
-            transition: all 0.2s;
-        }
-
-        .login-link a:hover {
-            color: white;
-        }
-
-        .login-link a:active { opacity: 0.8; }
 
         /* ===== TOAST NOTIFICATIONS ===== */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 0;
-            right: 0;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
-            padding: 0 16px;
-        }
-
-        .toast {
-            background: rgba(26, 43, 76, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-left: 4px solid #fbbf24;
-            padding: 14px 20px;
-            border-radius: 60px;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-            width: 100%;
-            max-width: 380px;
-            animation: toastIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.4);
-            font-weight: 500;
-            pointer-events: auto;
-        }
-
-        .toast.success { border-left-color: #10b981; }
-        .toast.error { border-left-color: #ef4444; }
-        .toast.warning { border-left-color: #f59e0b; }
-        .toast i { font-size: 1.2rem; }
-        .toast.success i { color: #10b981; }
-        .toast.error i { color: #ef4444; }
-        .toast.warning i { color: #f59e0b; }
-        .toast.info i { color: #fbbf24; }
-
-        .toast button {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            font-size: 1.2rem;
-            margin-left: auto;
-            transition: color 0.2s;
-        }
-        .toast button:hover { color: white; }
-
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* ===== SAFE AREAS ===== */
-        @supports (padding: max(0px)) {
-            .app {
-                padding-left: max(24px, env(safe-area-inset-left));
-                padding-right: max(24px, env(safe-area-inset-right));
-                padding-top: max(24px, env(safe-area-inset-top));
-                padding-bottom: max(40px, env(safe-area-inset-bottom));
-            }
+        @layer components {
             .toast-container {
-                top: max(20px, env(safe-area-inset-top));
+                position: fixed;
+                top: 20px;
+                left: 0;
+                right: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                pointer-events: none;
+                padding: 0 16px;
+            }
+
+            .toast {
+                background: #1E293B;
+                border-left: 4px solid #2563EB;
+                padding: 14px 20px;
+                border-radius: 16px;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                width: 100%;
+                max-width: 380px;
+                animation: toastIn 0.3s ease;
+                pointer-events: auto;
+                font-weight: 500;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            }
+
+            .toast.error { border-left-color: #DC2626; }
+            .toast.success { border-left-color: #16A34A; }
+            .toast.warning { border-left-color: #F59E0B; }
+
+            .toast button {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                margin-left: auto;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+
+            @keyframes toastIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
         }
 
-        .hide {
-            display: none;
+        /* ===== UTILITIES ===== */
+        @layer utilities {
+            ::-webkit-scrollbar { width: 5px; }
+            ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+            ::-webkit-scrollbar-thumb { background: #F59E0B; border-radius: 10px; }
+
+            @supports (padding: max(0px)) {
+                .main-content {
+                    padding-left: max(24px, env(safe-area-inset-left));
+                    padding-right: max(24px, env(safe-area-inset-right));
+                    padding-top: max(20px, env(safe-area-inset-top));
+                    padding-bottom: max(60px, env(safe-area-inset-bottom));
+                }
+                .toast-container {
+                    top: max(20px, env(safe-area-inset-top));
+                }
+            }
+        }
+
+        /* ===== VIEW TRANSITIONS API ===== */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.2s;
         }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- BACKGROUND IMAGE (kept as is) -->
+    <img src="{{ url_for('static', filename='images/student-studying.jpg') }}" class="bg-image" alt="Student studying for MSCE exams">
+    
+    <!-- MINIMALIST OVERLAY -->
+    <div class="bg-overlay"></div>
+
+    <!-- PAGE LOADER - CENTERED DOTS (FIXED) -->
     <div class="page-loader" id="pageLoader">
-        <div class="loader-spinner"></div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
     </div>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Background Image -->
-    <div class="background">
-        <img src="{{ url_for('static', filename='images/student-studying.jpg') }}"
-             alt=""
-             class="lazy-image"
-             onload="this.classList.add('loaded')"
-             onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #1a2b4c, #1e3a5f)';">
-        <div class="background-overlay"></div>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
     </div>
 
-    <div class="app">
-        <!-- Skip button -->
-        <a href="{{ url_for('login') }}" class="skip-btn">Skip</a>
+    <!-- Skeleton Container (visible initially) -->
+    <div class="skeleton-container" id="skeletonContainer">
+        <div class="skeleton-hero">
+            <div class="skeleton-badge shimmer"></div>
+            <div class="skeleton-title shimmer"></div>
+            <div class="skeleton-subtitle shimmer"></div>
+            <div class="skeleton-buttons">
+                <div class="skeleton-btn shimmer"></div>
+                <div class="skeleton-btn shimmer"></div>
+            </div>
+        </div>
+        <div class="skeleton-grid">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-text shimmer" style="width: 60%; margin: 0 auto 8px;"></div>
+                <div class="skeleton-text shimmer" style="width: 80%; margin: 0 auto;"></div>
+            </div>
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-text shimmer" style="width: 60%; margin: 0 auto 8px;"></div>
+                <div class="skeleton-text shimmer" style="width: 80%; margin: 0 auto;"></div>
+            </div>
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-text shimmer" style="width: 60%; margin: 0 auto 8px;"></div>
+                <div class="skeleton-text shimmer" style="width: 80%; margin: 0 auto;"></div>
+            </div>
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-icon shimmer"></div>
+                <div class="skeleton-text shimmer" style="width: 60%; margin: 0 auto 8px;"></div>
+                <div class="skeleton-text shimmer" style="width: 80%; margin: 0 auto;"></div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Main Content with Skeleton -->
-        <div class="content">
-            <!-- Skeleton Content (shown initially) -->
-            <div id="skeletonContent">
-                <div class="skeleton-circle"></div>
-                <div class="skeleton-line w70" style="height: 50px; margin: 0 auto 12px;"></div>
-                <div class="skeleton-line w50" style="height: 20px; margin: 0 auto 20px;"></div>
-                <div class="skeleton-line w90" style="height: 50px; border-radius: 50px;"></div>
+    <!-- Real Content (hidden initially) -->
+    <div id="realContent" style="display: none;">
+        <div class="main-content">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-badge">
+                    <i class="bi bi-star-fill"></i>
+                    Trusted by 10,000+ Students
+                </div>
+                <h1 class="hero-title">
+                    Ace Your <span>MSCE Exams</span><br>with Confidence
+                </h1>
+                <p class="hero-subtitle">
+                    Comprehensive video lessons, past papers, and practice tests — all in one place.
+                </p>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('register') }}" class="btn-primary">
+                        Get Started <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn-secondary">
+                        <i class="bi bi-person"></i> Sign In
+                    </a>
+                </div>
             </div>
 
-            <!-- Real Content (hidden initially) -->
-            <div id="realContent" style="display: none;">
-                <!-- Swipe Container -->
-                <div class="swipe-container">
-                    <div class="slides-wrapper" id="slidesWrapper">
-                        <!-- Slide 1: Welcome -->
-                        <div class="slide">
-                            <div class="illustration">
-                                <svg class="celebration-svg" viewBox="0 0 300 200" fill="none">
-                                    <!-- Person 1 - blue -->
-                                    <circle cx="100" cy="120" r="25" fill="#2563EB" opacity="0.9"/>
-                                    <circle cx="100" cy="85" r="18" fill="#2563EB"/>
-                                    <rect x="92" y="140" width="16" height="40" fill="#1E40AF" rx="8"/>
-                                    <rect x="70" y="120" width="16" height="30" fill="#1E40AF" rx="8" transform="rotate(-20 70 120)"/>
-                                    <rect x="114" y="120" width="16" height="30" fill="#1E40AF" rx="8" transform="rotate(20 114 120)"/>
-
-                                    <!-- Person 2 - purple -->
-                                    <circle cx="180" cy="100" r="25" fill="#7C3AED" opacity="0.9"/>
-                                    <circle cx="180" cy="65" r="18" fill="#7C3AED"/>
-                                    <rect x="172" y="120" width="16" height="40" fill="#5B21B6" rx="8"/>
-                                    <rect x="150" y="100" width="16" height="30" fill="#5B21B6" rx="8" transform="rotate(-20 150 100)"/>
-                                    <rect x="194" y="100" width="16" height="30" fill="#5B21B6" rx="8" transform="rotate(20 194 100)"/>
-
-                                    <!-- Person 3 - orange -->
-                                    <circle cx="140" cy="80" r="25" fill="#F59E0B" opacity="0.9"/>
-                                    <circle cx="140" cy="45" r="18" fill="#F59E0B"/>
-                                    <rect x="132" y="100" width="16" height="40" fill="#B45309" rx="8"/>
-                                    <rect x="110" y="80" width="16" height="30" fill="#B45309" rx="8" transform="rotate(-20 110 80)"/>
-                                    <rect x="154" y="80" width="16" height="30" fill="#B45309" rx="8" transform="rotate(20 154 80)"/>
-
-                                    <!-- Gold Confetti -->
-                                    <circle cx="50" cy="50" r="4" fill="#fbbf24"/>
-                                    <circle cx="260" cy="60" r="4" fill="#fbbf24"/>
-                                    <circle cx="280" cy="140" r="4" fill="#fbbf24"/>
-                                </svg>
-                            </div>
-                            <div class="welcome-header">
-                                <h1>
-                                    WELCOME
-                                    <span class="highlight">TO</span>
-                                    myMSCE
-                                </h1>
-                            </div>
-                            <div class="description">
-                                Your ultimate MSCE preparation platform. Join thousands of successful students.
-                            </div>
+            <!-- Features Section -->
+            <div class="features-section">
+                <h2 class="section-title">
+                    Everything You Need to <span>Succeed</span>
+                </h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-camera-reel-fill"></i>
                         </div>
-
-                        <!-- Slide 2: Features -->
-                        <div class="slide">
-                            <div class="features-grid">
-                                <div class="feature-item">
-                                    <i class="bi bi-camera-reel-fill"></i>
-                                    <span>500+ Videos</span>
-                                    <small>Form 3 & 4</small>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="bi bi-journal-text"></i>
-                                    <span>Past Papers</span>
-                                    <small>With solutions</small>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="bi bi-phone-fill"></i>
-                                    <span>Mobile Money</span>
-                                    <small>Airtel, TNM</small>
-                                </div>
-                                <div class="feature-item">
-                                    <i class="bi bi-star-fill"></i>
-                                    <span>Free Samples</span>
-                                    <small>Try first</small>
-                                </div>
-                            </div>
+                        <h3>500+ Video Lessons</h3>
+                        <p>Comprehensive coverage of Form 3 & 4 syllabus with expert explanations</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-journal-text"></i>
                         </div>
+                        <h3>Past Papers & Solutions</h3>
+                        <p>Practice with real MSCE past papers and detailed solutions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-phone-fill"></i>
+                        </div>
+                        <h3>Mobile Money Payment</h3>
+                        <p>Pay easily with Airtel Money or TNM Mpamba</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h3>Track Your Progress</h3>
+                        <p>Monitor your learning journey with detailed analytics</p>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Slide 3: Stats -->
-                        <div class="slide">
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <span class="stat-number">10k+</span>
-                                    <span class="stat-label">Students</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-number">98%</span>
-                                    <span class="stat-label">Pass Rate</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-number">24/7</span>
-                                    <span class="stat-label">Access</span>
-                                </div>
+            <!-- Stats Section -->
+            <div class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">10,000+</div>
+                        <div class="stat-label">Active Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Pass Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Access</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swipeable Carousel Section -->
+            <div class="carousel-section">
+                <div class="carousel-container" id="carouselContainer">
+                    <div class="carousel-slides" id="carouselSlides">
+                        <div class="carousel-slide">
+                            <div class="carousel-icon">
+                                <i class="bi bi-mortarboard-fill"></i>
                             </div>
+                            <h3>Expert Teachers</h3>
+                            <p>Learn from experienced educators who know exactly what it takes to pass MSCE</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <div class="carousel-icon">
+                                <i class="bi bi-phone-fill"></i>
+                            </div>
+                            <h3>Learn Anywhere</h3>
+                            <p>Access all lessons on your phone, tablet, or computer — anytime, anywhere</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <div class="carousel-icon">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <h3>Free Sample Lessons</h3>
+                            <p>Try before you buy — access free preview lessons for every subject</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- Progress Dots -->
-                <div class="progress-dots" id="progressDots">
-                    <span class="dot active"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
+                <div class="carousel-dots" id="carouselDots">
+                    <span class="carousel-dot active" data-index="0"></span>
+                    <span class="carousel-dot" data-index="1"></span>
+                    <span class="carousel-dot" data-index="2"></span>
                 </div>
-
-                <!-- Swipe Hint -->
                 <div class="swipe-hint" id="swipeHint">
                     <i class="bi bi-chevron-left"></i>
-                    <span>Swipe to explore</span>
+                    <span>Swipe to explore more</span>
                     <i class="bi bi-chevron-right"></i>
                 </div>
+            </div>
 
-                <!-- CTA Button -->
-                <a href="{{ url_for('register') }}" class="get-started-btn">
-                    GET STARTED
-                </a>
-
-                <!-- Login Link -->
-                <div class="login-link">
-                    Already have an account?
-                    <a href="{{ url_for('login') }}">Sign in</a>
-                </div>
+            <!-- Footer -->
+            <div class="footer">
+                <p>© 2025 myMSCE. Empowering Malawian students to excel.</p>
             </div>
         </div>
     </div>
 
     <script>
         // ===== TOAST FUNCTION =====
-        function showToast(message, type = 'info', duration = 5000) {
+        function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
+            
             if (container.children.length >= 3) {
                 container.children[0].remove();
             }
-
+            
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-
-            let icon = 'info-circle';
-            if (type === 'success') icon = 'check-circle';
-            else if (type === 'error') icon = 'exclamation-circle';
-            else if (type === 'warning') icon = 'exclamation-triangle';
-
-            toast.innerHTML = `
-                <i class="bi bi-${icon}-fill"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.remove()">✕</button>
-            `;
-
+            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+            const icon = icons[type] || icons.info;
+            toast.innerHTML = `<i class="bi bi-${icon}-fill"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateY(-20px)';
-                    setTimeout(() => toast.remove(), 300);
-                }
-            }, duration);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
         }
 
-        // ===== PAGE LOADER & SKELETON =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== LOADING ANIMATION =====
         window.addEventListener('load', function() {
-            // Hide loader after 800ms
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
+                const skeleton = document.getElementById('skeletonContainer');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
             }, 800);
-
-            // Show skeleton for 1s, then real content
+            
             setTimeout(() => {
-                document.getElementById('skeletonContent').style.display = 'none';
-                document.getElementById('realContent').style.display = 'block';
-
-                // Initialize swipe after content is shown
-                setTimeout(initSwipe, 100);
-            }, 1000);
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
         });
 
-        // ===== SWIPE FUNCTIONALITY =====
-        function initSwipe() {
-            const slidesWrapper = document.getElementById('slidesWrapper');
-            const dots = document.querySelectorAll('.dot');
-            const swipeHint = document.getElementById('swipeHint');
-            const slides = document.querySelectorAll('.slide');
+        // ===== CAROUSEL FUNCTIONALITY =====
+        let currentIndex = 0;
+        const slides = document.getElementById('carouselSlides');
+        const dots = document.querySelectorAll('.carousel-dot');
+        const swipeHint = document.getElementById('swipeHint');
+        let touchStartX = 0;
+        let autoInterval;
 
-            if (!slidesWrapper || !slides.length) return;
-
-            let currentIndex = 0;
-            let startX = 0;
-            let isDragging = false;
-
-            function updateDots(index) {
-                dots.forEach((dot, i) => {
-                    dot.classList.toggle('active', i === index);
-                });
-                if (index > 0 && swipeHint) {
-                    swipeHint.classList.add('hide');
-                }
+        function updateCarousel() {
+            if (slides) {
+                slides.style.transform = `translateX(-${currentIndex * 100}%)`;
             }
-
-            function goToSlide(index) {
-                if (index < 0 || index >= slides.length) return;
-                currentIndex = index;
-                slidesWrapper.style.transform = `translateX(-${index * 100}%)`;
-                updateDots(index);
-            }
-
-            // Touch events
-            slidesWrapper.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                isDragging = true;
-                slidesWrapper.style.transition = 'none';
-            }, { passive: true });
-
-            slidesWrapper.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
-
-                const currentX = e.touches[0].clientX;
-                const diff = ((currentX - startX) / window.innerWidth) * 100;
-
-                if ((currentIndex === 0 && diff > 0) || (currentIndex === slides.length - 1 && diff < 0)) {
-                    slidesWrapper.style.transform = `translateX(-${currentIndex * 100 + diff * 0.2}%)`;
+            dots.forEach((dot, i) => {
+                if (i === currentIndex) {
+                    dot.classList.add('active');
                 } else {
-                    slidesWrapper.style.transform = `translateX(-${currentIndex * 100 - diff}%)`;
-                }
-            }, { passive: false });
-
-            slidesWrapper.addEventListener('touchend', (e) => {
-                if (!isDragging) return;
-
-                isDragging = false;
-                slidesWrapper.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1)';
-
-                const currentX = e.changedTouches[0].clientX;
-                const diff = ((currentX - startX) / window.innerWidth) * 100;
-                const threshold = 15;
-
-                if (Math.abs(diff) > threshold) {
-                    if (diff < 0 && currentIndex < slides.length - 1) {
-                        goToSlide(currentIndex + 1);
-                    } else if (diff > 0 && currentIndex > 0) {
-                        goToSlide(currentIndex - 1);
-                    } else {
-                        goToSlide(currentIndex);
-                    }
-                } else {
-                    goToSlide(currentIndex);
+                    dot.classList.remove('active');
                 }
             });
-
-            // Dot click navigation
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    goToSlide(index);
-                    if (swipeHint) swipeHint.classList.add('hide');
-                });
-            });
-
-            // Auto-hide swipe hint
-            setTimeout(() => {
-                if (swipeHint && currentIndex === 0) {
-                    swipeHint.style.opacity = '0';
-                    setTimeout(() => {
-                        swipeHint.style.display = 'none';
-                    }, 300);
-                }
-            }, 4000);
         }
+
+        function goToSlide(index) {
+            if (index < 0) index = 0;
+            if (index >= dots.length) index = dots.length - 1;
+            currentIndex = index;
+            updateCarousel();
+            resetAutoSlide();
+            startAutoSlide();
+        }
+
+        function nextSlide() {
+            if (currentIndex < dots.length - 1) {
+                goToSlide(currentIndex + 1);
+            } else {
+                goToSlide(0);
+            }
+        }
+
+        function startAutoSlide() {
+            if (autoInterval) clearInterval(autoInterval);
+            autoInterval = setInterval(() => {
+                nextSlide();
+            }, 5000);
+        }
+
+        function resetAutoSlide() {
+            if (autoInterval) clearInterval(autoInterval);
+        }
+
+        // Initialize carousel
+        if (slides && dots.length) {
+            // Dot click handlers
+            dots.forEach((dot, i) => {
+                dot.addEventListener('click', () => {
+                    goToSlide(i);
+                });
+            });
+
+            // Touch swipe
+            const carouselContainer = document.getElementById('carouselContainer');
+            if (carouselContainer) {
+                carouselContainer.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    resetAutoSlide();
+                }, { passive: true });
+                
+                carouselContainer.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            nextSlide();
+                        } else if (diff < 0 && currentIndex > 0) {
+                            goToSlide(currentIndex - 1);
+                        }
+                    }
+                    startAutoSlide();
+                });
+            }
+
+            // Start auto-slide
+            startAutoSlide();
+
+            // Auto-hide swipe hint after 5 seconds
+            setTimeout(() => {
+                if (swipeHint) swipeHint.classList.add('hide');
+            }, 5000);
+        }
+
+        // ===== BACK BUTTON FIX =====
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code', '/payment'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/');
+                }
+            }
+        });
 
         // ===== FLASH MESSAGES =====
-        document.addEventListener('DOMContentLoaded', function() {
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1200 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        });
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        // Image loading
-        document.querySelectorAll('img').forEach(img => {
-            if (img.complete) {
-                img.classList.add('loaded');
-            }
-        });
+        // ===== EXIT SITE WHEN BACK BUTTON IS PRESSED ON HOMEPAGE =====
+        if (window.location.pathname === '/' || window.location.pathname === '/index') {
+            // Push a history state
+            history.pushState(null, null, window.location.href);
+            
+            window.addEventListener('popstate', function() {
+                // Go back twice in history to exit the site completely
+                history.go(-2);
+            });
+        }
     </script>
 </body>
 </html>
