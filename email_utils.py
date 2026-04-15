@@ -66,11 +66,11 @@ def send_email_keplars(recipient, subject, html_content, priority='high'):
         # Choose endpoint based on priority
         # For password resets and verification codes, use 'instant' or 'high'
         if priority == 'instant':
-            url = "https://api.keplars.email/api/v1/send-email/instant"
+            url = "https://api.keplers.email/api/v1/send-email/instant"
         elif priority == 'high':
-            url = "https://api.keplars.email/api/v1/send-email/high"
+            url = "https://api.keplers.email/api/v1/send-email/high"
         else:
-            url = "https://api.keplars.email/api/v1/send-email/async"
+            url = "https://api.keplers.email/api/v1/send-email/async"
         
         headers = {
             "Authorization": f"Bearer {api_key}",
