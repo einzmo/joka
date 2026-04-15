@@ -601,39 +601,48 @@ def verify_email_code():
     
     return render_template('verify_email_code.html', email=user.email)
 
-@app.route('/resend-verification-code')
-def resend_verification_code():
-    """Resend verification code"""
+@app.route('/resend-verification-logged-in')
+def resend_verification_logged_in():
+    """Resend verification code for user from session (from login attempt)"""
+    
+    # Try to get user from session first
     user_id = session.get('verify_user_id')
-    if not user_id:
-        flash('Please register first.', 'warning')
-        return redirect(url_for('register'))
     
-    user = User.query.get(user_id)
-    if not user:
-        return redirect(url_for('register'))
+    if user_id:
+        user = User.query.get(user_id)
+    elif current_user.is_authenticated:
+        user = current_user
+    else:
+        flash('Please login first.', 'warning')
+        return redirect(url_for('login'))
     
-    # Generate new code
+    if user.email_verified:
+        flash('Your email is already verified.', 'info')
+        return redirect(url_for('dashboard'))
+    
+    # Generate new 6-digit code
     code = generate_reset_code()
     
-    # Delete old unused codes
-    EmailVerification.query.filter_by(user_id=user_id, used=False).delete()
+    # Delete any existing unused verification codes for this user
+    EmailVerification.query.filter_by(user_id=user.id, used=False).delete()
     
     # Store new code
     verification = EmailVerification(
-        user_id=user_id,
+        user_id=user.id,
         code=code,
         expires_at=datetime.utcnow() + timedelta(minutes=15)
     )
     db.session.add(verification)
     db.session.commit()
     
-    # Send new code
+    # Send code via email
     send_verification_code(user, code)
+    
+    # Store user_id in session for verification step
+    session['verify_user_id'] = user.id
     
     flash('A new verification code has been sent to your email.', 'info')
     return redirect(url_for('verify_email_code'))
-
 
 @app.route('/resend-verification-logged-in')
 @login_required
@@ -736,7 +745,9 @@ def login():
         if user and user.check_password(form.password.data):
             if not user.email_verified:
                 flash('Please verify your email before logging in.', 'warning')
-                return redirect(url_for('login'))
+                # Store user ID in session so we know who to resend code for
+                session['verify_user_id'] = user.id
+                return redirect(url_for('verify_email_reminder'))
             
             login_user(user, remember=form.remember.data)
             
@@ -2556,14 +2567,25 @@ def profile():
                          analytics=analytics,
                          user=current_user,
                          subscription_info=subscription_info)
+
+
 @app.route('/verify-email-reminder')
-@login_required
 def verify_email_reminder():
-    if current_user.email_verified:
-        return redirect(url_for('dashboard'))
+    # Check if we have a user ID in session (from login attempt)
+    user_id = session.get('verify_user_id')
     
-    # Generate and send new code if needed
-    return render_template('verify_email_reminder.html', user=current_user)
+    if user_id:
+        user = User.query.get(user_id)
+        if user:
+            return render_template('verify_email_reminder.html', user=user)
+    
+    # If user is already logged in but not verified
+    if current_user.is_authenticated and not current_user.email_verified:
+        return render_template('verify_email_reminder.html', user=current_user)
+    
+    # Otherwise, redirect to login
+    flash('Please login first.', 'warning')
+    return redirect(url_for('login'))
 
 
 @app.route('/resend-verification')

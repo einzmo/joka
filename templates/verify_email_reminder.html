@@ -472,7 +472,7 @@
 
                 <div class="email-display">
                     <i class="bi bi-envelope"></i>
-                    <span>{{ current_user.email if current_user.is_authenticated else session.get('pending_email', 'your email') }}</span>
+                    <span>{{ user.email }}</span>
                 </div>
 
                 <div class="warning-box">
@@ -484,7 +484,7 @@
                 </div>
 
                 <div class="button-group">
-                    <a href="{{ url_for('resend_verification_logged_in') if current_user.is_authenticated else url_for('resend_verification_code') }}" class="btn btn-primary" id="resendBtn">
+                    <a href="{{ url_for('resend_verification_logged_in') }}" class="btn btn-primary" id="resendBtn">
                         <i class="bi bi-arrow-repeat"></i> Resend Code
                     </a>
                     <a href="{{ url_for('logout') }}" class="btn btn-secondary" id="logoutBtn">
