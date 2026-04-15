@@ -14,3 +14,4 @@ paychangu
 reportlab==4.2.2
 psycopg2-binary==2.9.9
 flask-migrate==4.1.0
+sendgrid==6.11.0
