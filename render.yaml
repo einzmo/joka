@@ -2,31 +2,12 @@ services:
   - type: web
     name: mymsce
     runtime: python
+    repo: https://github.com/einzmo/joka
+    plan: free
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
-    envVars:
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: mymsce-db
-          property: connectionString
-      - key: MAIL_USERNAME
-        sync: false
-      - key: MAIL_PASSWORD
-        sync: false
-      - key: PAYCHANGU_PUBLIC_KEY
-        sync: false
-      - key: PAYCHANGU_SECRET_KEY
-        sync: false
-      - key: PAYCHANGU_WEBHOOK_SECRET
-        sync: false
-      - key: PAYCHANGU_MODE
-        value: live
-      - key: SITE_URL
-        value: https://mymsce.onrender.com
-
-databases:
-  - name: mymsce-db
-    databaseName: mymsce
-    user: mymsce
