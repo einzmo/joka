@@ -1,35 +1,14 @@
-# email_utils.py - Updated for SendGrid API (works on Render free tier)
+# email_utils.py - Using Keplars API (works on Render free tier)
 from flask import current_app, url_for
 import logging
 import secrets
+import requests
 from datetime import datetime, timedelta
 import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Try to import SendGrid
-try:
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
-    HAS_SENDGRID = True
-    logger.info("✅ SendGrid imported successfully")
-except ImportError:
-    logger.warning("SendGrid not installed. Using development email mock.")
-    HAS_SENDGRID = False
-
-# Try to import Flask-Mail as fallback (for local development)
-try:
-    from flask_mail import Mail, Message
-    HAS_FLASK_MAIL = True
-except ImportError:
-    HAS_FLASK_MAIL = False
-
-# Mock mail for development
-mail = None
-if HAS_FLASK_MAIL:
-    mail = Mail()
 
 
 def get_base_url():
@@ -49,81 +28,76 @@ def site_url_for(endpoint, **kwargs):
 
 def generate_token(email):
     """Generate a secure token for email verification"""
-    if HAS_FLASK_MAIL:
-        from itsdangerous import URLSafeTimedSerializer
-        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-        return serializer.dumps(email, salt='email-confirm')
-    else:
-        return secrets.token_urlsafe(32)
+    from itsdangerous import URLSafeTimedSerializer
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt='email-confirm')
 
 
 def confirm_token(token, expiration=3600):
     """Verify email token"""
-    if HAS_FLASK_MAIL:
-        from itsdangerous import URLSafeTimedSerializer
-        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-        try:
-            email = serializer.loads(token, salt='email-confirm', max_age=expiration)
-            return email
-        except:
-            return False
-    else:
-        logger.info(f"Token confirmed (dev mode): {token}")
-        return "dev@example.com"
+    from itsdangerous import URLSafeTimedSerializer
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(token, salt='email-confirm', max_age=expiration)
+        return email
+    except:
+        return False
 
 
-def send_email_sendgrid(recipient, subject, html_content):
-    """Send email using SendGrid API (works on Render free tier)"""
+def send_email_keplars(recipient, subject, html_content, priority='high'):
+    """Send email using Keplars API"""
     
-    # Mock mode for testing - just log emails
+    # Mock mode for testing
     if os.getenv('EMAIL_MOCK_MODE') == 'True':
         print(f"\n📧 [MOCK MODE] Email would be sent to: {recipient}")
         print(f"   Subject: {subject}")
         print(f"   Content preview: {html_content[:100]}...\n")
-        logger.info(f"MOCK: Would send email to {recipient}")
-        return True
-    
-    if not HAS_SENDGRID:
-        logger.warning("SendGrid not available, using mock mode")
-        print(f"\n📧 [MOCK] Would send email to: {recipient}")
-        print(f"   Subject: {subject}")
-        print(f"   Content: {html_content[:200]}...\n")
         return True
     
     try:
-        api_key = os.getenv('SENDGRID_API_KEY')
+        api_key = os.getenv('KEPLARS_API_KEY')
         if not api_key:
-            logger.error("SENDGRID_API_KEY not set in environment variables")
-            print("❌ SENDGRID_API_KEY not set")
+            logger.error("KEPLARS_API_KEY not set")
+            print("❌ KEPLARS_API_KEY not set")
             return False
         
-        from_email = current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@mymsce.com')
+        from_email = current_app.config.get('MAIL_DEFAULT_SENDER', 'mymsce3@gmail.com')
         
-        # Use the correct SendGrid v6 API syntax with request body
-        import json
+        # Choose endpoint based on priority
+        # For password resets and verification codes, use 'instant' or 'high'
+        if priority == 'instant':
+            url = "https://api.keplars.email/api/v1/send-email/instant"
+        elif priority == 'high':
+            url = "https://api.keplars.email/api/v1/send-email/high"
+        else:
+            url = "https://api.keplars.email/api/v1/send-email/async"
         
-        data = {
-            "personalizations": [{"to": [{"email": recipient}]}],
-            "from": {"email": from_email},
-            "subject": subject,
-            "content": [{"type": "text/html", "value": html_content}]
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
         }
         
-        sg = SendGridAPIClient(api_key)
-        response = sg.client.mail.send.post(request_body=data)
+        data = {
+            "to": recipient,
+            "subject": subject,
+            "html_body": html_content,
+            "from_email": from_email
+        }
         
-        if response.status_code in [200, 202]:
-            logger.info(f"✅ Email sent to {recipient} via SendGrid")
+        response = requests.post(url, json=data, headers=headers, timeout=30)
+        
+        if response.status_code in [200, 201, 202]:
+            logger.info(f"✅ Email sent to {recipient} via Keplars")
             print(f"✅ Email sent to {recipient}")
             return True
         else:
-            logger.error(f"SendGrid returned status {response.status_code}: {response.body}")
-            print(f"❌ SendGrid returned status {response.status_code}")
+            logger.error(f"Keplars error: {response.status_code} - {response.text}")
+            print(f"❌ Keplars error: {response.status_code}")
             return False
             
     except Exception as e:
-        logger.error(f"SendGrid error: {str(e)}")
-        print(f"❌ SendGrid error: {str(e)}")
+        logger.error(f"Keplars error: {str(e)}")
+        print(f"❌ Keplars error: {str(e)}")
         return False
 
 
@@ -172,7 +146,7 @@ def send_verification_email(user):
         </html>
         '''
 
-        return send_email_sendgrid(user.email, 'Verify your myMSCE email', html_content)
+        return send_email_keplars(user.email, 'Verify your myMSCE email', html_content, priority='high')
 
     except Exception as e:
         error_msg = f"Verification email sending failed: {str(e)}"
@@ -229,7 +203,7 @@ def send_welcome_email(user):
         </html>
         '''
 
-        return send_email_sendgrid(user.email, 'Welcome to myMSCE!', html_content)
+        return send_email_keplars(user.email, 'Welcome to myMSCE!', html_content, priority='high')
 
     except Exception as e:
         error_msg = f"Welcome email sending failed for {user.email}: {str(e)}"
@@ -275,7 +249,7 @@ def send_password_reset_code(user, code):
         </html>
         '''
         
-        return send_email_sendgrid(user.email, 'Password Reset Code - myMSCE', html_content)
+        return send_email_keplars(user.email, 'Password Reset Code - myMSCE', html_content, priority='instant')
             
     except Exception as e:
         print(f"❌ Failed to send reset code: {e}")
@@ -319,7 +293,7 @@ def send_verification_code(user, code):
         </html>
         '''
         
-        return send_email_sendgrid(user.email, 'Verify your email - myMSCE', html_content)
+        return send_email_keplars(user.email, 'Verify your email - myMSCE', html_content, priority='instant')
             
     except Exception as e:
         print(f"❌ Failed to send verification code: {e}")
@@ -384,7 +358,7 @@ def send_payment_confirmation_email(user, payment):
         </html>
         '''
 
-        return send_email_sendgrid(user.email, 'Payment Confirmed - myMSCE Subscription', html_content)
+        return send_email_keplars(user.email, 'Payment Confirmed - myMSCE Subscription', html_content, priority='high')
 
     except Exception as e:
         error_msg = f"Payment confirmation email failed: {str(e)}"
@@ -394,15 +368,12 @@ def send_payment_confirmation_email(user, payment):
 
 
 def test_smtp_connection():
-    """Test email connection (now uses SendGrid)"""
+    """Test email connection (now uses Keplars)"""
     if os.getenv('EMAIL_MOCK_MODE') == 'True':
         return True, "EMAIL_MOCK_MODE is enabled - emails are being logged but not sent"
     
-    if HAS_SENDGRID:
-        api_key = os.getenv('SENDGRID_API_KEY')
-        if api_key:
-            return True, "SendGrid API key is configured"
-        else:
-            return False, "SENDGRID_API_KEY not set"
+    api_key = os.getenv('KEPLARS_API_KEY')
+    if api_key:
+        return True, "Keplars API key is configured"
     else:
-        return False, "SendGrid not installed"
+        return False, "KEPLARS_API_KEY not set"
