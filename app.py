@@ -22,6 +22,8 @@ from certificate import generate_certificate, check_subject_completion
 from models import db, User, Subject, Lesson, Payment, EmailVerification, PasswordReset, Progress, LoginAttempt
 from forms import LoginForm, RegistrationForm, PaymentForm, RequestResetForm, ResetPasswordForm
 from paychangu import PayChangu
+
+
 from email_utils import send_verification_email, send_welcome_email, send_payment_confirmation_email, test_smtp_connection, send_password_reset_code, send_verification_code
 
 def generate_reset_code():
@@ -77,7 +79,7 @@ except Exception as e:
 
 try:
     print("Importing email_utils...")
-    from email_utils import mail, send_verification_email, send_welcome_email, send_payment_confirmation_email, test_smtp_connection, send_password_reset_code
+from email_utils import send_verification_email, send_welcome_email, send_payment_confirmation_email, test_smtp_connection, send_password_reset_code, send_verification_code
     print("✅ Email utils imported")
 except Exception as e:
     print(f"❌ Failed to import email_utils: {e}")
