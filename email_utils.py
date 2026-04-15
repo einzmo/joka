@@ -43,45 +43,40 @@ def confirm_token(token, expiration=3600):
     except:
         return False
 
-
 def send_email_keplars(recipient, subject, html_content, priority='high'):
     """Send email using Keplars API"""
     
-    # Mock mode for testing
     if os.getenv('EMAIL_MOCK_MODE') == 'True':
         print(f"\n📧 [MOCK MODE] Email would be sent to: {recipient}")
-        print(f"   Subject: {subject}")
-        print(f"   Content preview: {html_content[:100]}...\n")
         return True
     
     try:
         api_key = os.getenv('KEPLARS_API_KEY')
         if not api_key:
             logger.error("KEPLARS_API_KEY not set")
-            print("❌ KEPLARS_API_KEY not set")
             return False
         
         from_email = current_app.config.get('MAIL_DEFAULT_SENDER', 'mymsce3@gmail.com')
         
         # Choose endpoint based on priority
-        # For password resets and verification codes, use 'instant' or 'high'
         if priority == 'instant':
-            url = "https://api.keplers.email/api/v1/send-email/instant"
+            url = "https://api.keplars.com/api/v1/send-email/instant"
         elif priority == 'high':
-            url = "https://api.keplers.email/api/v1/send-email/high"
+            url = "https://api.keplars.com/api/v1/send-email/high"
         else:
-            url = "https://api.keplers.email/api/v1/send-email/async"
+            url = "https://api.keplars.com/api/v1/send-email/async"
         
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
+        # Correct payload format from Keplars documentation
         data = {
-            "to": recipient,
+            "to": [recipient],  # Array of recipients
             "subject": subject,
-            "html_body": html_content,
-            "from_email": from_email
+            "body": html_content,
+            "is_html": True
         }
         
         response = requests.post(url, json=data, headers=headers, timeout=30)
@@ -99,7 +94,6 @@ def send_email_keplars(recipient, subject, html_content, priority='high'):
         logger.error(f"Keplars error: {str(e)}")
         print(f"❌ Keplars error: {str(e)}")
         return False
-
 
 def send_verification_email(user):
     """Send email verification link"""
