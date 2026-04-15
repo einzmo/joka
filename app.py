@@ -491,7 +491,7 @@ def index():
 
 
 @app.route('/register', methods=['GET', 'POST'])
-@limiter.limit("3 per minute")
+#@limiter.limit("3 per minute")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -676,7 +676,7 @@ def verify_email(token):
 
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
+#@limiter.limit("20 per minute")
 def login():
     if current_user.is_authenticated:
         if current_user.is_admin:
@@ -760,7 +760,7 @@ def logout():
 
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
-@limiter.limit("3 per minute")
+#@limiter.limit("3 per minute")
 def forgot_password():
     """Step 1: Request password reset code"""
     if current_user.is_authenticated:
