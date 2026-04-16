@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Pricing - myMSCE</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,13 +47,20 @@
             min-height: 100vh;
             color: var(--text-primary);
             overflow-x: hidden;
+            padding: 16px;
         }
 
-        /* ===== PAGE LOADER - PERFECTLY CENTERED DOTS (SAME AS PROFILE) ===== */
+        @media (min-width: 768px) {
+            body { padding: 20px; }
+        }
+
+        /* ===== PAGE LOADER - DOTS ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
             background: var(--bg-main);
@@ -61,48 +68,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
-            backdrop-filter: blur(2px);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .page-loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
+        .page-loader.hidden { opacity: 0; visibility: hidden; }
 
         .dots-loader {
             display: flex;
-            gap: clamp(10px, 5vw, 16px);
+            gap: 12px;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            background: rgba(255,255,255,0.5);
-            border-radius: 60px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
         }
 
         .dot {
-            width: clamp(12px, 4vw, 18px);
-            height: clamp(12px, 4vw, 18px);
+            width: 16px;
+            height: 16px;
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
             animation: bounce 0.6s ease-in-out infinite alternate;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-
         .dot:nth-child(1) { animation-delay: 0s; }
         .dot:nth-child(2) { animation-delay: 0.15s; }
         .dot:nth-child(3) { animation-delay: 0.3s; }
 
         @keyframes bounce {
-            from { transform: translateY(0); opacity: 0.5; }
-            to { transform: translateY(-24px); opacity: 1; }
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
             background: var(--primary-blue);
-            padding: 12px 20px;
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -110,66 +106,74 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin: -16px -16px 16px -16px;
         }
+        
+        @media (min-width: 768px) {
+            .navbar { margin: -20px -20px 20px -20px; padding: 14px 24px; }
+        }
+        
         .logo {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: white;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff, #E0F2FE);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        
         .close-btn {
             width: 42px;
             height: 42px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             text-decoration: none;
+            color: white;
         }
-        .close-btn:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.3); }
-        .close-btn i { font-size: 1.3rem; color: white; }
+        
+        .close-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .close-btn i { font-size: 1.3rem; }
 
         /* ===== MAIN CONTENT ===== */
         .main-content {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 24px 20px 56px;
-        }
-        @media (max-width: 640px) {
-            .main-content { padding: 20px 16px 40px; }
+            width: 100%;
+            overflow-x: hidden;
         }
 
         /* ===== HEADER ===== */
         .pricing-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
+        
         .pricing-header h1 {
-            font-size: clamp(1.8rem, 6vw, 2.4rem);
+            font-size: 1.8rem;
             font-weight: 800;
             color: var(--text-primary);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             letter-spacing: -0.5px;
         }
+        
+        @media (min-width: 768px) {
+            .pricing-header h1 { font-size: 2.2rem; margin-bottom: 12px; }
+        }
+        
         .pricing-header .highlight {
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            -webkit-text-fill-color: transparent;
         }
+        
         .pricing-header p {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         /* ===== TEST MODE BADGE ===== */
@@ -184,10 +188,10 @@
             border-radius: 40px;
             font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
-        /* ===== TOGGLE SECTIONS - ENHANCED MOBILE ===== */
+        /* ===== TOGGLE SECTIONS ===== */
         .toggle-section {
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(12px);
@@ -197,11 +201,13 @@
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-sm);
         }
+        
         .toggle-group {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
+        
         .toggle-option {
             flex: 1;
             text-align: center;
@@ -213,50 +219,46 @@
             transition: all 0.2s ease;
             color: var(--text-secondary);
             background: transparent;
-            letter-spacing: -0.2px;
         }
+        
         .toggle-option.active {
             background: var(--primary-blue);
             color: white;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
-        .toggle-option:active {
-            transform: scale(0.96);
-        }
+        
+        .toggle-option:active { transform: scale(0.97); }
+        
         @media (max-width: 520px) {
             .toggle-section { border-radius: 28px; padding: 8px; }
-            .toggle-group { gap: 8px; }
-            .toggle-option { padding: 8px 12px; font-size: 0.8rem; }
+            .toggle-option { padding: 8px 12px; font-size: 0.75rem; }
         }
 
-        /* ===== PRICE CARD - MODERN GLASS ===== */
-        .card-container {
-            margin-top: 28px;
-        }
+        /* ===== PRICE CARD ===== */
         .price-card {
-            background: rgba(255, 255, 255, 0.75);
+            background: var(--card-bg-glass);
             backdrop-filter: blur(16px);
-            border-radius: 40px;
+            border-radius: 32px;
             border: 1px solid var(--border-light);
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             box-shadow: var(--shadow-md);
         }
-        .price-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
+        
         .card-accent {
-            height: 5px;
+            height: 4px;
             width: 100%;
             background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green), var(--accent-orange));
         }
+        
         .card-content {
-            padding: 28px 28px 32px;
+            padding: 28px;
         }
+        
         @media (max-width: 480px) {
-            .card-content { padding: 22px 20px 26px; }
+            .card-content { padding: 22px 20px; }
         }
+        
         .form-badge {
             display: inline-flex;
             align-items: center;
@@ -265,33 +267,37 @@
             color: var(--primary-blue);
             padding: 6px 16px;
             border-radius: 40px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
+        
         .plan-name {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--text-primary);
             margin-bottom: 4px;
             letter-spacing: -0.5px;
         }
+        
         .duration-name {
             color: var(--text-tertiary);
             font-size: 0.85rem;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
+        
         .price-container {
             text-align: center;
-            padding: 24px 0;
-            margin-bottom: 24px;
+            padding: 20px 0;
+            margin-bottom: 20px;
             border-top: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
             background: rgba(37, 99, 235, 0.02);
-            border-radius: 24px;
+            border-radius: 20px;
         }
+        
         .price {
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 800;
             color: var(--text-primary);
             display: flex;
@@ -300,148 +306,160 @@
             gap: 4px;
             line-height: 1;
         }
+        
         .currency {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary-blue);
             margin-top: 6px;
         }
+        
         .amount {
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            -webkit-text-fill-color: transparent;
         }
+        
         .price-note {
             color: var(--text-tertiary);
             font-size: 0.75rem;
             margin-top: 8px;
         }
+        
         .features-list {
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
+        
         .feature-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             padding: 4px 0;
         }
+        
         .feature-item i {
             color: var(--secondary-green);
-            font-size: 1.1rem;
+            font-size: 1rem;
             flex-shrink: 0;
-            background: rgba(22, 163, 74, 0.1);
-            border-radius: 50%;
-            padding: 2px;
         }
+        
         .get-started-btn {
             display: block;
             width: 100%;
             background: linear-gradient(135deg, var(--accent-orange), #F97316);
             color: white;
             text-decoration: none;
-            padding: 16px 20px;
+            padding: 14px 20px;
             border-radius: 60px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             text-align: center;
             transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
             box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
         }
+        
         .get-started-btn:active {
             transform: scale(0.97);
             background: var(--accent-dark);
-            box-shadow: 0 3px 10px rgba(245, 158, 11, 0.4);
         }
+        
         .get-started-btn i {
             margin-left: 8px;
             transition: transform 0.2s;
         }
-        .get-started-btn:active i {
-            transform: translateX(5px);
-        }
+        
+        .get-started-btn:active i { transform: translateX(4px); }
 
         /* ===== INFO NOTE ===== */
         .info-note {
             text-align: center;
-            margin-top: 32px;
+            margin-top: 28px;
             padding: 16px 20px;
             background: rgba(37, 99, 235, 0.05);
             border-radius: 28px;
             color: var(--text-tertiary);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             backdrop-filter: blur(4px);
         }
+        
         .info-note i {
             color: var(--accent-orange);
             margin-right: 6px;
         }
 
-        /* ===== SKELETON LOADING (MATCHES PROFILE STYLE) ===== */
+        /* ===== SKELETON LOADING ===== */
         .skeleton-card {
             background: rgba(219, 234, 254, 0.5);
             backdrop-filter: blur(8px);
-            border-radius: 40px;
+            border-radius: 32px;
             overflow: hidden;
             border: 1px solid rgba(37, 99, 235, 0.1);
         }
+        
         .skeleton-accent {
-            height: 5px;
+            height: 4px;
             background: rgba(37, 99, 235, 0.15);
         }
+        
         .skeleton-content {
             padding: 28px;
         }
+        
         .skeleton-line {
-            height: 16px;
-            background: rgba(37, 99, 235, 0.1);
-            border-radius: 12px;
+            height: 14px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
             margin-bottom: 12px;
         }
+        
         .skeleton-line.badge {
             width: 100px;
             height: 28px;
             border-radius: 30px;
         }
+        
         .skeleton-line.title {
             width: 60%;
-            height: 36px;
+            height: 32px;
         }
+        
         .skeleton-line.price {
             width: 50%;
-            height: 60px;
+            height: 50px;
             margin: 0 auto;
         }
+        
         .skeleton-line.feature {
             width: 90%;
-            height: 22px;
+            height: 20px;
         }
+        
         .skeleton-button {
             width: 100%;
-            height: 56px;
-            background: rgba(37, 99, 235, 0.1);
+            height: 52px;
+            background: rgba(37, 99, 235, 0.08);
             border-radius: 60px;
-            margin-top: 24px;
+            margin-top: 20px;
         }
+        
         .shimmer {
             background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
             background-size: 200% 100%;
-            animation: shimmer 1.4s ease-in-out infinite;
+            animation: shimmer 1.5s ease-in-out infinite;
         }
+        
         @keyframes shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
+        /* ===== TOAST - BRANDED ===== */
         .toast-container {
             position: fixed;
-            top: max(16px, env(safe-area-inset-top));
+            top: 20px;
             left: 0;
             right: 0;
             z-index: 9999;
@@ -451,69 +469,77 @@
             pointer-events: none;
             padding: 0 16px;
         }
+        
         .toast {
             background: #1E293B;
             border-left: 4px solid var(--primary-blue);
-            padding: 14px 20px;
-            border-radius: 20px;
+            padding: 12px 16px;
+            border-radius: 16px;
             color: white;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 8px;
             width: 100%;
             max-width: 360px;
-            animation: toastIn 0.25s ease;
+            animation: toastIn 0.3s ease;
             pointer-events: auto;
             font-weight: 500;
-            backdrop-filter: blur(12px);
+            font-size: 0.8rem;
             box-shadow: var(--shadow-lg);
         }
+        
         .toast.error { border-left-color: var(--error-red); }
         .toast.success { border-left-color: var(--secondary-green); }
         .toast.warning { border-left-color: var(--accent-orange); }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i { font-size: 0.55rem; }
+        
         .toast button {
             background: transparent;
             border: none;
             color: rgba(255,255,255,0.5);
             margin-left: auto;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             padding: 4px;
         }
+        
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Fade In Animation */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .price-card {
-            animation: fadeInUp 0.4s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
-        }
-
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
 
-        /* Safe area support */
+        /* Safe Areas */
         @supports (padding: max(0px)) {
-            .main-content {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-            }
+            body { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .navbar { margin-top: max(-16px, calc(-1 * env(safe-area-inset-top))); }
         }
-        @media (prefers-reduced-motion: reduce) {
-            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- PAGE LOADER - CENTERED DOTS (IDENTICAL TO PROFILE PAGE) -->
+    <!-- PAGE LOADER - DOTS -->
     <div class="page-loader" id="pageLoader">
         <div class="dots-loader">
             <div class="dot"></div>
@@ -533,7 +559,29 @@
         </a>
     </div>
 
-    <!-- Real Content (hidden initially) -->
+    <!-- Skeleton Container -->
+    <div id="skeletonContent">
+        <div class="main-content" style="padding: 20px;">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-accent shimmer"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line badge shimmer"></div>
+                    <div class="skeleton-line title shimmer"></div>
+                    <div class="skeleton-line shimmer" style="width: 40%; height: 14px;"></div>
+                    <div style="margin: 20px 0; text-align: center;">
+                        <div class="skeleton-line price shimmer" style="margin: 0 auto;"></div>
+                    </div>
+                    <div class="skeleton-line feature shimmer"></div>
+                    <div class="skeleton-line feature shimmer"></div>
+                    <div class="skeleton-line feature shimmer"></div>
+                    <div class="skeleton-line feature shimmer" style="width: 70%;"></div>
+                    <div class="skeleton-button shimmer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real Content -->
     <div id="realContent" style="display: none;">
         <div class="main-content">
             <div class="pricing-header">
@@ -551,18 +599,18 @@
             <!-- Form Type Toggle -->
             <div class="toggle-section">
                 <div class="toggle-group" id="formToggle">
-                    <span class="toggle-option active" data-form="form3">Form 3</span>
-                    <span class="toggle-option" data-form="form4">Form 4</span>
-                    <span class="toggle-option" data-form="combined">Combined</span>
+                    <span class="toggle-option active" data-form="form3">📚 Form 3</span>
+                    <span class="toggle-option" data-form="form4">🎓 Form 4</span>
+                    <span class="toggle-option" data-form="combined">⭐ Combined</span>
                 </div>
             </div>
 
             <!-- Duration Toggle -->
             <div class="toggle-section">
                 <div class="toggle-group" id="durationToggle">
-                    <span class="toggle-option active" data-duration="daily">Daily</span>
-                    <span class="toggle-option" data-duration="weekly">Weekly</span>
-                    <span class="toggle-option" data-duration="monthly">Monthly</span>
+                    <span class="toggle-option active" data-duration="daily">🌞 Daily</span>
+                    <span class="toggle-option" data-duration="weekly">📅 Weekly</span>
+                    <span class="toggle-option" data-duration="monthly">📆 Monthly</span>
                 </div>
             </div>
 
@@ -574,67 +622,79 @@
             <!-- Info Note -->
             <div class="info-note">
                 <i class="bi bi-shield-fill-check"></i>
-                Airtel Money & TNM Mpampa accepted • Secure payments • Instant access after payment
-            </div>
-        </div>
-    </div>
-
-    <!-- Skeleton Container (visible initially) -->
-    <div class="main-content" id="skeletonContainer">
-        <div class="skeleton-card shimmer">
-            <div class="skeleton-accent shimmer"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line badge shimmer"></div>
-                <div class="skeleton-line title shimmer"></div>
-                <div class="skeleton-line shimmer" style="width: 40%; height: 16px;"></div>
-                <div style="margin: 24px 0; text-align: center;">
-                    <div class="skeleton-line price shimmer" style="margin: 0 auto;"></div>
-                </div>
-                <div class="skeleton-line feature shimmer"></div>
-                <div class="skeleton-line feature shimmer"></div>
-                <div class="skeleton-line feature shimmer"></div>
-                <div class="skeleton-line feature shimmer" style="width: 70%;"></div>
-                <div class="skeleton-button shimmer"></div>
+                Airtel Money & TNM Mpamba accepted • Secure payments • Instant access after payment
             </div>
         </div>
     </div>
 
     <script>
-        // ===== PRICING DATA (Preserved, with enhanced icons) =====
+        // Track shown toasts
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            if (container.children.length >= 3) container.children[0].remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== PRICING DATA =====
         const pricingData = {
             form3: {
                 daily: {
                     amount: '1,030',
                     description: 'Daily access',
                     note: 'per day • no commitment',
-                    features: [
-                        'All Form 3 lessons',
-                        '25+ video lessons',
-                        'Practice worksheets',
-                        '24-hour access'
-                    ]
+                    features: ['All Form 3 lessons', '25+ video lessons', 'Practice worksheets', '24-hour access']
                 },
                 weekly: {
                     amount: '6,695',
                     description: 'Weekly access',
                     note: 'per week • 7 days',
-                    features: [
-                        'All Form 3 lessons',
-                        'Unlimited video views',
-                        'Practice worksheets',
-                        'Progress tracking'
-                    ]
+                    features: ['All Form 3 lessons', 'Unlimited video views', 'Practice worksheets', 'Progress tracking']
                 },
                 monthly: {
                     amount: '12,500',
                     description: 'Monthly access',
                     note: 'per month • best value',
-                    features: [
-                        'All Form 3 lessons',
-                        'All video lessons',
-                        'Downloadable resources',
-                        'Full analytics'
-                    ]
+                    features: ['All Form 3 lessons', 'All video lessons', 'Downloadable resources', 'Full analytics']
                 }
             },
             form4: {
@@ -642,34 +702,19 @@
                     amount: '1,030',
                     description: 'Daily access',
                     note: 'per day • no commitment',
-                    features: [
-                        'All Form 4 lessons',
-                        '25+ video lessons',
-                        'Past paper questions',
-                        '24-hour access'
-                    ]
+                    features: ['All Form 4 lessons', '25+ video lessons', 'Past paper questions', '24-hour access']
                 },
                 weekly: {
                     amount: '6,695',
                     description: 'Weekly access',
                     note: 'per week • 7 days',
-                    features: [
-                        'All Form 4 lessons',
-                        'Unlimited video views',
-                        'Past papers',
-                        'Progress tracking'
-                    ]
+                    features: ['All Form 4 lessons', 'Unlimited video views', 'Past papers', 'Progress tracking']
                 },
                 monthly: {
                     amount: '12,500',
                     description: 'Monthly access',
                     note: 'per month • best value',
-                    features: [
-                        'All Form 4 lessons',
-                        'All video lessons',
-                        '10 years past papers',
-                        'Exam analytics'
-                    ]
+                    features: ['All Form 4 lessons', 'All video lessons', '10 years past papers', 'Exam analytics']
                 }
             },
             combined: {
@@ -677,34 +722,19 @@
                     amount: '1,545',
                     description: 'Daily access',
                     note: 'per day • both forms',
-                    features: [
-                        'Form 3 & 4 lessons',
-                        '50+ video lessons',
-                        'All worksheets',
-                        '24-hour access'
-                    ]
+                    features: ['Form 3 & 4 lessons', '50+ video lessons', 'All worksheets', '24-hour access']
                 },
                 weekly: {
                     amount: '8,500',
                     description: 'Weekly access',
                     note: 'per week • both forms',
-                    features: [
-                        'Form 3 & 4 lessons',
-                        'All video lessons',
-                        'All past papers',
-                        'Full tracking'
-                    ]
+                    features: ['Form 3 & 4 lessons', 'All video lessons', 'All past papers', 'Full tracking']
                 },
                 monthly: {
                     amount: '19,500',
                     description: 'Monthly access',
                     note: 'per month • complete',
-                    features: [
-                        'Form 3 & 4 lessons',
-                        'All video lessons (200+)',
-                        'All past papers',
-                        'Priority support'
-                    ]
+                    features: ['Form 3 & 4 lessons', 'All video lessons (200+)', 'All past papers', 'Priority support']
                 }
             }
         };
@@ -726,39 +756,6 @@
             form4: '4-circle-fill',
             combined: 'star-fill'
         };
-
-        // ===== TOAST FUNCTION =====
-        function showToast(message, type = 'info', duration = 4500) {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-
-            if (container.children.length >= 3) {
-                container.children[0].remove();
-            }
-
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            let icon = type === 'success' ? 'check-circle-fill' :
-                      type === 'error' ? 'exclamation-circle-fill' :
-                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
-
-            toast.innerHTML = `
-                <i class="bi bi-${icon}"></i>
-                <span>${escapeHtml(message)}</span>
-                <button onclick="this.parentElement.remove()">✕</button>
-            `;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentElement) toast.remove();
-            }, duration);
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
 
         // ===== RENDER PRICE CARD =====
         function renderPriceCard(form, duration) {
@@ -799,29 +796,18 @@
 
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Show flashed messages from server
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1200 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            // Hide loader and show content with smooth timing (same as profile)
+            // Loading animation
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
             setTimeout(() => {
                 const loader = document.getElementById('pageLoader');
-                if (loader) loader.classList.add('hidden');
-            }, 800);
-
-            setTimeout(() => {
-                const skeleton = document.getElementById('skeletonContainer');
-                const real = document.getElementById('realContent');
-                if (skeleton) skeleton.style.display = 'none';
-                if (real) real.style.display = 'block';
-            }, 1000);
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
 
             // Initialize pricing
             let currentForm = 'form3';
@@ -829,7 +815,7 @@
 
             renderPriceCard(currentForm, currentDuration);
 
-            // Form toggle with haptic feedback
+            // Form toggle
             const formOptions = document.querySelectorAll('[data-form]');
             formOptions.forEach(opt => {
                 opt.addEventListener('click', function() {
@@ -838,8 +824,6 @@
                     this.classList.add('active');
                     currentForm = form;
                     renderPriceCard(currentForm, currentDuration);
-                    // subtle haptic if supported
-                    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(10);
                 });
             });
 
@@ -852,12 +836,22 @@
                     this.classList.add('active');
                     currentDuration = duration;
                     renderPriceCard(currentForm, currentDuration);
-                    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(10);
                 });
             });
+
+            // Flash messages
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        setTimeout(() => {
+                            showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                        }, {{ loop.index0 * 200 + 500 }});
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         });
 
-        // Back button handling for redirect pages
+        // Back button fix
         window.addEventListener('pageshow', function(event) {
             if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
                 const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
