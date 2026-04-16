@@ -2245,6 +2245,11 @@ def sitemap():
     return xml, 200, {'Content-Type': 'application/xml'}
 
 
+@app.route('/robots.txt')
+def robots():
+    return render_template('robots.txt'), 200, {'Content-Type': 'text/plain'}
+
+
 @app.route('/paychangu-webhook', methods=['POST'])
 @app.route('/paychangu-webhook/', methods=['POST'])
 def paychangu_webhook():

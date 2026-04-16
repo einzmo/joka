@@ -1,0 +1,10 @@
+Sitemap: https://mymsce.dpdns.org/sitemap.xml
+
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /payment-status/
+Disallow: /verify-email-code/
+Disallow: /set-new-password/
