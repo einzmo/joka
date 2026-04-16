@@ -2228,11 +2228,12 @@ def sitemap():
         for lesson in lessons:
             pages.append({'loc': f'/lesson/{lesson.id}', 'priority': '0.6'})
     
+    # Use CORRECT domain
+    site_url = 'https://mymsce.dpdns.org'  # ← Make sure this is correct
+    
     # Build XML
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    
-    site_url = app.config.get('SITE_URL', 'https://mymsce.dpdns.org')
     
     for page in pages:
         xml += '  <url>\n'
@@ -2243,12 +2244,6 @@ def sitemap():
     xml += '</urlset>'
     
     return xml, 200, {'Content-Type': 'application/xml'}
-
-
-@app.route('/robots.txt')
-def robots():
-    return render_template('robots.txt'), 200, {'Content-Type': 'text/plain'}
-
 
 @app.route('/paychangu-webhook', methods=['POST'])
 @app.route('/paychangu-webhook/', methods=['POST'])
