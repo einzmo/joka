@@ -685,6 +685,10 @@ def verify_email(token):
 
     return redirect(url_for('login'))
 
+@app.route('/terms')
+def terms():
+    """Terms & Conditions page"""
+    return render_template('terms.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])

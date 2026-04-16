@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <title>Terms & Conditions - myMSCE</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #EFF6FF;
+            color: #0F172A;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== PAGE LOADER - MATCHING DASHBOARD DOTS ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #EFF6FF;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+        
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+        
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 24px 20px; }
+        }
+
+        /* ===== CLOSE BUTTON ===== */
+        .close-btn {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563EB;
+            text-decoration: none;
+            font-size: 1.3rem;
+            transition: all 0.2s;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+
+        .close-btn:active {
+            transform: scale(0.95);
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .close-btn { top: 16px; right: 16px; width: 40px; height: 40px; }
+        }
+
+        /* ===== TERMS CARD ===== */
+        .terms-card {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(20px);
+            border-radius: 36px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+        }
+        
+        .card-accent {
+            height: 4px;
+            background: linear-gradient(90deg, #2563EB, #16A34A);
+        }
+        
+        .card-content {
+            padding: 48px;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .card-content { padding: 32px 24px; }
+        }
+
+        /* ===== HEADER ===== */
+        .terms-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #2563EB, #16A34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .last-updated {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 99, 235, 0.08);
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        
+        .last-updated i {
+            color: var(--primary-blue);
+        }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+        }
+
+        /* ===== TABLE OF CONTENTS ===== */
+        .toc {
+            background: rgba(37, 99, 235, 0.04);
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border-light);
+        }
+        
+        .toc-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .toc-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border-radius: 12px;
+        }
+        
+        .toc-link:hover {
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary-blue);
+            transform: translateX(4px);
+        }
+        
+        .toc-link i {
+            font-size: 0.7rem;
+            color: var(--primary-blue);
+        }
+        
+        @media (max-width: 500px) {
+            .toc-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== SECTION STYLES ===== */
+        .section {
+            margin-bottom: 32px;
+            scroll-margin-top: 20px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .section-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+        }
+        
+        .section-toggle {
+            color: var(--text-tertiary);
+            transition: transform 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .section.collapsed .section-toggle {
+            transform: rotate(-90deg);
+        }
+        
+        .section.collapsed .section-content {
+            display: none;
+        }
+        
+        .section-content {
+            padding-left: 48px;
+            transition: all 0.3s ease;
+        }
+        
+        .section-content p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+        
+        .section-content ul {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .section-content li {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .section-content li i {
+            color: var(--secondary-green);
+            margin-right: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .info-box {
+            background: rgba(37, 99, 235, 0.06);
+            border-left: 3px solid var(--primary-blue);
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+        
+        .info-box i {
+            color: var(--primary-blue);
+            margin-right: 10px;
+        }
+        
+        .warning-box {
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 3px solid var(--accent-orange);
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+        
+        .warning-box i {
+            color: var(--accent-orange);
+            margin-right: 10px;
+        }
+
+        /* ===== ACCEPTANCE SECTION ===== */
+        .acceptance-section {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(22, 163, 74, 0.04));
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 32px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+        
+        .acceptance-section p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-orange), var(--accent-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn-outline {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+            border: 1px solid var(--border-light);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(37, 99, 235, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* ===== SCROLL TO TOP ===== */
+        .scroll-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            background: var(--primary-blue);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            z-index: 99;
+        }
+        
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .scroll-top:active {
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 768px) {
+            .scroll-top { bottom: 16px; right: 16px; width: 44px; height: 44px; }
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+        
+        .skeleton-accent {
+            height: 4px;
+            background: rgba(37, 99, 235, 0.15);
+        }
+        
+        .skeleton-content {
+            padding: 48px;
+        }
+        
+        .skeleton-line {
+            height: 14px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            width: 40%;
+            height: 40px;
+            margin: 0 auto 16px;
+        }
+        
+        .skeleton-line.subtitle {
+            width: 25%;
+            height: 20px;
+            margin: 0 auto 32px;
+        }
+        
+        .skeleton-section {
+            margin-bottom: 24px;
+        }
+        
+        .skeleton-section-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .skeleton-number {
+            width: 36px;
+            height: 36px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 12px;
+        }
+        
+        .skeleton-title {
+            flex: 1;
+            height: 28px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+        }
+        
+        .skeleton-text {
+            margin-left: 48px;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+        
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid #2563EB;
+            padding: 14px 20px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 380px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.65rem;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i {
+            font-size: 0.6rem;
+        }
+        
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .section-content { padding-left: 0; }
+            .section-header { flex-wrap: wrap; }
+        }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            .container {
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+                padding-top: max(40px, env(safe-area-inset-top));
+                padding-bottom: max(40px, env(safe-area-inset-bottom));
+            }
+            .toast-container {
+                top: max(20px, env(safe-area-inset-top));
+            }
+            .close-btn {
+                top: max(24px, env(safe-area-inset-top));
+                right: max(24px, env(safe-area-inset-right));
+            }
+            .scroll-top {
+                bottom: max(24px, env(safe-area-inset-bottom));
+                right: max(24px, env(safe-area-inset-right));
+            }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) {
+            animation-duration: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Close Button -->
+    <a href="javascript:history.back()" class="close-btn">
+        <i class="bi bi-x-lg"></i>
+    </a>
+
+    <!-- Scroll to Top Button -->
+    <a href="#" class="scroll-top" id="scrollTop">
+        <i class="bi bi-arrow-up"></i>
+    </a>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div id="realContent" style="display: none;">
+            <div class="terms-card">
+                <div class="card-accent"></div>
+                <div class="card-content">
+                    <div class="terms-header">
+                        <h1><span class="highlight">Terms &amp; Conditions</span></h1>
+                        <div class="last-updated">
+                            <i class="bi bi-calendar3"></i>
+                            Last Updated: April 16, 2026
+                            <i class="bi bi-check-circle-fill" style="color: #16A34A;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Table of Contents -->
+                    <div class="toc">
+                        <div class="toc-title">
+                            <i class="bi bi-list-ul"></i>
+                            Quick Navigation
+                        </div>
+                        <div class="toc-grid">
+                            <a href="#section1" class="toc-link"><i class="bi bi-chevron-right"></i> 1. Acceptance of Terms</a>
+                            <a href="#section2" class="toc-link"><i class="bi bi-chevron-right"></i> 2. Description of Service</a>
+                            <a href="#section3" class="toc-link"><i class="bi bi-chevron-right"></i> 3. User Accounts</a>
+                            <a href="#section4" class="toc-link"><i class="bi bi-chevron-right"></i> 4. Payments & Subscriptions</a>
+                            <a href="#section5" class="toc-link"><i class="bi bi-chevron-right"></i> 5. Content Usage</a>
+                            <a href="#section6" class="toc-link"><i class="bi bi-chevron-right"></i> 6. User Conduct</a>
+                            <a href="#section7" class="toc-link"><i class="bi bi-chevron-right"></i> 7. Intellectual Property</a>
+                            <a href="#section8" class="toc-link"><i class="bi bi-chevron-right"></i> 8. Termination</a>
+                            <a href="#section9" class="toc-link"><i class="bi bi-chevron-right"></i> 9. Disclaimer</a>
+                            <a href="#section10" class="toc-link"><i class="bi bi-chevron-right"></i> 10. Limitation of Liability</a>
+                            <a href="#section11" class="toc-link"><i class="bi bi-chevron-right"></i> 11. Changes to Terms</a>
+                            <a href="#section12" class="toc-link"><i class="bi bi-chevron-right"></i> 12. Contact Us</a>
+                        </div>
+                    </div>
+
+                    <!-- Section 1 -->
+                    <div class="section" id="section1">
+                        <div class="section-header">
+                            <div class="section-number">1</div>
+                            <h2>Acceptance of Terms</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>By registering for <strong>myMSCE</strong>, you agree to these Terms &amp; Conditions. If you do not agree, please do not use our services. These terms constitute a legally binding agreement between you and myMSCE regarding your use of the platform.</p>
+                            <div class="info-box">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <strong>Important:</strong> By accessing or using myMSCE, you acknowledge that you have read, understood, and agree to be bound by these terms.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2 -->
+                    <div class="section" id="section2">
+                        <div class="section-header">
+                            <div class="section-number">2</div>
+                            <h2>Description of Service</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>myMSCE provides online educational content including video lessons, audio lessons, documents, and practice materials for MSCE (Malawi School Certificate of Education) preparation. Our subscription plans include:</p>
+                            <ul>
+                                <li><i class="bi bi-3-circle-fill"></i> <strong>Form 3 Plan</strong> - Access to all Form 3 subjects and lessons</li>
+                                <li><i class="bi bi-4-circle-fill"></i> <strong>Form 4 Plan</strong> - Access to all Form 4 subjects and lessons</li>
+                                <li><i class="bi bi-star-fill"></i> <strong>Combined Plan</strong> - Full access to both Form 3 and Form 4 content</li>
+                            </ul>
+                            <p>Free users have limited access to sample lessons. Subscriptions grant full access to all content within the selected plan.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 3 -->
+                    <div class="section" id="section3">
+                        <div class="section-header">
+                            <div class="section-number">3</div>
+                            <h2>User Accounts</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>You are responsible for maintaining the confidentiality of your account credentials. You agree to:</p>
+                            <ul>
+                                <li><i class="bi bi-check-lg"></i> Provide accurate and complete registration information</li>
+                                <li><i class="bi bi-check-lg"></i> Update your information promptly when changes occur</li>
+                                <li><i class="bi bi-check-lg"></i> Not share your account credentials with anyone</li>
+                                <li><i class="bi bi-check-lg"></i> Notify us immediately of any unauthorized use of your account</li>
+                            </ul>
+                            <div class="warning-box">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <strong>Security Notice:</strong> myMSCE will never ask for your password. Be cautious of phishing attempts.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4 -->
+                    <div class="section" id="section4">
+                        <div class="section-header">
+                            <div class="section-number">4</div>
+                            <h2>Payments and Subscriptions</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>All payments are processed securely through <strong>PayChangu</strong>. Our payment policies include:</p>
+                            <ul>
+                                <li><i class="bi bi-credit-card"></i> Subscriptions are billed in Malawian Kwacha (MWK)</li>
+                                <li><i class="bi bi-clock"></i> Access is granted immediately upon successful payment verification</li>
+                                <li><i class="bi bi-arrow-repeat"></i> Subscriptions are non-refundable except as required by law</li>
+                                <li><i class="bi bi-bell"></i> You will receive payment confirmation via email and SMS</li>
+                            </ul>
+                            <p>For payment issues, contact our support team within 24 hours of the transaction.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 5 -->
+                    <div class="section" id="section5">
+                        <div class="section-header">
+                            <div class="section-number">5</div>
+                            <h2>Content Usage</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>All lessons, videos, documents, and materials on myMSCE are for <strong>personal educational use only</strong>. You may not:</p>
+                            <ul>
+                                <li><i class="bi bi-x-lg"></i> Share, distribute, or resell any content from myMSCE</li>
+                                <li><i class="bi bi-x-lg"></i> Download videos or content for offline distribution</li>
+                                <li><i class="bi bi-x-lg"></i> Use content for commercial purposes</li>
+                                <li><i class="bi bi-x-lg"></i> Create derivative works from our content</li>
+                            </ul>
+                            <p>Violation of these terms may result in immediate account termination without refund.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 6 -->
+                    <div class="section" id="section6">
+                        <div class="section-header">
+                            <div class="section-number">6</div>
+                            <h2>User Conduct</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>You agree to use myMSCE responsibly and not to:</p>
+                            <ul>
+                                <li><i class="bi bi-person-x"></i> Share your account credentials with others</li>
+                                <li><i class="bi bi-download"></i> Attempt to download, copy, or redistribute content</li>
+                                <li><i class="bi bi-gavel"></i> Use the platform for any illegal purpose</li>
+                                <li><i class="bi bi-chat-dots"></i> Harass, abuse, or threaten other users or staff</li>
+                                <li><i class="bi bi-bug"></i> Attempt to hack, disrupt, or bypass security measures</li>
+                                <li><i class="bi bi-robot"></i> Use automated scripts or bots to access content</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Section 7 -->
+                    <div class="section" id="section7">
+                        <div class="section-header">
+                            <div class="section-number">7</div>
+                            <h2>Intellectual Property</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>All content on myMSCE, including but not limited to:</p>
+                            <ul>
+                                <li><i class="bi bi-camera-reel"></i> Video lessons and tutorials</li>
+                                <li><i class="bi bi-file-text"></i> Documents and study materials</li>
+                                <li><i class="bi bi-mic"></i> Audio recordings</li>
+                                <li><i class="bi bi-brush"></i> Graphics, logos, and designs</li>
+                                <li><i class="bi bi-code"></i> Website code and structure</li>
+                            </ul>
+                            <p>is the exclusive property of myMSCE or its content creators and is protected by copyright laws. Unauthorized use is strictly prohibited.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 8 -->
+                    <div class="section" id="section8">
+                        <div class="section-header">
+                            <div class="section-number">8</div>
+                            <h2>Termination</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>We reserve the right to suspend or terminate accounts that:</p>
+                            <ul>
+                                <li><i class="bi bi-exclamation-triangle"></i> Violate these terms of service</li>
+                                <li><i class="bi bi-credit-card"></i> Engage in payment fraud or chargebacks</li>
+                                <li><i class="bi bi-share"></i> Share accounts or content with non-subscribers</li>
+                                <li><i class="bi bi-emoji-frown"></i> Engage in abusive or harassing behavior</li>
+                            </ul>
+                            <p>Terminated accounts will lose all access to content without refund.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 9 -->
+                    <div class="section" id="section9">
+                        <div class="section-header">
+                            <div class="section-number">9</div>
+                            <h2>Disclaimer of Warranties</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>The service is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind. We do not guarantee that:</p>
+                            <ul>
+                                <li><i class="bi bi-wifi"></i> The platform will be error-free or uninterrupted</li>
+                                <li><i class="bi bi-trophy"></i> Use of the platform will guarantee exam success</li>
+                                <li><i class="bi bi-shield"></i> Content is completely accurate or up-to-date</li>
+                            </ul>
+                            <div class="info-box">
+                                <i class="bi bi-mortarboard-fill"></i>
+                                <strong>Educational Purpose:</strong> While we strive for excellence, myMSCE is a supplementary educational tool and not a replacement for formal education.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 10 -->
+                    <div class="section" id="section10">
+                        <div class="section-header">
+                            <div class="section-number">10</div>
+                            <h2>Limitation of Liability</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>To the maximum extent permitted by law, myMSCE shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:</p>
+                            <ul>
+                                <li><i class="bi bi-cash"></i> Loss of profits or revenue</li>
+                                <li><i class="bi bi-database"></i> Loss of data or content</li>
+                                <li><i class="bi bi-clock"></i> Business interruption</li>
+                                <li><i class="bi bi-emoji-neutral"></i> Personal or emotional distress</li>
+                            </ul>
+                            <p>Our total liability shall not exceed the amount you paid for your subscription.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 11 -->
+                    <div class="section" id="section11">
+                        <div class="section-header">
+                            <div class="section-number">11</div>
+                            <h2>Changes to Terms</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>We may update these terms from time to time. When changes are made:</p>
+                            <ul>
+                                <li><i class="bi bi-bell-fill"></i> We will notify users via email or in-app notification</li>
+                                <li><i class="bi bi-calendar"></i> The "Last Updated" date will be revised</li>
+                                <li><i class="bi bi-check-all"></i> Continued use of the platform constitutes acceptance of updated terms</li>
+                            </ul>
+                            <p>If you do not agree to the changes, you should discontinue using myMSCE.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section 12 -->
+                    <div class="section" id="section12">
+                        <div class="section-header">
+                            <div class="section-number">12</div>
+                            <h2>Contact Us</h2>
+                            <i class="bi bi-chevron-down section-toggle"></i>
+                        </div>
+                        <div class="section-content">
+                            <p>If you have questions, concerns, or feedback about these terms, please contact us:</p>
+                            <ul>
+                                <li><i class="bi bi-envelope-fill"></i> <strong>Email:</strong> <a href="mailto:support@mymsce.com" style="color: var(--primary-blue);">support@mymsce.com</a></li>
+                                <li><i class="bi bi-whatsapp"></i> <strong>WhatsApp:</strong> +265 888 123 456</li>
+                                <li><i class="bi bi-facebook"></i> <strong>Facebook:</strong> @myMSCEofficial</li>
+                            </ul>
+                            <p>We aim to respond to all inquiries within 24-48 hours.</p>
+                        </div>
+                    </div>
+
+                    <!-- Acceptance Section -->
+                    <div class="acceptance-section">
+                        <p><i class="bi bi-check-circle-fill" style="color: #16A34A; font-size: 1.2rem;"></i> By using myMSCE, you acknowledge that you have read, understood, and agree to these Terms &amp; Conditions.</p>
+                        <div class="button-group">
+                            <a href="{{ url_for('register') }}" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> I Agree - Continue
+                            </a>
+                            <a href="javascript:history.back()" class="btn btn-outline">
+                                <i class="bi bi-x-lg"></i> Decline
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skeleton Loading -->
+        <div id="skeletonContent">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-accent shimmer"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line title shimmer"></div>
+                    <div class="skeleton-line subtitle shimmer"></div>
+                    <div class="skeleton-section">
+                        <div class="skeleton-section-header">
+                            <div class="skeleton-number shimmer"></div>
+                            <div class="skeleton-title shimmer"></div>
+                        </div>
+                        <div class="skeleton-text">
+                            <div class="skeleton-line shimmer"></div>
+                            <div class="skeleton-line shimmer" style="width: 80%;"></div>
+                            <div class="skeleton-line shimmer" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-section">
+                        <div class="skeleton-section-header">
+                            <div class="skeleton-number shimmer"></div>
+                            <div class="skeleton-title shimmer"></div>
+                        </div>
+                        <div class="skeleton-text">
+                            <div class="skeleton-line shimmer"></div>
+                            <div class="skeleton-line shimmer" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Track shown toasts
+        let shownToasts = new Set();
+
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            if (container.children.length >= 3) container.children[0].remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+        });
+
+        // Collapsible sections
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach(section => {
+                const header = section.querySelector('.section-header');
+                if (header) {
+                    header.addEventListener('click', () => {
+                        section.classList.toggle('collapsed');
+                    });
+                }
+            });
+            
+            // Scroll to top button
+            const scrollTop = document.getElementById('scrollTop');
+            if (scrollTop) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 300) {
+                        scrollTop.classList.add('visible');
+                    } else {
+                        scrollTop.classList.remove('visible');
+                    }
+                });
+                
+                scrollTop.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+            
+            // Smooth scroll for TOC links
+            document.querySelectorAll('.toc-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = document.querySelector(link.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        target.classList.add('highlight-section');
+                        setTimeout(() => target.classList.remove('highlight-section'), 2000);
+                    }
+                });
+            });
+            
+            // Flash messages
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+    </script>
+</body>
+</html>

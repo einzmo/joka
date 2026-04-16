@@ -1,4 +1,4 @@
-<!-- templates/register.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
+<!-- templates/register.html - ENHANCED with Dashboard Branding Consistency -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,7 +52,7 @@
             --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER ===== */
+        /* ===== PAGE LOADER - MATCHING DASHBOARD DOTS ===== */
         .page-loader {
             position: fixed;
             top: 0;
@@ -72,56 +72,28 @@
             visibility: hidden;
         }
         
-        .glass-loader {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(37, 99, 235, 0.08);
-            backdrop-filter: blur(10px);
-            animation: pulseGlow 2s ease-in-out infinite;
+        .dots-loader {
             display: flex;
+            gap: 12px;
             align-items: center;
             justify-content: center;
         }
         
-        .glass-loader::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
-            animation: spin 1.5s linear infinite;
+            animation: bounce 0.6s ease-in-out infinite alternate;
         }
         
-        .glass-loader::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-            background: #EFF6FF;
-            border-radius: 50%;
-        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
         
-        .glass-loader .inner {
-            position: relative;
-            z-index: 2;
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2563EB, #16A34A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
         }
 
         /* ===== MAIN CONTENT ===== */
@@ -502,6 +474,10 @@
         .create-btn.loading i {
             animation: spin 1s linear infinite;
         }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
         /* ===== SIGNIN FOOTER ===== */
         .signin-footer {
@@ -605,7 +581,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
+        /* ===== TOAST NOTIFICATIONS - BRANDED (Matches Dashboard) ===== */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -634,12 +610,27 @@
             animation: toastIn 0.3s ease;
             pointer-events: auto;
             font-weight: 500;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-lg);
         }
         
         .toast.error { border-left-color: #DC2626; }
         .toast.success { border-left-color: #16A34A; }
         .toast.warning { border-left-color: #F59E0B; }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.65rem;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i {
+            font-size: 0.6rem;
+        }
         
         .toast button {
             background: transparent;
@@ -648,6 +639,11 @@
             margin-left: auto;
             cursor: pointer;
             font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .toast button:hover {
+            color: white;
         }
         
         @keyframes toastIn {
@@ -679,14 +675,25 @@
                 top: max(24px, env(safe-area-inset-top));
                 right: max(24px, env(safe-area-inset-right));
             }
+            .page-loader {
+                padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) {
+            animation-duration: 0.2s;
         }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- Page Loader - Matching Dashboard Dots -->
     <div class="page-loader" id="pageLoader">
-        <div class="glass-loader">
-            <div class="inner">M</div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
 
@@ -888,7 +895,7 @@
                                 <div class="checkbox-wrapper">
                                     <input type="checkbox" class="checkbox" id="terms" required>
                                     <label for="terms" class="checkbox-label">
-                                        I agree to the <a href="#">Terms & Conditions</a>
+                                        I agree to the <a href="{{ url_for('terms') }}">Terms & Conditions</a>
                                     </label>
                                 </div>
                             </div>
@@ -910,24 +917,40 @@
     </div>
 
     <script>
-        // Toast function
+        // Track shown toast messages to prevent duplicates
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding (Matches Dashboard) =====
         function showToast(message, type = 'info', duration = 5000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) {
+                console.log('Duplicate toast prevented:', message);
+                return;
+            }
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
             if (container.children.length >= 3) {
                 container.children[0].remove();
             }
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            let icon = type === 'success' ? 'check-circle-fill' :
-                      type === 'error' ? 'exclamation-triangle-fill' :
-                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
 
             toast.innerHTML = `
                 <i class="bi bi-${icon}"></i>
-                <span>${message}</span>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Learning Platform
+                    </div>
+                </div>
                 <button onclick="this.parentElement.remove()">✕</button>
             `;
 
@@ -942,10 +965,17 @@
             }, duration);
         }
 
-        // Page load simulation
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Page load simulation (matching dashboard timing)
         window.addEventListener('load', function() {
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
             }, 800);
 
             setTimeout(() => {
@@ -953,7 +983,7 @@
                 const real = document.getElementById('realContent');
                 if(skeleton) skeleton.style.display = 'none';
                 if(real) real.style.display = 'block';
-            }, 1000);
+            }, 800);
         });
 
         // Password toggle function
@@ -1046,16 +1076,27 @@
 
         // DOM ready functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Flash messages
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1200 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            // Flash messages with deduplication (matches dashboard pattern)
+            if (window.flashMessagesProcessed) {
+                console.log('Flash messages already processed, skipping');
+            } else {
+                window.flashMessagesProcessed = true;
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% set shown_messages = [] %}
+                        {% for category, message in messages %}
+                            {% set message_key = category + ':' + message %}
+                            {% if message_key not in shown_messages %}
+                                setTimeout(() => {
+                                    showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
+                                }, {{ loop.index0 * 200 + 800 }});
+                                {% set _ = shown_messages.append(message_key) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            }
 
             // Setup password toggles
             setupPasswordToggle('togglePassword', 'password', 'toggleIcon');
