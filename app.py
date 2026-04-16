@@ -1865,9 +1865,14 @@ def subscribe(form_type, duration):
         'combined': {'daily': 1545, 'weekly': 8500, 'monthly': 19500}
     }
 
+    # ===== CHECK IF THIS IS A CONFIRMED UPGRADE COMING FROM process_upgrade =====
+    # If bypass_upgrade_check is set, skip the upgrade confirmation flow
+    if session.get('bypass_upgrade_check'):
+        session.pop('bypass_upgrade_check', None)
+        # Skip to payment creation
+        pass
     # ===== SMARTER UPGRADE LOGIC =====
-    # If user already has active subscription, suggest combined plan
-    if current_user.is_active_subscriber and current_user.subscription_expiry and current_user.subscription_expiry > datetime.utcnow():
+    elif current_user.is_active_subscriber and current_user.subscription_expiry and current_user.subscription_expiry > datetime.utcnow():
         
         # If already on combined, just extend
         if current_user.subscription_form == 'combined':
@@ -1894,10 +1899,6 @@ def subscribe(form_type, duration):
             'amount': real_prices[form_type][duration]
         }
         return redirect(url_for('confirm_subscription_upgrade'))
-
-    # ✅ Clear the confirmed_upgrade flag after using it
-    if session.get('confirmed_upgrade'):
-        session.pop('confirmed_upgrade', None)
 
     # Use test prices if in TEST_MODE
     if TEST_MODE:
@@ -1938,7 +1939,6 @@ def subscribe(form_type, duration):
                            payment_id=payment.id,
                            test_mode=TEST_MODE)
 
-
 @app.route('/confirm-subscription-upgrade')
 @login_required
 def confirm_subscription_upgrade():
@@ -1966,21 +1966,43 @@ def confirm_subscription_upgrade():
 @app.route('/process-upgrade', methods=['GET'])
 @login_required
 def process_upgrade():
-    """Process the confirmed upgrade"""
+    """Process the confirmed upgrade - go directly to payment"""
     pending = session.get('pending_subscription')
 
     if not pending:
         flash('No pending subscription found.', 'warning')
         return redirect(url_for('pricing'))
 
-    # ✅ Set a flag in session that this is a confirmed upgrade
-    session['confirmed_upgrade'] = True
-
-    # Redirect to the normal subscribe flow
-    return redirect(url_for('subscribe',
-                            form_type=pending['form_type'],
-                            duration=pending['duration']))
-
+    form_type = pending['form_type']
+    duration = pending['duration']
+    amount = pending['amount']
+    
+    # Clear the pending subscription from session to prevent reuse
+    session.pop('pending_subscription', None)
+    
+    # Generate unique reference
+    reference = f"SUB-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{current_user.id}"
+    
+    # Create payment record directly
+    payment = Payment(
+        user_id=current_user.id,
+        amount=amount,
+        subscription_type=duration,
+        subscription_form=form_type,
+        reference=reference,
+        status='pending'
+    )
+    db.session.add(payment)
+    db.session.commit()
+    
+    # Go directly to payment page
+    return render_template('payment.html',
+                           form_type=form_type,
+                           duration=duration,
+                           amount=amount,
+                           reference=reference,
+                           payment_id=payment.id,
+                           test_mode=TEST_MODE)
 
 @app.route('/process-payment/<int:payment_id>', methods=['POST'])
 @login_required
