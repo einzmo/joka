@@ -1,12 +1,11 @@
-<!-- templates/admin/edit_subject.html - RENOVATED with Modern CSS & Navigation Fixes -->
+<!-- templates/admin/edit_subject.html - FULLY ENHANCED with Dashboard Branding -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Edit Subject - {{ subject.name }} | myMSCE Admin</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,47 +28,38 @@
             overflow-x: hidden;
         }
 
-        /* ===== COLOR SYSTEM with CSS Layers ===== */
-        @layer base, components, utilities;
-        
-        @layer base {
-            :root {
-                --primary-blue: #2563EB;
-                --primary-dark: #1D4ED8;
-                --primary-light: #DBEAFE;
-                --secondary-green: #16A34A;
-                --secondary-light: #DCFCE7;
-                --accent-orange: #F59E0B;
-                --accent-dark: #D97706;
-                --error-red: #DC2626;
-                --bg-main: #EFF6FF;
-                --card-bg-glass: rgba(219, 234, 254, 0.7);
-                --text-primary: #0F172A;
-                --text-secondary: #475569;
-                --text-tertiary: #64748B;
-                --border-light: rgba(37, 99, 235, 0.12);
-                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
-                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
-                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            }
-            
-            @media (prefers-reduced-motion: reduce) {
-                * {
-                    animation-duration: 0.01ms !important;
-                    animation-iteration-count: 1 !important;
-                    transition-duration: 0.01ms !important;
-                }
-            }
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --card-bg-solid: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER ===== */
+        /* ===== PAGE LOADER - DOTS (MATCHING DASHBOARD) ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            width: 100%;
+            height: 100%;
             background: #EFF6FF;
             z-index: 10000;
             display: flex;
@@ -83,62 +73,34 @@
             visibility: hidden;
         }
         
-        .glass-loader {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(37, 99, 235, 0.08);
-            backdrop-filter: blur(10px);
-            animation: pulseGlow 2s ease-in-out infinite;
+        .dots-loader {
             display: flex;
+            gap: 12px;
             align-items: center;
             justify-content: center;
         }
         
-        .glass-loader::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
-            animation: spin 1.5s linear infinite;
+            animation: bounce 0.6s ease-in-out infinite alternate;
         }
         
-        .glass-loader::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-            background: #EFF6FF;
-            border-radius: 50%;
-        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
         
-        .glass-loader .inner {
-            position: relative;
-            z-index: 2;
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2563EB, #16A34A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: #2563EB;
-            padding: 14px 24px;
+            background: var(--primary-blue);
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -149,7 +111,7 @@
         }
         
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: white;
             letter-spacing: -0.5px;
@@ -172,23 +134,30 @@
         .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
         .menu-btn i { font-size: 1.3rem; color: white; }
 
-        /* ===== SLIDE MENU with Focus Trap ===== */
+        /* ===== SLIDE MENU - SCROLLABLE ===== */
         .slide-menu {
             position: fixed;
             top: 0;
             left: -280px;
             width: 280px;
             height: 100vh;
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
             z-index: 1000;
             transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
-            padding: 24px 0;
+            padding: 20px 0;
             border-right: 1px solid rgba(37, 99, 235, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .slide-menu.open { left: 0; }
+        
+        .slide-menu::-webkit-scrollbar { width: 4px; }
+        .slide-menu::-webkit-scrollbar-track { background: var(--border-light); border-radius: 10px; }
+        .slide-menu::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
 
         .menu-overlay {
             position: fixed;
@@ -207,50 +176,63 @@
         .menu-overlay.active { opacity: 1; visibility: visible; }
 
         .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
-        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #2563EB, #16A34A); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
-        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: #0F172A; }
-        .menu-user-info p { font-size: 0.7rem; color: #64748B; }
-        .menu-plan-badge { background: #DBEAFE; color: #2563EB; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+        .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+        .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
         
-        .menu-section { padding: 0 20px; margin-bottom: 24px; }
+        .menu-section { padding: 0 16px; margin-bottom: 24px; }
         .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #475569; text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
-        .menu-item:hover, .menu-item:active { background: #DBEAFE; color: #2563EB; }
-        .menu-item i { width: 22px; color: #94A3B8; }
-        .menu-item:hover i { color: #2563EB; }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            color: var(--text-secondary); 
+            text-decoration: none; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+            width: 100%; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            text-align: left;
+        }
+        .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-item i { width: 22px; color: #94A3B8; font-size: 1rem; }
+        .menu-item:hover i { color: var(--primary-blue); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary-blue); }
         .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        
+        .logout-btn { color: var(--error-red) !important; }
+        .logout-btn i { color: var(--error-red) !important; }
+        .logout-btn:hover, .logout-btn:active { background: rgba(220, 38, 38, 0.1) !important; color: var(--error-red) !important; }
 
-        /* ===== MAIN CONTENT with Container Queries ===== */
+        /* ===== MAIN CONTENT ===== */
         .main-content {
             max-width: 800px;
             margin: 0 auto;
-            padding: 32px 24px 60px;
-            container-type: inline-size;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+            width: 100%;
+            overflow-x: hidden;
         }
 
-        @media (max-width: 768px) {
-            .main-content { padding: 24px 20px 40px; }
-        }
-        
-        /* Container query for responsive form layout */
-        @container (max-width: 500px) {
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .icon-preview {
-                flex-direction: column;
-                text-align: center;
-            }
+        @media (min-width: 768px) {
+            .main-content { padding: 32px 24px 60px; }
         }
 
         /* ===== PAGE HEADER ===== */
         .page-header {
             display: flex;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 28px;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
         }
         
         .back-btn {
@@ -262,231 +244,261 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #2563EB;
+            color: var(--primary-blue);
             text-decoration: none;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         
-        .back-btn:active {
-            transform: scale(0.95);
-            background: rgba(37, 99, 235, 0.2);
-        }
+        .back-btn:active { transform: scale(0.95); background: rgba(37, 99, 235, 0.2); }
         
         .page-header h1 {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            word-break: break-word;
+        }
+        
+        @media (min-width: 768px) {
+            .page-header h1 { font-size: 1.6rem; gap: 10px; }
         }
         
         .page-header h1 i {
-            color: #2563EB;
+            color: var(--primary-blue);
         }
 
         /* ===== FORM CARD ===== */
         .form-card {
             background: var(--card-bg-glass);
             backdrop-filter: blur(12px);
-            border-radius: 28px;
+            border-radius: 24px;
             border: 1px solid var(--border-light);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
-            view-transition-name: form-card;
+        }
+        
+        @media (min-width: 768px) {
+            .form-card { border-radius: 28px; }
         }
         
         .card-accent {
             height: 4px;
             width: 100%;
-            background: linear-gradient(90deg, #2563EB, #16A34A);
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green));
         }
         
         .form-header {
             background: rgba(37, 99, 235, 0.04);
             border-bottom: 1px solid var(--border-light);
-            padding: 20px 28px;
+            padding: 16px 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .form-header { padding: 20px 28px; }
         }
         
         .form-header h2 {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--text-primary);
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            word-break: break-word;
+        }
+        
+        @media (min-width: 768px) {
+            .form-header h2 { font-size: 1rem; gap: 10px; }
         }
         
         .form-header h2 i {
-            color: #2563EB;
+            color: var(--primary-blue);
         }
         
         .form-body {
-            padding: 28px;
+            padding: 20px;
         }
         
-        @media (max-width: 480px) {
-            .form-body { padding: 20px; }
-            .form-header { padding: 16px 20px; }
+        @media (min-width: 768px) {
+            .form-body { padding: 28px; }
         }
 
-        /* ===== ICON PREVIEW with :has() support ===== */
+        /* ===== ICON PREVIEW ===== */
         .icon-preview {
             background: rgba(255, 255, 255, 0.3);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 28px;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 16px;
             transition: all 0.3s ease;
             border: 1px solid var(--border-light);
             flex-wrap: wrap;
         }
         
-        .icon-preview:has(.preview-circle:hover) {
-            border-color: #2563EB;
-            background: rgba(255, 255, 255, 0.5);
+        @media (min-width: 768px) {
+            .icon-preview { padding: 24px; gap: 24px; margin-bottom: 28px; border-radius: 24px; }
         }
         
         .preview-circle {
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 64px;
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(22, 163, 74, 0.08));
-            border-radius: 24px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid rgba(37, 99, 235, 0.3);
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
         
-        .icon-preview:hover .preview-circle {
-            transform: scale(1.02);
-            border-color: #2563EB;
+        @media (min-width: 768px) {
+            .preview-circle { width: 80px; height: 80px; border-radius: 24px; }
         }
         
         .preview-circle i {
-            font-size: 2.5rem;
-            color: #2563EB;
-            transition: transform 0.3s;
+            font-size: 2rem;
+            color: var(--primary-blue);
         }
         
-        .icon-preview:hover .preview-circle i {
-            transform: scale(1.05);
+        @media (min-width: 768px) {
+            .preview-circle i { font-size: 2.5rem; }
         }
         
         .preview-text {
             flex: 1;
+            min-width: 0;
         }
         
         .preview-text h4 {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+        
+        @media (min-width: 768px) {
+            .preview-text h4 { font-size: 1.3rem; margin-bottom: 8px; }
         }
         
         .preview-text p {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         
         .form-badge {
-            padding: 6px 14px;
-            border-radius: 40px;
-            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
             font-weight: 600;
+        }
+        
+        @media (min-width: 768px) {
+            .form-badge { padding: 6px 14px; font-size: 0.7rem; }
         }
         
         .badge-form3 {
             background: rgba(37, 99, 235, 0.12);
-            color: #2563EB;
+            color: var(--primary-blue);
         }
         
         .badge-form4 {
             background: rgba(22, 163, 74, 0.12);
-            color: #16A34A;
+            color: var(--secondary-green);
         }
         
         .icon-tag {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             color: var(--text-tertiary);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
+        }
+        
+        @media (min-width: 768px) {
+            .icon-tag { gap: 6px; font-size: 0.8rem; }
         }
         
         .icon-tag i {
-            color: #2563EB;
+            color: var(--primary-blue);
         }
 
-        /* ===== FORM SECTIONS with Validation Styling ===== */
+        /* ===== FORM SECTIONS ===== */
         .form-section {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .form-section { margin-bottom: 24px; }
         }
         
         .section-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+        }
+        
+        @media (min-width: 768px) {
+            .section-title { font-size: 0.9rem; margin-bottom: 12px; gap: 8px; }
         }
         
         .section-title i {
-            color: #2563EB;
+            color: var(--primary-blue);
         }
         
         .form-label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             color: var(--text-secondary);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+        }
+        
+        @media (min-width: 768px) {
+            .form-label { gap: 8px; font-size: 0.85rem; margin-bottom: 8px; }
         }
         
         .form-label i {
-            color: #2563EB;
+            color: var(--primary-blue);
         }
         
         .form-control, .form-select {
             width: 100%;
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: rgba(255, 255, 255, 0.4);
             border: 1px solid var(--border-light);
             border-radius: 14px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-primary);
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
         }
         
-        /* CSS-only validation styling using :user-invalid (modern) */
-        .form-control:user-invalid,
-        .form-control:invalid:not(:placeholder-shown) {
-            border-color: #DC2626;
-            background: rgba(220, 38, 38, 0.05);
+        @media (min-width: 768px) {
+            .form-control, .form-select { padding: 12px 16px; font-size: 0.9rem; border-radius: 14px; }
         }
         
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             outline: none;
-            border-color: #2563EB;
+            border-color: var(--primary-blue);
             background: rgba(255, 255, 255, 0.6);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        
-        .form-control:focus:user-invalid {
-            border-color: #DC2626;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
         }
         
         .form-control::placeholder {
@@ -496,7 +508,11 @@
         
         textarea.form-control {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
+        }
+        
+        @media (min-width: 768px) {
+            textarea.form-control { min-height: 100px; }
         }
         
         .input-group {
@@ -509,17 +525,22 @@
         }
         
         .input-group:focus-within {
-            border-color: #2563EB;
+            border-color: var(--primary-blue);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         
         .input-group-text {
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: rgba(37, 99, 235, 0.1);
-            color: #2563EB;
+            color: var(--primary-blue);
             font-weight: 500;
             border-right: 1px solid var(--border-light);
             white-space: nowrap;
+            font-size: 0.85rem;
+        }
+        
+        @media (min-width: 768px) {
+            .input-group-text { padding: 12px 16px; font-size: 0.9rem; }
         }
         
         .input-group .form-control {
@@ -535,29 +556,38 @@
         .helper-text {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             margin-top: 6px;
             color: var(--text-tertiary);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
+        }
+        
+        @media (min-width: 768px) {
+            .helper-text { gap: 6px; font-size: 0.7rem; margin-top: 8px; }
         }
         
         .helper-text i {
-            color: #2563EB;
+            color: var(--primary-blue);
+            font-size: 0.6rem;
         }
 
         /* ===== ACTION BUTTONS ===== */
         .action-buttons {
             display: flex;
-            gap: 12px;
-            margin-top: 28px;
+            gap: 10px;
+            margin-top: 24px;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 500px) {
+            .action-buttons { flex-direction: row; gap: 12px; margin-top: 28px; }
         }
         
         .btn {
-            flex: 1;
-            padding: 14px 24px;
+            padding: 12px 20px;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -566,42 +596,45 @@
             transition: all 0.2s;
             cursor: pointer;
             border: none;
+            width: 100%;
         }
         
-        .btn:active {
-            transform: scale(0.97);
+        @media (min-width: 500px) {
+            .btn { width: auto; flex: 1; padding: 14px 24px; font-size: 0.9rem; }
         }
+        
+        .btn:active { transform: scale(0.97); }
         
         .btn-primary {
-            background: #F59E0B;
+            background: var(--accent-orange);
             color: white;
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
         
-        .btn-primary:active {
-            background: #D97706;
-        }
+        .btn-primary:active { background: var(--accent-dark); }
         
         .btn-secondary {
             background: rgba(37, 99, 235, 0.1);
-            color: #2563EB;
+            color: var(--primary-blue);
             border: 1px solid rgba(37, 99, 235, 0.25);
         }
         
-        .btn-secondary:active {
-            background: rgba(37, 99, 235, 0.2);
-        }
+        .btn-secondary:active { background: rgba(37, 99, 235, 0.2); }
 
         /* ===== SKELETON LOADING ===== */
         .skeleton-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 32px 24px 60px;
+            padding: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-container { padding: 32px 24px 60px; }
         }
         
         .skeleton-card {
             background: rgba(219, 234, 254, 0.5);
-            border-radius: 28px;
+            border-radius: 24px;
             overflow: hidden;
         }
         
@@ -611,69 +644,110 @@
         }
         
         .skeleton-header {
-            padding: 20px 28px;
+            padding: 16px 20px;
             border-bottom: 1px solid rgba(37, 99, 235, 0.08);
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-header { padding: 20px 28px; }
         }
         
         .skeleton-title {
             width: 40%;
-            height: 24px;
+            height: 20px;
             background: rgba(37, 99, 235, 0.08);
             border-radius: 8px;
         }
         
+        @media (min-width: 768px) {
+            .skeleton-title { height: 24px; }
+        }
+        
         .skeleton-body {
-            padding: 28px;
+            padding: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-body { padding: 28px; }
         }
         
         .skeleton-preview {
             display: flex;
-            gap: 24px;
-            margin-bottom: 28px;
+            gap: 16px;
+            margin-bottom: 24px;
             background: rgba(37, 99, 235, 0.04);
-            border-radius: 24px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 16px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-preview { gap: 24px; margin-bottom: 28px; border-radius: 24px; padding: 24px; }
         }
         
         .skeleton-preview-icon {
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 64px;
             background: rgba(37, 99, 235, 0.08);
-            border-radius: 24px;
+            border-radius: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-preview-icon { width: 80px; height: 80px; border-radius: 24px; }
         }
         
         .skeleton-line {
-            height: 14px;
+            height: 12px;
             background: rgba(37, 99, 235, 0.08);
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-line { height: 14px; margin-bottom: 10px; }
         }
         
         .skeleton-input {
-            height: 48px;
+            height: 44px;
             background: rgba(37, 99, 235, 0.06);
             border-radius: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-input { height: 48px; margin-bottom: 24px; }
         }
         
         .skeleton-textarea {
-            height: 100px;
+            height: 80px;
             background: rgba(37, 99, 235, 0.06);
             border-radius: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-textarea { height: 100px; margin-bottom: 24px; }
         }
         
         .skeleton-button-group {
             display: flex;
-            gap: 12px;
-            margin-top: 28px;
+            gap: 10px;
+            margin-top: 24px;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 500px) {
+            .skeleton-button-group { flex-direction: row; gap: 12px; margin-top: 28px; }
         }
         
         .skeleton-button {
-            flex: 1;
-            height: 52px;
+            height: 48px;
             background: rgba(37, 99, 235, 0.08);
             border-radius: 50px;
+            width: 100%;
+        }
+        
+        @media (min-width: 500px) {
+            .skeleton-button { height: 52px; width: auto; flex: 1; }
         }
         
         .shimmer {
@@ -687,7 +761,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* ===== TOAST ===== */
+        /* ===== TOAST - BRANDED ===== */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -703,21 +777,39 @@
         
         .toast {
             background: #1E293B;
-            border-left: 4px solid #2563EB;
-            padding: 14px 20px;
+            border-left: 4px solid var(--primary-blue);
+            padding: 12px 16px;
             border-radius: 16px;
             color: white;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 8px;
             width: 100%;
-            max-width: 380px;
+            max-width: 360px;
             animation: toastIn 0.3s ease;
             pointer-events: auto;
             font-weight: 500;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-lg);
         }
+        
+        .toast.error { border-left-color: var(--error-red); }
+        .toast.success { border-left-color: var(--secondary-green); }
+        .toast.warning { border-left-color: var(--accent-orange); }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i { font-size: 0.55rem; }
         
         .toast button {
             background: transparent;
@@ -725,7 +817,8 @@
             color: rgba(255,255,255,0.5);
             margin-left: auto;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            padding: 4px;
         }
         
         @keyframes toastIn {
@@ -733,27 +826,30 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* View Transitions API Support */
-        @view-transition {
-            navigation: auto;
-        }
-        
-        ::view-transition-old(root),
-        ::view-transition-new(root) {
-            animation-duration: 0.2s;
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            .main-content { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .slide-menu { padding-top: max(20px, env(safe-area-inset-top)); }
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- PAGE LOADER - DOTS (MATCHING DASHBOARD) -->
     <div class="page-loader" id="pageLoader">
-        <div class="glass-loader">
-            <div class="inner">M</div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
 
@@ -761,61 +857,61 @@
     <div class="menu-overlay" id="menuOverlay"></div>
 
     <!-- Slide Menu -->
-    <div class="slide-menu" id="slideMenu" aria-label="Navigation menu">
+    <div class="slide-menu" id="slideMenu">
         <div class="menu-header">
             <div class="menu-user">
-                <div class="menu-avatar" aria-hidden="true">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
                 <div class="menu-user-info">
                     <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
                     <p>Administrator</p>
                 </div>
             </div>
-            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i> Admin Access</div>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
         </div>
 
         <div class="menu-section">
             <div class="menu-section-title">Main</div>
-            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard</a>
-            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill" aria-hidden="true"></i> Users</a>
-            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill" aria-hidden="true"></i> Subjects</a>
-            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill" aria-hidden="true"></i> Lessons</a>
-            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill" aria-hidden="true"></i> Payments</a>
-            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill" aria-hidden="true"></i> Free Samples</a>
-            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up" aria-hidden="true"></i> Analytics</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
         </div>
 
         <div class="menu-divider"></div>
 
         <div class="menu-section">
             <div class="menu-section-title">Account</div>
-            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill" aria-hidden="true"></i> Student View</a>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
             <form method="POST" action="{{ url_for('logout') }}">
-                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout</button>
+                <button type="submit" class="menu-item logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
             </form>
         </div>
     </div>
 
     <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Navbar -->
     <div class="navbar">
         <div class="logo">myMSCE</div>
-        <div class="menu-btn" id="menuBtn" aria-label="Open menu">
-            <i class="bi bi-list" aria-hidden="true"></i>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
         </div>
     </div>
 
-    <!-- Real Content (hidden initially) -->
+    <!-- Real Content -->
     <div id="realContent" style="display: none;">
         <div class="main-content">
             <!-- Page Header -->
             <div class="page-header">
-                <a href="{{ url_for('admin_subjects') }}" class="back-btn" aria-label="Back to subjects">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <a href="{{ url_for('admin_subjects') }}" class="back-btn">
+                    <i class="bi bi-arrow-left"></i>
                 </a>
                 <h1>
-                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                    <i class="bi bi-pencil-square"></i>
                     Edit Subject
                 </h1>
             </div>
@@ -825,7 +921,7 @@
                 <div class="card-accent"></div>
                 <div class="form-header">
                     <h2>
-                        <i class="bi bi-book-fill" aria-hidden="true"></i>
+                        <i class="bi bi-book-fill"></i>
                         {{ subject.name }}
                     </h2>
                 </div>
@@ -834,7 +930,7 @@
                     <!-- Live Icon Preview -->
                     <div class="icon-preview" id="iconPreview">
                         <div class="preview-circle">
-                            <i class="bi bi-{{ subject.icon or 'book' }}" id="previewIcon" aria-hidden="true"></i>
+                            <i class="bi bi-{{ subject.icon or 'book' }}" id="previewIcon"></i>
                         </div>
                         <div class="preview-text">
                             <h4 id="previewName">{{ subject.name }}</h4>
@@ -843,25 +939,24 @@
                                     Form {{ subject.form }}
                                 </span>
                                 <span class="icon-tag">
-                                    <i class="bi bi-{{ subject.icon or 'book' }}" aria-hidden="true"></i>
+                                    <i class="bi bi-{{ subject.icon or 'book' }}"></i>
                                     <span id="previewIconName">{{ subject.icon or 'book' }}</span>
                                 </span>
                             </p>
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ url_for('admin_edit_subject', subject_id=subject.id) }}" id="editSubjectForm" novalidate>
+                    <form method="POST" action="{{ url_for('admin_edit_subject', subject_id=subject.id) }}" id="editSubjectForm">
                         <!-- Subject Name -->
                         <div class="form-section">
                             <div class="section-title">
-                                <i class="bi bi-type" aria-hidden="true"></i>
+                                <i class="bi bi-type"></i>
                                 Subject Name
                             </div>
                             <input type="text" class="form-control" id="name" name="name" value="{{ subject.name }}" required
-                                   placeholder="e.g., Mathematics, Physics, Chemistry"
-                                   aria-describedby="nameHelp">
-                            <div class="helper-text" id="nameHelp">
-                                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                                   placeholder="e.g., Mathematics, Physics, Chemistry">
+                            <div class="helper-text">
+                                <i class="bi bi-info-circle-fill"></i>
                                 Enter the full subject name
                             </div>
                         </div>
@@ -869,10 +964,10 @@
                         <!-- Form Selection -->
                         <div class="form-section">
                             <div class="section-title">
-                                <i class="bi bi-layers-fill" aria-hidden="true"></i>
+                                <i class="bi bi-layers-fill"></i>
                                 Form
                             </div>
-                            <select class="form-select" id="form" name="form" required aria-describedby="formHelp">
+                            <select class="form-select" id="form" name="form" required>
                                 <option value="3" {% if subject.form == 3 %}selected{% endif %}>Form 3</option>
                                 <option value="4" {% if subject.form == 4 %}selected{% endif %}>Form 4</option>
                             </select>
@@ -881,14 +976,13 @@
                         <!-- Description -->
                         <div class="form-section">
                             <div class="section-title">
-                                <i class="bi bi-text-paragraph" aria-hidden="true"></i>
+                                <i class="bi bi-text-paragraph"></i>
                                 Description
                             </div>
                             <textarea class="form-control" id="description" name="description" rows="4"
-                                      placeholder="Enter a brief description of the subject"
-                                      aria-describedby="descriptionHelp">{{ subject.description }}</textarea>
-                            <div class="helper-text" id="descriptionHelp">
-                                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                                      placeholder="Enter a brief description of the subject">{{ subject.description }}</textarea>
+                            <div class="helper-text">
+                                <i class="bi bi-info-circle-fill"></i>
                                 This will appear on the subject card
                             </div>
                         </div>
@@ -896,32 +990,30 @@
                         <!-- Icon -->
                         <div class="form-section">
                             <div class="section-title">
-                                <i class="bi bi-emoji-smile" aria-hidden="true"></i>
+                                <i class="bi bi-emoji-smile"></i>
                                 Icon
                             </div>
                             <div class="input-group">
                                 <span class="input-group-text">bi bi-</span>
                                 <input type="text" class="form-control" id="icon" name="icon" value="{{ subject.icon or 'book' }}"
-                                       placeholder="book, calculator, flask, leaf"
-                                       aria-describedby="iconHelp">
+                                       placeholder="book, calculator, flask, leaf">
                             </div>
-                            <div class="helper-text" id="iconHelp">
-                                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                            <div class="helper-text">
+                                <i class="bi bi-info-circle-fill"></i>
                                 Bootstrap Icon name (e.g., book, calculator, flask, leaf)
-                                <a href="https://icons.getbootstrap.com/" target="_blank" style="color: #2563EB; margin-left: 8px;">Browse icons →</a>
+                                <a href="https://icons.getbootstrap.com/" target="_blank" style="color: var(--primary-blue); margin-left: 4px;">Browse icons →</a>
                             </div>
                         </div>
 
                         <!-- Display Order -->
                         <div class="form-section">
                             <div class="section-title">
-                                <i class="bi bi-sort-numeric-down" aria-hidden="true"></i>
+                                <i class="bi bi-sort-numeric-down"></i>
                                 Display Order
                             </div>
-                            <input type="number" class="form-control" id="order" name="order" value="{{ subject.order or 0 }}" min="0"
-                                   aria-describedby="orderHelp">
-                            <div class="helper-text" id="orderHelp">
-                                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                            <input type="number" class="form-control" id="order" name="order" value="{{ subject.order or 0 }}" min="0">
+                            <div class="helper-text">
+                                <i class="bi bi-info-circle-fill"></i>
                                 Lower numbers appear first
                             </div>
                         </div>
@@ -929,10 +1021,10 @@
                         <!-- Action Buttons -->
                         <div class="action-buttons">
                             <a href="{{ url_for('admin_subjects') }}" class="btn btn-secondary" id="cancelBtn">
-                                <i class="bi bi-x-circle" aria-hidden="true"></i> Cancel
+                                <i class="bi bi-x-circle"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Update Subject
+                                <i class="bi bi-check-circle-fill"></i> Update Subject
                             </button>
                         </div>
                     </form>
@@ -941,7 +1033,7 @@
         </div>
     </div>
 
-    <!-- Skeleton Container (visible initially) -->
+    <!-- Skeleton Loading -->
     <div id="skeletonContent">
         <div class="skeleton-container">
             <div class="skeleton-card shimmer">
@@ -953,8 +1045,8 @@
                     <div class="skeleton-preview">
                         <div class="skeleton-preview-icon shimmer"></div>
                         <div style="flex: 1;">
-                            <div class="skeleton-line" style="width: 60%; height: 24px;"></div>
-                            <div class="skeleton-line" style="width: 40%; height: 16px;"></div>
+                            <div class="skeleton-line" style="width: 60%; height: 20px;"></div>
+                            <div class="skeleton-line" style="width: 40%; height: 14px;"></div>
                         </div>
                     </div>
                     <div class="skeleton-input shimmer"></div>
@@ -972,75 +1064,64 @@
     </div>
 
     <script>
-        // Toast function
+        // Track shown toasts for duplicate prevention
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
         function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            if (container.children.length >= 3) container.children[0].remove();
+            
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
             const icon = icons[type] || icons.info;
-            toast.innerHTML = `<i class="bi bi-${icon}-fill" aria-hidden="true"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()" aria-label="Close">✕</button>`;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Admin
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
         }
-        
-        // Helper function to escape HTML in toasts
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Menu functionality with focus trap
+        // Menu functionality
         const menu = document.getElementById('slideMenu');
         const overlay = document.getElementById('menuOverlay');
         const menuBtn = document.getElementById('menuBtn');
-        let previousFocus = null;
 
-        function openMenu() { 
-            previousFocus = document.activeElement;
-            menu.classList.add('open'); 
-            overlay.classList.add('active'); 
-            document.body.style.overflow = 'hidden';
-            // Focus first menu item
-            const firstMenuItem = menu.querySelector('.menu-item');
-            if (firstMenuItem) firstMenuItem.focus();
-        }
-        
-        function closeMenu() { 
-            menu.classList.remove('open'); 
-            overlay.classList.remove('active'); 
-            document.body.style.overflow = '';
-            if (previousFocus) previousFocus.focus();
-        }
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
 
         if(menuBtn) menuBtn.addEventListener('click', openMenu);
         if(overlay) overlay.addEventListener('click', closeMenu);
-        
-        // Escape key closes menu
-        document.addEventListener('keydown', (e) => { 
-            if (e.key === 'Escape' && menu.classList.contains('open')) {
-                closeMenu();
-            }
-        });
-        
-        // Tab trapping in menu
-        menu.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                const focusable = menu.querySelectorAll('a, button, [tabindex="0"]');
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-                
-                if (e.shiftKey && document.activeElement === first) {
-                    e.preventDefault();
-                    last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                    e.preventDefault();
-                    first.focus();
-                }
-            }
-        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
 
         // Loading animation
         document.addEventListener('DOMContentLoaded', function() {
@@ -1057,57 +1138,34 @@
             }, 1200);
         });
 
-        // Form submission with history management
+        // Form submission handling
         const form = document.getElementById('editSubjectForm');
         const submitBtn = document.getElementById('submitBtn');
         let isSubmitting = false;
 
         if (form && submitBtn) {
-            // Warn about unsaved changes
-            let formChanged = false;
-            const formInputs = form.querySelectorAll('input, select, textarea');
-            const originalValues = Array.from(formInputs).map(input => input.value);
-            
-            function checkChanges() {
-                formChanged = Array.from(formInputs).some((input, index) => input.value !== originalValues[index]);
-            }
-            
-            formInputs.forEach(input => input.addEventListener('input', checkChanges));
-            
-            window.addEventListener('beforeunload', (e) => {
-                if (formChanged && !isSubmitting) {
-                    e.preventDefault();
-                    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-                    return e.returnValue;
-                }
-            });
-            
             form.addEventListener('submit', function(e) {
                 if (isSubmitting) {
                     e.preventDefault();
                     return;
                 }
                 isSubmitting = true;
-                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat" aria-hidden="true"></i> Updating...';
+                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Updating...';
                 submitBtn.style.opacity = '0.8';
                 submitBtn.disabled = true;
-                
-                // Mark that form was submitted to prevent beforeunload warning
-                formChanged = false;
             });
         }
-        
+
         // Cancel button - replace history to avoid back button issues
         const cancelBtn = document.getElementById('cancelBtn');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                // Use replace to clean history
                 window.location.replace(this.href);
             });
         }
 
-        // ===== DEBOUNCED LIVE PREVIEW FUNCTIONALITY =====
+        // Debounced live preview
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -1129,7 +1187,7 @@
         const previewIcon = document.getElementById('previewIcon');
         const previewIconName = document.getElementById('previewIconName');
 
-        // Name preview with debounce
+        // Name preview
         if (nameInput) {
             const updateName = debounce(function() {
                 previewName.textContent = this.value || '{{ subject.name }}';
@@ -1151,7 +1209,7 @@
             });
         }
 
-        // Icon preview with debounce
+        // Icon preview
         if (iconInput) {
             const updateIcon = debounce(function() {
                 const iconName = this.value.trim() || 'book';
@@ -1163,32 +1221,37 @@
             iconInput.addEventListener('input', updateIcon);
         }
 
-        // Back button detection - fix for payment/success pages
+        // Back button fix
         window.addEventListener('pageshow', function(event) {
             if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-                // Page was loaded via back button
-                const currentPath = window.location.pathname;
                 const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
-                if (redirectPages.some(page => currentPath.includes(page))) {
-                    sessionStorage.setItem('redirectToDashboard', 'true');
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
                     window.location.replace('/admin/subjects');
                 }
             }
         });
-        
-        // Handle redirect flag
-        if (sessionStorage.getItem('redirectToDashboard')) {
-            sessionStorage.removeItem('redirectToDashboard');
-        }
 
-        // Flash messages
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        // Flash messages with deduplication
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 200 + 500 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
     </script>
 </body>
 </html>

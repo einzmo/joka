@@ -1,9 +1,9 @@
-<!-- templates/admin/payments.html - RENOVATED with Blue/Green/Orange Glassmorphism Theme -->
+<!-- templates/admin/payments.html - COMPLETELY RENOVATED with Dashboard Branding -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Payments - myMSCE Admin</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,941 +13,1053 @@
     <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
 
     <style>
-        /* ===== CSS LAYERS ===== */
-        @layer reset, base, components, utilities, animations;
-
-        /* ===== COLOR SYSTEM - MATCHING YOUR BLUE/GREEN/ORANGE THEME ===== */
-        @layer base {
-            :root {
-                --primary-blue: #2563EB;
-                --primary-dark: #1D4ED8;
-                --primary-light: #DBEAFE;
-                --secondary-green: #16A34A;
-                --secondary-light: #DCFCE7;
-                --accent-orange: #F59E0B;
-                --accent-dark: #D97706;
-                --error-red: #DC2626;
-                --bg-main: #EFF6FF;
-                --card-bg-glass: rgba(219, 234, 254, 0.7);
-                --card-bg-glass-solid: rgba(219, 234, 254, 0.95);
-                --text-primary: #0F172A;
-                --text-secondary: #475569;
-                --text-tertiary: #64748B;
-                --border-light: rgba(37, 99, 235, 0.12);
-                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
-                --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
-                --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            }
-
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                -webkit-tap-highlight-color: transparent;
-            }
-
-            body {
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                background: var(--bg-main);
-                color: var(--text-primary);
-                min-height: 100vh;
-                line-height: 1.5;
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-                * {
-                    animation-duration: 0.01ms !important;
-                    transition-duration: 0.01ms !important;
-                }
-            }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* ===== PAGE LOADER ===== */
-        @layer components {
-            .page-loader {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: var(--bg-main);
-                z-index: 10000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: opacity 0.5s ease, visibility 0.5s ease;
-            }
-            .page-loader.hidden { opacity: 0; visibility: hidden; }
-
-            .glass-loader {
-                position: relative;
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                background: rgba(37, 99, 235, 0.08);
-                backdrop-filter: blur(10px);
-                animation: pulseGlow 2s ease-in-out infinite;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .glass-loader::before {
-                content: '';
-                position: absolute;
-                top: -2px;
-                left: -2px;
-                right: -2px;
-                bottom: -2px;
-                border-radius: 50%;
-                background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
-                animation: spin 1.5s linear infinite;
-            }
-
-            .glass-loader::after {
-                content: '';
-                position: absolute;
-                top: 8px;
-                left: 8px;
-                right: 8px;
-                bottom: 8px;
-                background: var(--bg-main);
-                border-radius: 50%;
-            }
-
-            .glass-loader .inner {
-                position: relative;
-                z-index: 2;
-                font-size: 1.2rem;
-                font-weight: 700;
-                background: linear-gradient(135deg, #2563EB, #16A34A);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
-
-            @keyframes spin { to { transform: rotate(360deg); } }
-            @keyframes pulseGlow {
-                0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
-                50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
-            }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #EFF6FF;
+            color: #0F172A;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* ===== SKELETON LOADING ===== */
-        @layer components {
-            .skeleton-container {
-                max-width: 650px;
-                margin: 0 auto;
-                padding: 20px 16px;
-            }
-
-            .skeleton-card {
-                background: var(--card-bg-glass);
-                backdrop-filter: blur(10px);
-                border-radius: 28px;
-                padding: 20px;
-                border: 1px solid var(--border-light);
-                margin-bottom: 16px;
-            }
-
-            .skeleton-header {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 16px;
-            }
-
-            .skeleton-avatar {
-                width: 48px;
-                height: 48px;
-                background: rgba(37, 99, 235, 0.08);
-                border-radius: 30px;
-            }
-
-            .skeleton-line {
-                height: 14px;
-                background: rgba(37, 99, 235, 0.08);
-                border-radius: 8px;
-                margin-bottom: 12px;
-            }
-
-            .shimmer {
-                background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
-                background-size: 200% 100%;
-                animation: shimmer 1.5s ease-in-out infinite;
-            }
-
-            @keyframes shimmer {
-                0% { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
-            }
+        /* ===== COLOR SYSTEM ===== */
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --card-bg-solid: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
+
+        /* ===== PAGE LOADER - DOTS (MATCHING DASHBOARD) ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: #EFF6FF;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+        
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+        
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--primary-blue);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .menu-btn i { font-size: 1.3rem; color: white; }
+
+        /* ===== SLIDE MENU - SCROLLABLE ===== */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            border-right: 1px solid rgba(37, 99, 235, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-menu.open { left: 0; }
+        
+        .slide-menu::-webkit-scrollbar { width: 4px; }
+        .slide-menu::-webkit-scrollbar-track { background: var(--border-light); border-radius: 10px; }
+        .slide-menu::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+        .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+        .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        
+        .menu-section { padding: 0 16px; margin-bottom: 24px; }
+        .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            color: var(--text-secondary); 
+            text-decoration: none; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+            width: 100%; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            text-align: left;
+        }
+        .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-item i { width: 22px; color: #94A3B8; font-size: 1rem; }
+        .menu-item:hover i { color: var(--primary-blue); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        
+        .logout-btn { color: var(--error-red) !important; }
+        .logout-btn i { color: var(--error-red) !important; }
+        .logout-btn:hover, .logout-btn:active { background: rgba(220, 38, 38, 0.1) !important; color: var(--error-red) !important; }
 
         /* ===== MAIN CONTAINER ===== */
-        @layer components {
-            .app {
-                max-width: 650px;
-                margin: 0 auto;
-                padding: 20px 16px;
-                min-height: 100vh;
-            }
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+            width: 100%;
+            overflow-x: hidden;
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
-        @layer components {
-            .toast-container {
-                position: fixed;
-                top: 20px;
-                left: 0;
-                right: 0;
-                z-index: 99999;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                pointer-events: none;
-                padding: 0 16px;
-            }
-
-            .toast {
-                background: #1E293B;
-                border-left: 4px solid #2563EB;
-                padding: 14px 20px;
-                border-radius: 16px;
-                color: white;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin-bottom: 8px;
-                width: 100%;
-                max-width: 380px;
-                animation: toastIn 0.3s ease;
-                pointer-events: auto;
-                font-weight: 500;
-                box-shadow: var(--shadow-lg);
-            }
-
-            .toast button {
-                background: none;
-                border: none;
-                color: rgba(255, 255, 255, 0.5);
-                margin-left: auto;
-                cursor: pointer;
-                font-size: 1rem;
-            }
-
-            @keyframes toastIn {
-                from { opacity: 0; transform: translateY(-20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
+        @media (min-width: 768px) {
+            .app { padding: 24px; }
         }
 
         /* ===== HEADER ===== */
-        @layer components {
-            .header {
-                margin-bottom: 24px;
-            }
+        .header {
+            margin-bottom: 24px;
+        }
 
-            .header-top {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 12px;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
 
-            .header-title h1 {
-                font-size: 1.6rem;
-                font-weight: 800;
-                color: var(--text-primary);
-                letter-spacing: -0.5px;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-            .header-title h1 i {
-                color: var(--primary-blue);
-                background: rgba(37, 99, 235, 0.1);
-                padding: 8px;
-                border-radius: 16px;
-            }
+        @media (min-width: 768px) {
+            .header-title h1 { font-size: 1.8rem; }
+        }
 
-            .header-date {
-                font-size: 0.75rem;
-                color: var(--text-tertiary);
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                background: rgba(37, 99, 235, 0.08);
-                padding: 6px 12px;
-                border-radius: 30px;
-                border: 1px solid var(--border-light);
-                width: fit-content;
-            }
+        .header-title h1 i {
+            color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.1);
+            padding: 8px;
+            border-radius: 14px;
+        }
 
-            .header-date i {
-                color: var(--primary-blue);
-            }
+        .header-date {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37, 99, 235, 0.08);
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 1px solid var(--border-light);
+            width: fit-content;
+        }
 
-            .header-actions {
-                display: flex;
-                gap: 8px;
-            }
+        .header-date i {
+            color: var(--primary-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
         }
 
         /* ===== BUTTONS ===== */
-        @layer components {
-            .btn {
-                padding: 10px 18px;
-                border-radius: 40px;
-                font-weight: 600;
-                font-size: 0.85rem;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                transition: all 0.2s;
-                border: none;
-                cursor: pointer;
-                white-space: nowrap;
-            }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
 
-            .btn:active { transform: scale(0.97); }
+        .btn:active { transform: scale(0.97); }
 
-            .btn-primary {
-                background: var(--accent-orange);
-                color: white;
-                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
-            }
+        .btn-primary {
+            background: var(--accent-orange);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
 
-            .btn-primary:hover {
-                background: var(--accent-dark);
-                transform: translateY(-2px);
-                box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.3);
-            }
+        .btn-secondary {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+            border: 1px solid var(--border-light);
+        }
 
-            .btn-secondary {
-                background: rgba(37, 99, 235, 0.1);
-                color: var(--primary-blue);
-                border: 1px solid var(--border-light);
-            }
-
-            .btn-secondary:hover {
-                background: rgba(37, 99, 235, 0.2);
-                transform: translateY(-2px);
-            }
-
-            .btn-icon {
-                width: 42px;
-                height: 42px;
-                padding: 0;
-                justify-content: center;
-            }
+        .btn-icon {
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            justify-content: center;
         }
 
         /* ===== STATS SUMMARY ===== */
-        @layer components {
-            .stats-summary {
-                display: flex;
-                gap: 12px;
-                margin-bottom: 24px;
-                overflow-x: auto;
-                padding: 4px 0;
-                scrollbar-width: none;
-            }
+        .stats-summary {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
 
-            .stats-summary::-webkit-scrollbar { display: none; }
+        .stat-pill {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
 
-            .stat-pill {
-                background: var(--card-bg-glass);
-                backdrop-filter: blur(10px);
-                border: 1px solid var(--border-light);
-                border-radius: 40px;
-                padding: 8px 18px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                white-space: nowrap;
-                transition: all 0.2s;
-            }
+        .stat-pill:active { transform: scale(0.98); }
 
-            .stat-pill:hover {
-                border-color: var(--primary-blue);
-                transform: translateY(-2px);
-            }
+        .stat-pill i {
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+        }
 
-            .stat-pill i {
-                color: var(--primary-blue);
-                font-size: 1.1rem;
-            }
+        .stat-pill span {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
 
-            .stat-pill span {
-                color: var(--text-primary);
-                font-weight: 700;
-                font-size: 1.1rem;
-            }
-
-            .stat-pill small {
-                color: var(--text-tertiary);
-                font-size: 0.75rem;
-            }
+        .stat-pill small {
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
         }
 
         /* ===== PAYMENTS LIST ===== */
-        @layer components {
-            .payments-list {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-                margin-bottom: 20px;
-            }
-
-            .payment-card {
-                background: var(--card-bg-glass);
-                backdrop-filter: blur(10px);
-                border-radius: 28px;
-                padding: 20px;
-                border: 1px solid var(--border-light);
-                transition: all 0.3s ease;
-                container-type: inline-size;
-                container-name: payment-card;
-            }
-
-            .payment-card:hover {
-                transform: translateY(-4px);
-                border-color: var(--primary-blue);
-                box-shadow: var(--shadow-md);
-            }
-
-            /* CSS :has() selector magic */
-            .payment-card:has(.status-pending) {
-                border-left: 3px solid var(--accent-orange);
-            }
-
-            .payment-card:has(.status-failed) {
-                border-left: 3px solid var(--error-red);
-            }
-
-            .payment-card:has(.status-completed) {
-                border-left: 3px solid var(--secondary-green);
-            }
-
-            @container payment-card (max-width: 480px) {
-                .payment-details {
-                    flex-direction: column;
-                    gap: 12px;
-                }
-                .payment-footer {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 12px;
-                }
-                .payment-actions {
-                    width: 100%;
-                    justify-content: flex-end;
-                }
-            }
-
-            .payment-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 16px;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-
-            .user-info {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-
-            .user-avatar {
-                width: 48px;
-                height: 48px;
-                background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
-                border-radius: 30px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-weight: 700;
-                font-size: 1.3rem;
-                flex-shrink: 0;
-                box-shadow: var(--shadow-sm);
-            }
-
-            .user-details h4 {
-                font-size: 1rem;
-                font-weight: 700;
-                color: var(--text-primary);
-                margin-bottom: 4px;
-            }
-
-            .user-details .user-email {
-                font-size: 0.7rem;
-                color: var(--text-tertiary);
-            }
-
-            .payment-status {
-                padding: 6px 14px;
-                border-radius: 40px;
-                font-size: 0.7rem;
-                font-weight: 600;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-            }
-
-            .status-completed {
-                background: rgba(22, 163, 74, 0.1);
-                color: var(--secondary-green);
-                border: 1px solid rgba(22, 163, 74, 0.3);
-            }
-
-            .status-pending {
-                background: rgba(245, 158, 11, 0.1);
-                color: var(--accent-orange);
-                border: 1px solid rgba(245, 158, 11, 0.3);
-                animation: softPulse 2s infinite;
-            }
-
-            .status-failed {
-                background: rgba(220, 38, 38, 0.1);
-                color: var(--error-red);
-                border: 1px solid rgba(220, 38, 38, 0.3);
-            }
-
-            @keyframes softPulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.7; }
-            }
-
-            .payment-details {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 16px;
-                margin-bottom: 16px;
-                padding: 16px 0;
-                border-top: 1px solid var(--border-light);
-                border-bottom: 1px solid var(--border-light);
-            }
-
-            .detail-item {
-                flex: 1;
-                min-width: 120px;
-            }
-
-            .detail-label {
-                font-size: 0.65rem;
-                color: var(--text-tertiary);
-                margin-bottom: 6px;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                text-transform: uppercase;
-                letter-spacing: 0.3px;
-            }
-
-            .detail-label i {
-                color: var(--primary-blue);
-                font-size: 0.7rem;
-            }
-
-            .detail-value {
-                font-size: 0.95rem;
-                font-weight: 600;
-                color: var(--text-primary);
-            }
-
-            .detail-value.amount {
-                color: var(--accent-orange);
-                font-size: 1.2rem;
-            }
-
-            .reference {
-                font-family: monospace;
-                font-size: 0.75rem;
-                color: var(--text-secondary);
-                background: rgba(37, 99, 235, 0.08);
-                padding: 6px 12px;
-                border-radius: 30px;
-                display: inline-block;
-                border: 1px solid var(--border-light);
-            }
-
-            .plan-badge {
-                background: rgba(37, 99, 235, 0.1);
-                color: var(--primary-blue);
-                padding: 6px 14px;
-                border-radius: 40px;
-                font-size: 0.7rem;
-                font-weight: 600;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                border: 1px solid var(--border-light);
-            }
-
-            .payment-footer {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-
-            .payment-meta {
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                flex-wrap: wrap;
-            }
-
-            .payment-date {
-                font-size: 0.7rem;
-                color: var(--text-tertiary);
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-
-            .payment-date i {
-                color: var(--primary-blue);
-            }
-
-            .payment-actions {
-                display: flex;
-                gap: 8px;
-            }
-
-            .action-btn {
-                width: 38px;
-                height: 38px;
-                border-radius: 30px;
-                background: rgba(37, 99, 235, 0.1);
-                border: 1px solid var(--border-light);
-                color: var(--text-secondary);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.2s;
-                font-size: 0.9rem;
-            }
-
-            .action-btn:hover {
-                transform: translateY(-2px);
-            }
-
-            .action-btn.info:hover {
-                background: var(--primary-blue);
-                color: white;
-                border-color: var(--primary-blue);
-            }
-
-            .action-btn.activate:hover {
-                background: var(--secondary-green);
-                color: white;
-                border-color: var(--secondary-green);
-            }
-
-            .action-btn:active { transform: scale(0.95); }
+        .payments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
+        .payment-card {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .payment-card { padding: 20px; border-radius: 24px; }
+        }
+
+        .payment-card:active { transform: scale(0.99); }
+
+        /* Status border colors */
+        .payment-card[data-status="completed"] { border-left: 3px solid var(--secondary-green); }
+        .payment-card[data-status="pending"] { border-left: 3px solid var(--accent-orange); }
+        .payment-card[data-status="failed"] { border-left: 3px solid var(--error-red); }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media (min-width: 768px) {
+            .user-avatar { width: 48px; height: 48px; font-size: 1.3rem; }
+        }
+
+        .user-details h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .user-details .user-email {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            word-break: break-all;
+        }
+
+        .payment-status {
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-completed {
+            background: rgba(22, 163, 74, 0.1);
+            color: var(--secondary-green);
+            border: 1px solid rgba(22, 163, 74, 0.3);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-orange);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-failed {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--error-red);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .payment-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding: 12px 0;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        @media (min-width: 500px) {
+            .payment-details { gap: 16px; }
+        }
+
+        .detail-item {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .detail-label {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .detail-label i {
+            color: var(--primary-blue);
+            font-size: 0.7rem;
+        }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .detail-value.amount {
+            color: var(--accent-orange);
+            font-size: 1.1rem;
+        }
+
+        .reference {
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            background: rgba(37, 99, 235, 0.08);
+            padding: 5px 10px;
+            border-radius: 30px;
+            display: inline-block;
+            border: 1px solid var(--border-light);
+            word-break: break-all;
+        }
+
+        .plan-badge {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border-light);
+        }
+
+        .payment-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .payment-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .payment-date {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .payment-date i {
+            color: var(--primary-blue);
+        }
+
+        .payment-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 30px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:active { transform: scale(0.95); }
+
+        .action-btn.info:hover { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
+        .action-btn.activate:hover { background: var(--secondary-green); color: white; border-color: var(--secondary-green); }
+
         /* ===== EMPTY STATE ===== */
-        @layer components {
-            .empty-state {
-                text-align: center;
-                padding: 60px 20px;
-                background: var(--card-bg-glass);
-                backdrop-filter: blur(10px);
-                border-radius: 32px;
-                border: 1px solid var(--border-light);
-            }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            border: 1px solid var(--border-light);
+        }
 
-            .empty-state i {
-                font-size: 4rem;
-                color: var(--text-tertiary);
-                opacity: 0.3;
-                margin-bottom: 16px;
-            }
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-tertiary);
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
 
-            .empty-state h3 {
-                color: var(--text-primary);
-                font-size: 1.2rem;
-                margin-bottom: 8px;
-            }
+        .empty-state h3 {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
 
-            .empty-state p {
-                color: var(--text-tertiary);
-                font-size: 0.85rem;
-            }
+        .empty-state p {
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
         }
 
         /* ===== BACK TO TOP BUTTON ===== */
-        @layer components {
-            .back-to-top {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 48px;
-                height: 48px;
-                background: var(--accent-orange);
-                border-radius: 30px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                text-decoration: none;
-                opacity: 0;
-                transition: all 0.3s ease;
-                pointer-events: none;
-                z-index: 100;
-                box-shadow: var(--shadow-md);
-            }
-
-            .back-to-top.visible {
-                opacity: 1;
-                pointer-events: auto;
-            }
-
-            .back-to-top:hover {
-                background: var(--accent-dark);
-                transform: translateY(-4px);
-                box-shadow: var(--shadow-lg);
-            }
-
-            .back-to-top:active { transform: scale(0.95); }
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--accent-orange);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: var(--shadow-md);
         }
 
-        /* ===== RESPONSIVE & UTILITIES ===== */
-        @layer utilities {
-            @media (max-width: 480px) {
-                .app { padding: 16px; }
-                .header-title h1 { font-size: 1.4rem; }
-                .stat-pill { padding: 6px 14px; }
-                .stat-pill span { font-size: 1rem; }
-                .payment-card { padding: 16px; }
-            }
-
-            @supports (padding: max(0px)) {
-                .app {
-                    padding-left: max(16px, env(safe-area-inset-left));
-                    padding-right: max(16px, env(safe-area-inset-right));
-                    padding-top: max(20px, env(safe-area-inset-top));
-                    padding-bottom: max(20px, env(safe-area-inset-bottom));
-                }
-                .back-to-top {
-                    bottom: max(20px, env(safe-area-inset-bottom));
-                    right: max(20px, env(safe-area-inset-right));
-                }
-                .toast-container {
-                    top: max(20px, env(safe-area-inset-top));
-                }
-            }
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        /* ===== VIEW TRANSITIONS API ===== */
-        @view-transition { navigation: auto; }
-        ::view-transition-old(root),
-        ::view-transition-new(root) {
-            animation-duration: 0.2s;
+        .back-to-top:active { transform: scale(0.95); }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+        @media (min-width: 768px) {
+            .skeleton-card { padding: 20px; }
+        }
+
+        .skeleton-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .skeleton-avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 30px;
+        }
+
+        .skeleton-line {
+            height: 12px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== TOAST - BRANDED ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+        
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid var(--primary-blue);
+            padding: 12px 16px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 360px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .toast.error { border-left-color: var(--error-red); }
+        .toast.success { border-left-color: var(--secondary-green); }
+        .toast.warning { border-left-color: var(--accent-orange); }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i { font-size: 0.55rem; }
+        
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            .app { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .slide-menu { padding-top: max(20px, env(safe-area-inset-top)); }
+            .back-to-top { bottom: max(20px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- PAGE LOADER - DOTS (MATCHING DASHBOARD) -->
     <div class="page-loader" id="pageLoader">
-        <div class="glass-loader">
-            <div class="inner">M</div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
+                    <p>Administrator</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Main</div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item active"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Account</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
         </div>
     </div>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <div class="app">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-top">
-                <div class="header-title">
-                    <h1>
-                        <i class="bi bi-credit-card"></i>
-                        Payments
-                    </h1>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-icon btn-primary" onclick="testWebhook()" title="Test Webhook">
-                        <i class="bi bi-send"></i>
-                    </button>
-                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-icon btn-secondary" title="Back to Dashboard">
-                        <i class="bi bi-arrow-left"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="header-date">
-                <i class="bi bi-clock"></i>
-                <span>{{ now.strftime('%d %b %Y, %H:%M') if now else 'Current' }}</span>
-            </div>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
         </div>
+    </div>
 
-        <!-- Stats Summary -->
-        {% if payments %}
-        {% set total = payments|length %}
-        {% set completed = payments|selectattr('status', 'equalto', 'completed')|list|length %}
-        {% set pending = payments|selectattr('status', 'equalto', 'pending')|list|length %}
-        <div class="stats-summary">
-            <div class="stat-pill">
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="app">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-top">
+                    <div class="header-title">
+                        <h1>
+                            <i class="bi bi-credit-card"></i>
+                            Payments
+                        </h1>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-icon btn-secondary" onclick="window.location.href='{{ url_for('admin_dashboard') }}'" title="Back to Dashboard">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <button class="btn btn-icon btn-primary" onclick="testWebhook()" title="Test Webhook">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="header-date">
+                    <i class="bi bi-clock"></i>
+                    <span>{{ now.strftime('%d %b %Y, %H:%M') if now else 'Current' }}</span>
+                </div>
+            </div>
+
+            <!-- Stats Summary -->
+            {% if payments %}
+            {% set total = payments|length %}
+            {% set completed = payments|selectattr('status', 'equalto', 'completed')|list|length %}
+            {% set pending = payments|selectattr('status', 'equalto', 'pending')|list|length %}
+            {% set failed = payments|selectattr('status', 'equalto', 'failed')|list|length %}
+            <div class="stats-summary">
+                <div class="stat-pill">
+                    <i class="bi bi-credit-card"></i>
+                    <span>{{ total }}</span>
+                    <small>total</small>
+                </div>
+                <div class="stat-pill">
+                    <i class="bi bi-check-circle"></i>
+                    <span>{{ completed }}</span>
+                    <small>completed</small>
+                </div>
+                <div class="stat-pill">
+                    <i class="bi bi-hourglass"></i>
+                    <span>{{ pending }}</span>
+                    <small>pending</small>
+                </div>
+                {% if failed > 0 %}
+                <div class="stat-pill">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span>{{ failed }}</span>
+                    <small>failed</small>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Payments List -->
+            <div class="payments-list">
+                {% for payment in payments %}
+                <div class="payment-card" data-status="{{ payment.status }}">
+                    <div class="payment-header">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {{ payment.user.username[0]|upper }}
+                            </div>
+                            <div class="user-details">
+                                <h4>{{ payment.user.username }}</h4>
+                                <div class="user-email">{{ payment.user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="payment-status
+                            {% if payment.status == 'completed' %}status-completed
+                            {% elif payment.status == 'pending' %}status-pending
+                            {% else %}status-failed{% endif %}">
+                            <i class="bi
+                                {% if payment.status == 'completed' %}bi-check-circle-fill
+                                {% elif payment.status == 'pending' %}bi-hourglass-split
+                                {% else %}bi-exclamation-circle-fill{% endif %}"></i>
+                            {{ payment.status|upper }}
+                        </div>
+                    </div>
+
+                    <div class="payment-details">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-cash"></i> Amount
+                            </div>
+                            <div class="detail-value amount">MWK {{ "{:,.0f}".format(payment.amount) }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-tag"></i> Plan
+                            </div>
+                            <div class="detail-value">
+                                <span class="plan-badge">
+                                    <i class="bi bi-{% if payment.subscription_form == 'form3' %}3-circle{% else %}4-circle{% endif %}"></i>
+                                    {{ payment.subscription_form|upper }} - {{ payment.subscription_type|title }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="bi bi-upc-scan"></i> Reference
+                            </div>
+                            <div class="detail-value">
+                                <span class="reference">{{ payment.reference }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-footer">
+                        <div class="payment-meta">
+                            <div class="payment-date">
+                                <i class="bi bi-calendar"></i>
+                                {{ payment.created_at.strftime('%d %b %Y') }}
+                            </div>
+                            <div class="payment-date">
+                                <i class="bi bi-clock"></i>
+                                {{ payment.created_at.strftime('%H:%M') }}
+                            </div>
+                            {% if payment.payment_method %}
+                            <div class="payment-date">
+                                <i class="bi bi-phone"></i>
+                                {{ payment.payment_method|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="payment-actions">
+                            {% if payment.charge_id %}
+                            <button class="action-btn info" onclick="showChargeId('{{ payment.charge_id }}')" title="View Charge ID">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                            {% endif %}
+                            {% if payment.status == 'pending' and payment.charge_id %}
+                            <button class="action-btn activate" onclick="activatePayment({{ payment.id }})" title="Activate Payment">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
                 <i class="bi bi-credit-card"></i>
-                <span>{{ total }}</span>
-                <small>total</small>
+                <h3>No Payments Yet</h3>
+                <p>Payment records will appear here when users subscribe.</p>
             </div>
-            <div class="stat-pill">
-                <i class="bi bi-check-circle"></i>
-                <span>{{ completed }}</span>
-                <small>completed</small>
+            {% endif %}
+
+            <!-- Back to Top Button -->
+            <a href="#" class="back-to-top" id="backToTop">
+                <i class="bi bi-arrow-up"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Skeleton Loading -->
+    <div id="skeletonContent">
+        <div class="app">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-header">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-line" style="width: 80px; height: 28px;"></div>
+                </div>
+                <div class="skeleton-line" style="width: 100%;"></div>
+                <div class="skeleton-line" style="width: 80%;"></div>
+                <div class="skeleton-line" style="width: 60%;"></div>
             </div>
-            <div class="stat-pill">
-                <i class="bi bi-hourglass"></i>
-                <span>{{ pending }}</span>
-                <small>pending</small>
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-header">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-line" style="width: 80px; height: 28px;"></div>
+                </div>
+                <div class="skeleton-line" style="width: 100%;"></div>
+                <div class="skeleton-line" style="width: 80%;"></div>
+                <div class="skeleton-line" style="width: 60%;"></div>
+            </div>
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-header">
+                    <div class="skeleton-avatar shimmer"></div>
+                    <div class="skeleton-line" style="width: 80px; height: 28px;"></div>
+                </div>
+                <div class="skeleton-line" style="width: 100%;"></div>
+                <div class="skeleton-line" style="width: 80%;"></div>
+                <div class="skeleton-line" style="width: 60%;"></div>
             </div>
         </div>
-        {% endif %}
-
-        <!-- Payments List -->
-        {% if payments %}
-        <div class="payments-list">
-            {% for payment in payments %}
-            <div class="payment-card">
-                <div class="payment-header">
-                    <div class="user-info">
-                        <div class="user-avatar">
-                            {{ payment.user.username[0]|upper }}
-                        </div>
-                        <div class="user-details">
-                            <h4>{{ payment.user.username }}</h4>
-                            <div class="user-email">{{ payment.user.email }}</div>
-                        </div>
-                    </div>
-                    <div class="payment-status
-                        {% if payment.status == 'completed' %}status-completed
-                        {% elif payment.status == 'pending' %}status-pending
-                        {% else %}status-failed{% endif %}">
-                        <i class="bi
-                            {% if payment.status == 'completed' %}bi-check-circle-fill
-                            {% elif payment.status == 'pending' %}bi-hourglass-split
-                            {% else %}bi-exclamation-circle-fill{% endif %}"></i>
-                        {{ payment.status }}
-                    </div>
-                </div>
-
-                <div class="payment-details">
-                    <div class="detail-item">
-                        <div class="detail-label">
-                            <i class="bi bi-cash"></i> Amount
-                        </div>
-                        <div class="detail-value amount">MWK {{ "{:,.0f}".format(payment.amount) }}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">
-                            <i class="bi bi-tag"></i> Plan
-                        </div>
-                        <div class="detail-value">
-                            <span class="plan-badge">
-                                <i class="bi bi-{{ payment.subscription_form }}"></i>
-                                {{ payment.subscription_form }} - {{ payment.subscription_type }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 16px;">
-                    <span class="detail-label" style="margin-bottom: 8px;">
-                        <i class="bi bi-phone"></i> Payment Method
-                    </span>
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        {% if payment.payment_method %}
-                        <span class="plan-badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                            <i class="bi bi-{% if 'airtel' in payment.payment_method %}phone{% else %}wifi{% endif %}"></i>
-                            {{ payment.payment_method|upper }}
-                        </span>
-                        {% else %}
-                        <span class="plan-badge" style="background: rgba(100, 116, 139, 0.1); color: #64748B;">—</span>
-                        {% endif %}
-                        <span class="reference">{{ payment.reference }}</span>
-                    </div>
-                </div>
-
-                <div class="payment-footer">
-                    <div class="payment-meta">
-                        <div class="payment-date">
-                            <i class="bi bi-calendar"></i>
-                            {{ payment.created_at.strftime('%d %b %Y') }}
-                        </div>
-                        <div class="payment-date">
-                            <i class="bi bi-clock"></i>
-                            {{ payment.created_at.strftime('%H:%M') }}
-                        </div>
-                    </div>
-                    <div class="payment-actions">
-                        {% if payment.charge_id %}
-                        <button class="action-btn info" onclick="showChargeId('{{ payment.charge_id }}')" title="View Charge ID">
-                            <i class="bi bi-info-circle"></i>
-                        </button>
-                        {% endif %}
-                        {% if payment.status == 'pending' and payment.charge_id %}
-                        <button class="action-btn activate" onclick="activatePayment({{ payment.id }})" title="Activate Payment">
-                            <i class="bi bi-check-circle"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="bi bi-credit-card"></i>
-            <h3>No Payments Yet</h3>
-            <p>Payment records will appear here when users subscribe.</p>
-        </div>
-        {% endif %}
-
-        <!-- Back to Top Button -->
-        <a href="#" class="back-to-top" id="backToTop">
-            <i class="bi bi-arrow-up"></i>
-        </a>
     </div>
 
     <script>
-        // ===== TOAST FUNCTION =====
-        function showToast(message, type = 'info', duration = 5000) {
+        // Track shown toasts for duplicate prevention
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
+        function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
             if (container.children.length >= 3) container.children[0].remove();
-
+            
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = type === 'success' ? 'check-circle' :
-                      type === 'error' ? 'exclamation-circle' :
-                      type === 'warning' ? 'exclamation-triangle' : 'info-circle';
-
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            
             toast.innerHTML = `
-                <i class="bi bi-${icon}-fill"></i>
-                <span>${escapeHtml(message)}</span>
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Admin
+                    </div>
+                </div>
                 <button onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(toast);
-            setTimeout(() => { if (toast.parentElement) toast.remove(); }, duration);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
         }
 
         function escapeHtml(text) {
@@ -956,11 +1068,31 @@
             return div.innerHTML;
         }
 
-        // ===== PAGE LOADER =====
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation
         window.addEventListener('load', function() {
             setTimeout(() => {
-                document.getElementById('pageLoader').classList.add('hidden');
-            }, 600);
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
         });
 
         // ===== TEST WEBHOOK =====
@@ -993,13 +1125,13 @@
 
         // ===== ACTIVATE PAYMENT =====
         function activatePayment(paymentId) {
-            if (confirm('Activate this payment?')) {
-                showToast('Activating...', 'info');
+            if (confirm('Activate this payment? This will grant the user subscription access.')) {
+                showToast('Activating payment...', 'info');
                 fetch(`/admin/activate-payment/${paymentId}`, { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            showToast('✅ Payment activated', 'success');
+                            showToast('✅ Payment activated successfully', 'success');
                             setTimeout(() => location.reload(), 1500);
                         } else {
                             showToast('❌ ' + data.message, 'error');
@@ -1010,21 +1142,23 @@
         }
 
         // ===== BACK TO TOP =====
-        window.addEventListener('scroll', () => {
-            const btn = document.getElementById('backToTop');
-            if (window.scrollY > 300) {
-                btn.classList.add('visible');
-            } else {
-                btn.classList.remove('visible');
-            }
-        });
+        const backToTop = document.getElementById('backToTop');
+        if (backToTop) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            });
 
-        document.getElementById('backToTop').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+            backToTop.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
 
-        // ===== BACK BUTTON FIX =====
+        // Back button fix
         window.addEventListener('pageshow', function(event) {
             if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
                 const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
@@ -1034,18 +1168,27 @@
             }
         });
 
-        // ===== FLASH MESSAGES =====
-        document.addEventListener('DOMContentLoaded', function() {
+        // Flash messages with deduplication
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
+                    {% set shown_messages = [] %}
                     {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1000 }});
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 200 + 500 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-        });
+        }
     </script>
 </body>
 </html>

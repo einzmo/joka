@@ -1,42 +1,1055 @@
-{% extends "admin/base.html" %}
-{% block content %}
-<h2>Video Management</h2>
+<!-- templates/admin/video_management.html - FULLY ENHANCED with Dashboard Branding -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Video Management - myMSCE Admin</title>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h4>Lessons with Cloudinary Videos</h4>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="{{ url_for('static', filename='js/history-manager.js') }}"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-blue: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary-green: #16A34A;
+            --secondary-light: #DCFCE7;
+            --accent-orange: #F59E0B;
+            --accent-dark: #D97706;
+            --error-red: #DC2626;
+            --bg-main: #EFF6FF;
+            --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --card-bg-solid: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
+            --border-light: rgba(37, 99, 235, 0.12);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 16px;
+        }
+
+        @media (min-width: 768px) {
+            body { padding: 20px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
+        /* ===== PAGE LOADER - DOTS ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-main);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .page-loader.hidden { opacity: 0; visibility: hidden; }
+
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--primary-blue);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin: -16px -16px 16px -16px;
+        }
+        
+        @media (min-width: 768px) {
+            .navbar { margin: -20px -20px 20px -20px; padding: 14px 24px; }
+        }
+        
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .menu-btn i { font-size: 1.3rem; color: white; }
+
+        /* ===== SLIDE MENU ===== */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            border-right: 1px solid rgba(37, 99, 235, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-menu.open { left: 0; }
+        
+        .slide-menu::-webkit-scrollbar { width: 4px; }
+        .slide-menu::-webkit-scrollbar-track { background: var(--border-light); border-radius: 10px; }
+        .slide-menu::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+        .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+        .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        
+        .menu-section { padding: 0 16px; margin-bottom: 24px; }
+        .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            color: var(--text-secondary); 
+            text-decoration: none; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+            width: 100%; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            text-align: left;
+        }
+        .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-item i { width: 22px; color: #94A3B8; font-size: 1rem; }
+        .menu-item:hover i { color: var(--primary-blue); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        
+        .logout-btn { color: var(--error-red) !important; }
+        .logout-btn i { color: var(--error-red) !important; }
+        .logout-btn:hover, .logout-btn:active { background: rgba(220, 38, 38, 0.1) !important; color: var(--error-red) !important; }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            text-decoration: none;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .back-btn:active { transform: scale(0.95); background: rgba(37, 99, 235, 0.2); }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .header-left h1 { font-size: 1.6rem; gap: 12px; }
+        }
+
+        .header-left h1 i {
+            color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.1);
+            padding: 8px;
+            border-radius: 14px;
+        }
+
+        .stats-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .stats-badge i {
+            color: var(--primary-blue);
+        }
+
+        .stats-badge strong {
+            color: var(--primary-blue);
+            margin-left: 4px;
+        }
+
+        /* ===== STATS CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid { gap: 16px; }
+        }
+
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+        }
+
+        .stat-card {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 14px;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+        }
+
+        @media (min-width: 768px) {
+            .stat-card { padding: 20px; border-radius: 24px; }
+        }
+
+        .stat-card:active { transform: scale(0.98); }
+
+        .stat-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-info h6 {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (min-width: 768px) {
+            .stat-info h6 { font-size: 0.75rem; margin-bottom: 8px; }
+        }
+
+        .stat-info h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        @media (min-width: 768px) {
+            .stat-info h3 { font-size: 1.8rem; }
+        }
+
+        .stat-icon i {
+            font-size: 1.6rem;
+            opacity: 0.4;
+            color: var(--primary-blue);
+        }
+
+        @media (min-width: 768px) {
+            .stat-icon i { font-size: 2rem; }
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-light);
+        }
+
+        @media (min-width: 768px) {
+            .search-bar { padding: 20px; border-radius: 24px; margin-bottom: 28px; }
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ===== TABLE CARD ===== */
+        .table-card {
+            background: var(--card-bg-glass);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .table-card { border-radius: 24px; }
+        }
+
+        .card-header {
+            padding: 14px 16px;
+            background: rgba(37, 99, 235, 0.04);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .card-header { padding: 16px 20px; }
+        }
+
+        .card-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header h3 i {
+            color: var(--primary-blue);
+        }
+
+        .lesson-count {
+            padding: 4px 10px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 30px;
+            color: var(--primary-blue);
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* ===== TABLE ===== */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(37, 99, 235, 0.04); }
+
+        .lesson-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .subject-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .cloudinary-id {
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: rgba(37, 99, 235, 0.08);
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .views-count {
+            font-weight: 600;
+            color: var(--accent-orange);
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-action:active { transform: scale(0.97); background: rgba(37, 99, 235, 0.2); }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-tertiary);
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+        }
+
+        /* ===== TOAST - BRANDED ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+        
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid var(--primary-blue);
+            padding: 12px 16px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 360px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .toast.error { border-left-color: var(--error-red); }
+        .toast.success { border-left-color: var(--secondary-green); }
+        .toast.warning { border-left-color: var(--accent-orange); }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i { font-size: 0.55rem; }
+        
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        @media (min-width: 768px) {
+            .skeleton-stats { grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+        }
+        
+        .skeleton-stat-card {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 20px;
+            padding: 14px;
+        }
+        
+        .skeleton-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .skeleton-line {
+            height: 14px;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .skeleton-table {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .skeleton-table-header {
+            padding: 12px 16px;
+            background: rgba(37, 99, 235, 0.04);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            body { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .slide-menu { padding-top: max(20px, env(safe-area-inset-top)); }
+            .navbar { margin-top: max(-16px, calc(-1 * env(safe-area-inset-top))); }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
+    </style>
+</head>
+<body>
+    <!-- PAGE LOADER - DOTS -->
+    <div class="page-loader" id="pageLoader">
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
+                    <p>Administrator</p>
+                </div>
             </div>
-            <div class="card-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Lesson</th>
-                            <th>Subject</th>
-                            <th>Cloudinary ID</th>
-                            <th>Duration</th>
-                            <th>Views</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for lesson in lessons %}
-                        <tr>
-                            <td>{{ lesson.title }}</td>
-                            <td>{{ lesson.subject.name }}</td>
-                            <td><code>{{ lesson.cloudinary_public_id[:50] }}...</code></td>
-                            <td>{{ lesson.duration }} min</td>
-                            <td>{{ lesson.access_count or 0 }}</td>
-                            <td>
-                                <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-info">Watch</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Main</div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Account</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
+        </div>
+    </div>
+
+    <!-- Skeleton Container -->
+    <div id="skeletonContent">
+        <div class="container">
+            <div class="skeleton-stats">
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+            </div>
+            <div class="skeleton-table shimmer">
+                <div class="skeleton-table-header"><div class="skeleton-line" style="width: 30%; height: 20px;"></div></div>
+                <div style="padding: 12px 16px;"><div class="skeleton-line" style="width: 100%;"></div><div class="skeleton-line" style="width: 90%; margin-top: 10px;"></div><div class="skeleton-line" style="width: 80%; margin-top: 10px;"></div></div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <a href="{{ url_for('admin_dashboard') }}" class="back-btn">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h1>
+                        <i class="bi bi-camera-reel-fill"></i>
+                        Video Management
+                    </h1>
+                </div>
+                <div class="stats-badge">
+                    <i class="bi bi-cloud-check-fill"></i>
+                    Cloudinary Storage
+                    <strong>{{ lessons|length }}</strong>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            {% set total_duration = lessons|sum(attribute='duration') %}
+            {% set total_views = lessons|sum(attribute='access_count') %}
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Total Videos</h6>
+                            <h3>{{ lessons|length }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-camera-reel-fill"></i></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Total Views</h6>
+                            <h3>{{ total_views }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-eye-fill"></i></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Total Duration</h6>
+                            <h3>{{ total_duration }} min</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-clock-fill"></i></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Avg Views/Video</h6>
+                            <h3>{{ (total_views / lessons|length)|round|int if lessons|length > 0 else 0 }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-graph-up"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <div class="search-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by lesson title or subject...">
+                </div>
+            </div>
+
+            <!-- Lessons Table -->
+            <div class="table-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="bi bi-camera-reel-fill"></i>
+                        Lessons with Cloudinary Videos
+                    </h3>
+                    <span class="lesson-count" id="lessonCount">{{ lessons|length }} lessons</span>
+                </div>
+
+                {% if lessons %}
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lesson</th>
+                                <th>Subject</th>
+                                <th>Cloudinary ID</th>
+                                <th>Duration</th>
+                                <th>Views</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lessonsTableBody">
+                            {% for lesson in lessons %}
+                            <tr data-title="{{ lesson.title|lower }}" data-subject="{{ lesson.subject.name|lower }}">
+                                <td class="lesson-title">{{ lesson.title }}</td>
+                                <td><span class="subject-badge">{{ lesson.subject.name }}</span></td>
+                                <td><code class="cloudinary-id">{{ lesson.cloudinary_public_id[:50] }}{% if lesson.cloudinary_public_id|length > 50 %}...{% endif %}</code></td>
+                                <td>{{ lesson.duration }} min</td>
+                                <td><span class="views-count">{{ lesson.access_count or 0 }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="btn-action" target="_blank">
+                                        <i class="bi bi-play-fill"></i> Watch
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-camera-reel"></i>
+                    <h3>No Videos Found</h3>
+                    <p>No lessons have Cloudinary videos uploaded yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Track shown toasts
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            if (container.children.length >= 3) container.children[0].remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Admin
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const skeleton = document.getElementById('skeletonContent');
+                const real = document.getElementById('realContent');
+                if(skeleton) skeleton.style.display = 'none';
+                if(real) real.style.display = 'block';
+            }, 800);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if(loader) loader.classList.add('hidden');
+            }, 1200);
+        });
+
+        // ===== SEARCH FUNCTION =====
+        const searchInput = document.getElementById('searchInput');
+        const rows = document.querySelectorAll('#lessonsTableBody tr');
+        const lessonCountSpan = document.getElementById('lessonCount');
+
+        function filterLessons() {
+            const searchTerm = searchInput.value.toLowerCase();
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const title = row.dataset.title || '';
+                const subject = row.dataset.subject || '';
+                
+                const matchesSearch = searchTerm === '' || title.includes(searchTerm) || subject.includes(searchTerm);
+
+                if (matchesSearch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (lessonCountSpan) {
+                lessonCountSpan.textContent = visibleCount + ' lesson' + (visibleCount !== 1 ? 's' : '');
+            }
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterLessons);
+        }
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/admin/dashboard');
+                }
+            }
+        });
+
+        // Flash messages with deduplication
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 200 + 500 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
+    </script>
+</body>
+</html>

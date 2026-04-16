@@ -1,12 +1,11 @@
-<!-- templates/admin/create_subject.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
+<!-- templates/admin/create_subject.html - COMPLETELY RENOVATED with Dashboard Branding -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Create Subject - myMSCE Admin</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -41,6 +40,7 @@
             --error-red: #DC2626;
             --bg-main: #EFF6FF;
             --card-bg-glass: rgba(219, 234, 254, 0.7);
+            --card-bg-solid: #FFFFFF;
             --text-primary: #0F172A;
             --text-secondary: #475569;
             --text-tertiary: #64748B;
@@ -51,13 +51,15 @@
             --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER ===== */
+        /* ===== PAGE LOADER - DOTS (MATCHING DASHBOARD) ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            width: 100%;
+            height: 100%;
             background: #EFF6FF;
             z-index: 10000;
             display: flex;
@@ -71,62 +73,34 @@
             visibility: hidden;
         }
         
-        .glass-loader {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(37, 99, 235, 0.08);
-            backdrop-filter: blur(10px);
-            animation: pulseGlow 2s ease-in-out infinite;
+        .dots-loader {
             display: flex;
+            gap: 12px;
             align-items: center;
             justify-content: center;
         }
         
-        .glass-loader::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
-            animation: spin 1.5s linear infinite;
+            animation: bounce 0.6s ease-in-out infinite alternate;
         }
         
-        .glass-loader::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-            background: #EFF6FF;
-            border-radius: 50%;
-        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
         
-        .glass-loader .inner {
-            position: relative;
-            z-index: 2;
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2563EB, #16A34A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: #2563EB;
-            padding: 14px 24px;
+            background: var(--primary-blue);
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -137,7 +111,7 @@
         }
         
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: white;
             letter-spacing: -0.5px;
@@ -160,23 +134,30 @@
         .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
         .menu-btn i { font-size: 1.3rem; color: white; }
 
-        /* ===== SLIDE MENU ===== */
+        /* ===== SLIDE MENU - SCROLLABLE ===== */
         .slide-menu {
             position: fixed;
             top: 0;
             left: -280px;
             width: 280px;
             height: 100vh;
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
             z-index: 1000;
             transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
-            padding: 24px 0;
+            padding: 20px 0;
             border-right: 1px solid rgba(37, 99, 235, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .slide-menu.open { left: 0; }
+        
+        .slide-menu::-webkit-scrollbar { width: 4px; }
+        .slide-menu::-webkit-scrollbar-track { background: var(--border-light); border-radius: 10px; }
+        .slide-menu::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
 
         .menu-overlay {
             position: fixed;
@@ -195,91 +176,118 @@
         .menu-overlay.active { opacity: 1; visibility: visible; }
 
         .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
-        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #2563EB, #16A34A); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; }
-        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: #0F172A; }
-        .menu-user-info p { font-size: 0.7rem; color: #64748B; }
-        .menu-plan-badge { background: #DBEAFE; color: #2563EB; padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+        .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+        .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
         
-        .menu-section { padding: 0 20px; margin-bottom: 24px; }
+        .menu-section { padding: 0 16px; margin-bottom: 24px; }
         .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: #475569; text-decoration: none; transition: all 0.2s; margin-bottom: 4px; width: 100%; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
-        .menu-item:hover, .menu-item:active { background: #DBEAFE; color: #2563EB; }
-        .menu-item i { width: 22px; color: #94A3B8; }
-        .menu-item:hover i { color: #2563EB; }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            color: var(--text-secondary); 
+            text-decoration: none; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+            width: 100%; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            text-align: left;
+        }
+        .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-item i { width: 22px; color: #94A3B8; font-size: 1rem; }
+        .menu-item:hover i { color: var(--primary-blue); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary-blue); }
         .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        
+        .logout-btn { color: var(--error-red) !important; }
+        .logout-btn i { color: var(--error-red) !important; }
+        .logout-btn:hover, .logout-btn:active { background: rgba(220, 38, 38, 0.1) !important; color: var(--error-red) !important; }
 
         /* ===== MAIN CONTENT ===== */
         .main-content {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 32px 24px 60px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+            width: 100%;
+            overflow-x: hidden;
         }
 
-        @media (max-width: 768px) {
-            .main-content { padding: 24px 20px 40px; }
+        @media (min-width: 768px) {
+            .main-content { padding: 32px 24px 60px; }
         }
 
         /* ===== PAGE HEADER ===== */
         .page-header {
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
         
         .page-header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        @media (min-width: 768px) {
+            .page-header h1 { font-size: 1.8rem; }
         }
         
         .page-header h1 i {
-            color: #2563EB;
+            color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.1);
+            padding: 8px;
+            border-radius: 14px;
         }
         
         .page-header p {
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-top: 4px;
-        }
-
-        /* ===== FORM LAYOUT ===== */
-        .form-layout {
-            display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 28px;
-        }
-        
-        @media (max-width: 900px) {
-            .form-layout { grid-template-columns: 1fr; gap: 24px; }
+            font-size: 0.85rem;
+            margin-top: 6px;
         }
 
         /* ===== FORM CARD ===== */
         .form-card {
             background: var(--card-bg-glass);
             backdrop-filter: blur(12px);
-            border-radius: 28px;
+            border-radius: 24px;
             border: 1px solid var(--border-light);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
         }
         
+        @media (min-width: 768px) {
+            .form-card { border-radius: 28px; }
+        }
+        
         .card-accent {
             height: 4px;
             width: 100%;
-            background: linear-gradient(90deg, #2563EB, #16A34A);
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-green));
         }
         
-        .card-content {
-            padding: 28px;
+        .form-body {
+            padding: 24px;
         }
         
-        @media (max-width: 480px) {
-            .card-content { padding: 20px; }
+        @media (min-width: 768px) {
+            .form-body { padding: 32px; }
         }
-        
+
+        /* ===== FORM GROUPS ===== */
         .form-group {
             margin-bottom: 24px;
         }
@@ -295,13 +303,13 @@
         }
         
         .form-label i {
-            color: #2563EB;
-            font-size: 0.9rem;
+            color: var(--primary-blue);
         }
         
-        .form-label .required {
-            color: #DC2626;
+        .required {
+            color: var(--error-red);
             font-size: 0.7rem;
+            margin-left: 4px;
         }
         
         .form-control, .form-select {
@@ -318,7 +326,7 @@
         
         .form-control:focus, .form-select:focus {
             outline: none;
-            border-color: #2563EB;
+            border-color: var(--primary-blue);
             background: rgba(255, 255, 255, 0.6);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
@@ -333,16 +341,6 @@
             min-height: 100px;
         }
         
-        .row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-        
-        @media (max-width: 500px) {
-            .row { grid-template-columns: 1fr; gap: 16px; }
-        }
-        
         .help-text {
             display: flex;
             align-items: center;
@@ -353,22 +351,133 @@
         }
         
         .help-text i {
-            color: #2563EB;
-            font-size: 0.7rem;
+            color: var(--primary-blue);
+            font-size: 0.65rem;
+        }
+
+        /* ===== ICON SELECTOR ===== */
+        .icon-selector {
+            position: relative;
         }
         
-        /* Checkbox */
+        .icon-preview-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .icon-preview-box {
+            width: 48px;
+            height: 48px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-light);
+        }
+        
+        .icon-preview-box i {
+            font-size: 1.6rem;
+            color: var(--primary-blue);
+        }
+        
+        .icon-dropdown {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .icon-dropdown select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .icon-dropdown select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .icon-custom-input {
+            flex: 2;
+        }
+        
+        .icon-custom-input input {
+            width: 100%;
+        }
+
+        /* ===== ICON OPTIONS GRID ===== */
+        .icon-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        @media (min-width: 500px) {
+            .icon-options { grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        }
+        
+        @media (min-width: 768px) {
+            .icon-options { grid-template-columns: repeat(8, 1fr); gap: 12px; }
+        }
+        
+        .icon-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .icon-option:hover {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+        
+        .icon-option.selected {
+            background: rgba(37, 99, 235, 0.15);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+        
+        .icon-option i {
+            font-size: 1.3rem;
+            color: var(--primary-blue);
+        }
+        
+        .icon-option span {
+            font-size: 0.6rem;
+            color: var(--text-tertiary);
+        }
+
+        /* ===== CHECKBOX ===== */
         .checkbox-wrapper {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 0;
+            padding: 12px 0;
         }
         
         .checkbox-wrapper input {
             width: 18px;
             height: 18px;
-            accent-color: #16A34A;
+            accent-color: var(--secondary-green);
             cursor: pointer;
         }
         
@@ -376,28 +485,36 @@
             color: var(--text-secondary);
             font-size: 0.85rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .checkbox-wrapper label i {
-            color: #16A34A;
-            margin-right: 6px;
+            color: var(--secondary-green);
         }
-        
+
+        /* ===== DIVIDER ===== */
         .divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--border-light), transparent);
             margin: 24px 0;
         }
-        
-        /* Buttons */
+
+        /* ===== BUTTONS ===== */
         .button-group {
             display: flex;
             gap: 12px;
             margin-top: 24px;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 500px) {
+            .button-group { flex-direction: row; }
         }
         
         .btn {
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 50px;
             font-weight: 600;
             font-size: 0.85rem;
@@ -409,150 +526,113 @@
             transition: all 0.2s;
             cursor: pointer;
             border: none;
+            width: 100%;
         }
         
-        .btn:active {
-            transform: scale(0.97);
+        @media (min-width: 500px) {
+            .btn { width: auto; flex: 1; padding: 14px 24px; font-size: 0.9rem; }
         }
+        
+        .btn:active { transform: scale(0.97); }
         
         .btn-primary {
-            background: #F59E0B;
+            background: var(--accent-orange);
             color: white;
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
         
-        .btn-primary:active {
-            background: #D97706;
-        }
+        .btn-primary:active { background: var(--accent-dark); }
         
         .btn-secondary {
             background: rgba(37, 99, 235, 0.1);
-            color: #2563EB;
+            color: var(--primary-blue);
             border: 1px solid rgba(37, 99, 235, 0.25);
         }
         
-        .btn-secondary:active {
-            background: rgba(37, 99, 235, 0.2);
-        }
+        .btn-secondary:active { background: rgba(37, 99, 235, 0.2); }
 
-        /* ===== PREVIEW CARD ===== */
-        .preview-card {
-            background: var(--card-bg-glass);
-            backdrop-filter: blur(12px);
-            border-radius: 28px;
-            border: 1px solid var(--border-light);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            position: sticky;
-            top: 100px;
-        }
-        
-        @media (max-width: 900px) {
-            .preview-card { position: relative; top: 0; }
-        }
-        
-        .preview-header {
+        /* ===== PREVIEW SECTION ===== */
+        .preview-section {
+            margin-top: 24px;
             background: rgba(37, 99, 235, 0.04);
-            border-bottom: 1px solid var(--border-light);
-            padding: 18px 20px;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-light);
         }
         
-        .preview-header h5 {
-            font-size: 0.95rem;
+        @media (min-width: 768px) {
+            .preview-section { padding: 24px; border-radius: 24px; }
+        }
+        
+        .preview-title {
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin: 0;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        .preview-header h5 i {
-            color: #2563EB;
+        .preview-title i {
+            color: var(--primary-blue);
         }
         
-        .preview-body {
-            padding: 24px;
-        }
-        
-        /* Subject Preview Card */
         .subject-preview {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 24px;
-            padding: 32px 20px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 24px 20px;
             text-align: center;
             border: 1px solid var(--border-light);
             transition: all 0.3s ease;
         }
         
-        .subject-preview:hover {
-            transform: translateY(-4px);
-            border-color: #2563EB;
-            box-shadow: var(--shadow-md);
+        .preview-icon-display {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
         }
         
-        .preview-icon {
-            font-size: 3.5rem;
-            margin-bottom: 16px;
-            transition: transform 0.3s;
+        .preview-icon-display i {
+            color: var(--primary-blue);
         }
         
-        .subject-preview:hover .preview-icon {
-            transform: scale(1.05);
-        }
-        
-        .preview-icon i {
-            color: #2563EB;
-        }
-        
-        .preview-name {
-            color: var(--text-primary);
-            font-size: 1.3rem;
+        .preview-name-display {
+            font-size: 1.2rem;
             font-weight: 700;
+            color: var(--text-primary);
             margin-bottom: 8px;
+            word-break: break-word;
         }
         
-        .preview-desc {
-            color: var(--text-tertiary);
+        .preview-desc-display {
             font-size: 0.8rem;
-            margin-bottom: 16px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
             line-height: 1.5;
         }
         
-        .preview-badge {
+        .preview-badge-display {
             display: inline-block;
-            padding: 6px 16px;
-            border-radius: 40px;
+            padding: 4px 12px;
+            border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
         }
         
-        .badge-form3 {
+        .badge-form3-preview {
             background: rgba(37, 99, 235, 0.12);
-            color: #2563EB;
+            color: var(--primary-blue);
         }
         
-        .badge-form4 {
+        .badge-form4-preview {
             background: rgba(22, 163, 74, 0.12);
-            color: #16A34A;
+            color: var(--secondary-green);
         }
 
         /* ===== SKELETON LOADING ===== */
-        .skeleton-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 32px 24px 60px;
-        }
-        
-        .skeleton-layout {
-            display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 28px;
-        }
-        
-        .skeleton-form-card {
+        .skeleton-card {
             background: rgba(219, 234, 254, 0.5);
-            border-radius: 28px;
+            border-radius: 24px;
             overflow: hidden;
         }
         
@@ -561,8 +641,8 @@
             background: rgba(37, 99, 235, 0.15);
         }
         
-        .skeleton-content {
-            padding: 28px;
+        .skeleton-body {
+            padding: 24px;
         }
         
         .skeleton-line {
@@ -586,31 +666,26 @@
             margin-bottom: 24px;
         }
         
-        .skeleton-preview {
-            background: rgba(219, 234, 254, 0.5);
-            border-radius: 28px;
-            overflow: hidden;
-        }
-        
-        .skeleton-preview-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(37, 99, 235, 0.08);
-            border-radius: 20px;
-            margin: 0 auto 16px;
-        }
-        
         .skeleton-button-group {
             display: flex;
             gap: 12px;
             margin-top: 24px;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 500px) {
+            .skeleton-button-group { flex-direction: row; }
         }
         
         .skeleton-button {
-            flex: 1;
             height: 48px;
             background: rgba(37, 99, 235, 0.08);
             border-radius: 50px;
+            width: 100%;
+        }
+        
+        @media (min-width: 500px) {
+            .skeleton-button { width: auto; flex: 1; }
         }
         
         .shimmer {
@@ -624,7 +699,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* ===== TOAST ===== */
+        /* ===== TOAST - BRANDED ===== */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -640,21 +715,39 @@
         
         .toast {
             background: #1E293B;
-            border-left: 4px solid #2563EB;
-            padding: 14px 20px;
+            border-left: 4px solid var(--primary-blue);
+            padding: 12px 16px;
             border-radius: 16px;
             color: white;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 8px;
             width: 100%;
-            max-width: 380px;
+            max-width: 360px;
             animation: toastIn 0.3s ease;
             pointer-events: auto;
             font-weight: 500;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-lg);
         }
+        
+        .toast.error { border-left-color: var(--error-red); }
+        .toast.success { border-left-color: var(--secondary-green); }
+        .toast.warning { border-left-color: var(--accent-orange); }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i { font-size: 0.55rem; }
         
         .toast button {
             background: transparent;
@@ -662,7 +755,8 @@
             color: rgba(255,255,255,0.5);
             margin-left: auto;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            padding: 4px;
         }
         
         @keyframes toastIn {
@@ -670,17 +764,30 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            .main-content { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .slide-menu { padding-top: max(20px, env(safe-area-inset-top)); }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- PAGE LOADER - DOTS (MATCHING DASHBOARD) -->
     <div class="page-loader" id="pageLoader">
-        <div class="glass-loader">
-            <div class="inner">M</div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
 
@@ -717,7 +824,7 @@
             <div class="menu-section-title">Account</div>
             <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
             <form method="POST" action="{{ url_for('logout') }}">
-                <button type="submit" class="menu-item"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                <button type="submit" class="menu-item logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
             </form>
         </div>
     </div>
@@ -733,133 +840,173 @@
         </div>
     </div>
 
-    <!-- Real Content (hidden initially) -->
+    <!-- Real Content -->
     <div id="realContent" style="display: none;">
         <div class="main-content">
             <!-- Page Header -->
             <div class="page-header">
-                <h1><i class="bi bi-plus-circle-fill"></i> Create New Subject</h1>
-                <p>Add a new subject to the platform</p>
+                <h1>
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Create New Subject
+                </h1>
+                <p>Add a new subject to the platform. Students will see this in their dashboard.</p>
             </div>
 
-            <!-- Form Layout -->
-            <div class="form-layout">
-                <!-- Main Form Card -->
-                <div class="form-card">
-                    <div class="card-accent"></div>
-                    <div class="card-content">
-                        <form method="POST" action="{{ url_for('admin_create_subject') }}" id="subjectForm">
-                            <!-- Subject Name -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-type"></i>
-                                    Subject Name <span class="required">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="name" name="name" required
-                                       placeholder="e.g., Mathematics, Physics, Chemistry">
-                                <div class="help-text">
-                                    <i class="bi bi-info-circle"></i>
-                                    Enter the full subject name
+            <!-- Form Card -->
+            <div class="form-card">
+                <div class="card-accent"></div>
+                <div class="form-body">
+                    <form method="POST" action="{{ url_for('admin_create_subject') }}" id="subjectForm">
+                        <!-- Subject Name -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-type"></i>
+                                Subject Name <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" required
+                                   placeholder="e.g., Mathematics, Physics, Chemistry, Biology">
+                            <div class="help-text">
+                                <i class="bi bi-info-circle-fill"></i>
+                                Enter the full subject name as it will appear to students
+                            </div>
+                        </div>
+
+                        <!-- Form Selection -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-layers-fill"></i>
+                                Form <span class="required">*</span>
+                            </label>
+                            <select class="form-select" id="form" name="form" required>
+                                <option value="">Select Form</option>
+                                <option value="3">📚 Form 3</option>
+                                <option value="4">🎓 Form 4</option>
+                            </select>
+                            <div class="help-text">
+                                <i class="bi bi-info-circle-fill"></i>
+                                Choose which class this subject belongs to
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-text-paragraph"></i>
+                                Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                      placeholder="Enter a brief description of the subject..."></textarea>
+                            <div class="help-text">
+                                <i class="bi bi-info-circle-fill"></i>
+                                This will appear on the subject card (max 150 characters recommended)
+                            </div>
+                        </div>
+
+                        <!-- Icon Selector -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-emoji-smile"></i>
+                                Subject Icon
+                            </label>
+                            
+                            <div class="icon-preview-row">
+                                <div class="icon-preview-box" id="iconPreviewBox">
+                                    <i class="bi bi-book" id="previewIcon"></i>
+                                </div>
+                                <div class="icon-dropdown">
+                                    <select id="iconSelect" class="form-select">
+                                        <option value="book">📖 Book</option>
+                                        <option value="calculator">🔢 Calculator</option>
+                                        <option value="flask">🧪 Flask</option>
+                                        <option value="leaf">🌿 Leaf</option>
+                                        <option value="atom">⚛️ Atom</option>
+                                        <option value="music-note">🎵 Music Note</option>
+                                        <option value="globe">🌍 Globe</option>
+                                        <option value="code-slash">💻 Code</option>
+                                        <option value="brush">🎨 Brush</option>
+                                        <option value="heart">❤️ Heart</option>
+                                        <option value="star">⭐ Star</option>
+                                        <option value="trophy">🏆 Trophy</option>
+                                        <option value="graph-up">📈 Graph</option>
+                                        <option value="building">🏛️ Building</option>
+                                        <option value="car">🚗 Car</option>
+                                        <option value="cloud">☁️ Cloud</option>
+                                    </select>
                                 </div>
                             </div>
-
-                            <!-- Form Selection -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-sort-numeric-up"></i>
-                                    Form <span class="required">*</span>
-                                </label>
-                                <select class="form-select" id="form" name="form" required>
-                                    <option value="">Select Form</option>
-                                    <option value="3">Form 3</option>
-                                    <option value="4">Form 4</option>
-                                </select>
+                            
+                            <!-- Custom Icon Input -->
+                            <div class="icon-custom-input" style="margin-top: 12px;">
+                                <input type="text" class="form-control" id="icon" name="icon" value="book"
+                                       placeholder="Or type custom icon name (e.g., calculator, flask, atom)">
                             </div>
-
-                            <!-- Description -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-text-paragraph"></i>
-                                    Description
-                                </label>
-                                <textarea class="form-control" id="description" name="description" rows="4"
-                                          placeholder="Enter a brief description of the subject"></textarea>
-                                <div class="help-text">
-                                    <i class="bi bi-info-circle"></i>
-                                    This will appear on the subject card
-                                </div>
+                            
+                            <!-- Quick Icon Grid -->
+                            <div class="icon-options" id="iconGrid">
+                                <div class="icon-option" data-icon="book"><i class="bi bi-book"></i><span>Book</span></div>
+                                <div class="icon-option" data-icon="calculator"><i class="bi bi-calculator"></i><span>Math</span></div>
+                                <div class="icon-option" data-icon="flask"><i class="bi bi-flask"></i><span>Science</span></div>
+                                <div class="icon-option" data-icon="leaf"><i class="bi bi-leaf"></i><span>Biology</span></div>
+                                <div class="icon-option" data-icon="atom"><i class="bi bi-atom"></i><span>Physics</span></div>
+                                <div class="icon-option" data-icon="music-note"><i class="bi bi-music-note"></i><span>Music</span></div>
+                                <div class="icon-option" data-icon="globe"><i class="bi bi-globe"></i><span>Geography</span></div>
+                                <div class="icon-option" data-icon="code-slash"><i class="bi bi-code-slash"></i><span>ICT</span></div>
                             </div>
-
-                            <!-- Icon -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-vector-pen"></i>
-                                    Icon
-                                </label>
-                                <div class="row">
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <input type="text" class="form-control" id="icon" name="icon" value="book"
-                                               placeholder="book, calculator, flask, leaf">
-                                    </div>
-                                </div>
-                                <div class="help-text">
-                                    <i class="bi bi-info-circle"></i>
-                                    Bootstrap Icon name (e.g., book, calculator, flask, leaf, atom, music-note)
-                                </div>
+                            
+                            <div class="help-text">
+                                <i class="bi bi-info-circle-fill"></i>
+                                Choose an icon or type a custom Bootstrap Icon name
                             </div>
+                        </div>
 
-                            <!-- Display Order -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-sort-numeric-down"></i>
-                                    Display Order
-                                </label>
-                                <input type="number" class="form-control" id="order" name="order" value="0" min="0">
-                                <div class="help-text">
-                                    <i class="bi bi-info-circle"></i>
-                                    Lower numbers appear first in the list
-                                </div>
+                        <!-- Display Order -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-sort-numeric-down"></i>
+                                Display Order
+                            </label>
+                            <input type="number" class="form-control" id="order" name="order" value="0" min="0">
+                            <div class="help-text">
+                                <i class="bi bi-info-circle-fill"></i>
+                                Lower numbers appear first in the subject list
                             </div>
+                        </div>
 
-                            <!-- Active Status -->
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
-                                <label for="is_active">
-                                    <i class="bi bi-check-circle-fill"></i> Active (visible to students)
-                                </label>
-                            </div>
+                        <!-- Active Status -->
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="is_active" name="is_active" checked>
+                            <label for="is_active">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Active (visible to students)
+                            </label>
+                        </div>
 
-                            <div class="divider"></div>
+                        <div class="divider"></div>
 
-                            <!-- Form Actions -->
-                            <div class="button-group">
-                                <a href="{{ url_for('admin_subjects') }}" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn btn-primary" id="submitBtn">
-                                    <i class="bi bi-check-circle-fill"></i> Create Subject
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                        <!-- Form Actions -->
+                        <div class="button-group">
+                            <a href="{{ url_for('admin_subjects') }}" class="btn btn-secondary" id="cancelBtn">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-check-circle-fill"></i> Create Subject
+                            </button>
+                        </div>
+                    </form>
 
-                <!-- Preview Card -->
-                <div class="preview-card">
-                    <div class="preview-header">
-                        <h5>
+                    <!-- Live Preview Section -->
+                    <div class="preview-section">
+                        <div class="preview-title">
                             <i class="bi bi-eye-fill"></i>
                             Live Preview
-                        </h5>
-                    </div>
-                    <div class="preview-body">
+                        </div>
                         <div class="subject-preview">
-                            <div class="preview-icon" id="previewIcon">
+                            <div class="preview-icon-display" id="previewIconDisplay">
                                 <i class="bi bi-book"></i>
                             </div>
-                            <h3 class="preview-name" id="previewName">Subject Name</h3>
-                            <p class="preview-desc" id="previewDesc">Subject description will appear here</p>
-                            <span class="preview-badge badge-form3" id="previewForm">Form 3</span>
+                            <div class="preview-name-display" id="previewNameDisplay">Subject Name</div>
+                            <div class="preview-desc-display" id="previewDescDisplay">Subject description will appear here</div>
+                            <span class="preview-badge-display badge-form3-preview" id="previewFormDisplay">Form 3</span>
                         </div>
                     </div>
                 </div>
@@ -867,35 +1014,25 @@
         </div>
     </div>
 
-    <!-- Skeleton Container (visible initially) -->
+    <!-- Skeleton Loading -->
     <div id="skeletonContent">
-        <div class="skeleton-container">
-            <div class="skeleton-layout">
-                <div class="skeleton-form-card shimmer">
-                    <div class="skeleton-accent shimmer"></div>
-                    <div class="skeleton-content">
-                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
-                        <div class="skeleton-input shimmer"></div>
-                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
-                        <div class="skeleton-input shimmer"></div>
-                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
-                        <div class="skeleton-textarea shimmer"></div>
-                        <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
-                        <div class="skeleton-input shimmer"></div>
-                        <div class="skeleton-button-group">
-                            <div class="skeleton-button shimmer"></div>
-                            <div class="skeleton-button shimmer"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="skeleton-preview shimmer">
-                    <div class="skeleton-accent shimmer"></div>
-                    <div class="skeleton-content">
-                        <div class="skeleton-line" style="width: 40%; height: 24px;"></div>
-                        <div class="skeleton-preview-icon shimmer"></div>
-                        <div class="skeleton-line" style="width: 60%; margin: 8px auto;"></div>
-                        <div class="skeleton-line" style="width: 80%; margin: 8px auto;"></div>
-                        <div class="skeleton-line" style="width: 40%; margin: 8px auto;"></div>
+        <div class="main-content">
+            <div class="skeleton-card shimmer">
+                <div class="skeleton-accent shimmer"></div>
+                <div class="skeleton-body">
+                    <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                    <div class="skeleton-input shimmer"></div>
+                    <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                    <div class="skeleton-input shimmer"></div>
+                    <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                    <div class="skeleton-textarea shimmer"></div>
+                    <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                    <div class="skeleton-input shimmer"></div>
+                    <div class="skeleton-line" style="width: 30%; height: 20px;"></div>
+                    <div class="skeleton-input shimmer"></div>
+                    <div class="skeleton-button-group">
+                        <div class="skeleton-button shimmer"></div>
+                        <div class="skeleton-button shimmer"></div>
                     </div>
                 </div>
             </div>
@@ -903,17 +1040,51 @@
     </div>
 
     <script>
-        // Toast function
+        // Track shown toasts for duplicate prevention
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
         function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            if (container.children.length >= 3) container.children[0].remove();
+            
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
             const icon = icons[type] || icons.info;
-            toast.innerHTML = `<i class="bi bi-${icon}-fill"></i><span>${message}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Admin
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Menu functionality
@@ -943,76 +1114,151 @@
             }, 1200);
         });
 
-        // Form submission loading state
-        const form = document.getElementById('subjectForm');
-        const submitBtn = document.getElementById('submitBtn');
-
-        if (form && submitBtn) {
-            form.addEventListener('submit', function() {
-                submitBtn.classList.add('loading');
-                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Creating...';
-                submitBtn.style.opacity = '0.8';
-                submitBtn.style.pointerEvents = 'none';
-            });
-        }
-
         // ===== LIVE PREVIEW FUNCTIONALITY =====
         const nameInput = document.getElementById('name');
         const descInput = document.getElementById('description');
-        const iconInput = document.getElementById('icon');
+        const iconSelect = document.getElementById('iconSelect');
+        const iconCustom = document.getElementById('icon');
         const formSelect = document.getElementById('form');
 
-        const previewName = document.getElementById('previewName');
-        const previewDesc = document.getElementById('previewDesc');
-        const previewIcon = document.getElementById('previewIcon');
-        const previewForm = document.getElementById('previewForm');
+        const previewNameDisplay = document.getElementById('previewNameDisplay');
+        const previewDescDisplay = document.getElementById('previewDescDisplay');
+        const previewIconDisplay = document.getElementById('previewIconDisplay');
+        const previewIconBox = document.getElementById('previewIconBox');
+        const previewFormDisplay = document.getElementById('previewFormDisplay');
+
+        // Update icon function
+        function updateIcon(iconName) {
+            const cleanIcon = iconName.trim() || 'book';
+            previewIconDisplay.innerHTML = `<i class="bi bi-${cleanIcon}"></i>`;
+            if (previewIconBox) {
+                previewIconBox.innerHTML = `<i class="bi bi-${cleanIcon}"></i>`;
+            }
+        }
 
         // Name preview
         if (nameInput) {
             nameInput.addEventListener('input', function() {
-                previewName.textContent = this.value || 'Subject Name';
+                previewNameDisplay.textContent = this.value || 'Subject Name';
             });
         }
 
         // Description preview
         if (descInput) {
             descInput.addEventListener('input', function() {
-                previewDesc.textContent = this.value || 'Subject description will appear here';
+                previewDescDisplay.textContent = this.value || 'Subject description will appear here';
             });
         }
 
-        // Icon preview
-        if (iconInput) {
-            iconInput.addEventListener('input', function() {
-                const iconValue = this.value || 'book';
-                previewIcon.innerHTML = `<i class="bi bi-${iconValue}"></i>`;
+        // Icon select dropdown
+        if (iconSelect) {
+            iconSelect.addEventListener('change', function() {
+                const iconValue = this.value;
+                iconCustom.value = iconValue;
+                updateIcon(iconValue);
             });
         }
+
+        // Icon custom input
+        if (iconCustom) {
+            iconCustom.addEventListener('input', function() {
+                const iconValue = this.value || 'book';
+                if (iconSelect) iconSelect.value = iconValue;
+                updateIcon(iconValue);
+            });
+        }
+
+        // Icon grid click handlers
+        const iconOptions = document.querySelectorAll('.icon-option');
+        iconOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const iconValue = this.dataset.icon;
+                iconCustom.value = iconValue;
+                if (iconSelect) iconSelect.value = iconValue;
+                updateIcon(iconValue);
+                
+                // Visual feedback
+                iconOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                setTimeout(() => this.classList.remove('selected'), 300);
+            });
+        });
 
         // Form preview
         if (formSelect) {
             formSelect.addEventListener('change', function() {
                 const formValue = this.value;
-                previewForm.textContent = formValue ? `Form ${formValue}` : 'Form 3';
-                
-                // Update badge class based on form
-                previewForm.className = 'preview-badge';
                 if (formValue === '4') {
-                    previewForm.classList.add('badge-form4');
+                    previewFormDisplay.textContent = 'Form 4';
+                    previewFormDisplay.className = 'preview-badge-display badge-form4-preview';
+                } else if (formValue === '3') {
+                    previewFormDisplay.textContent = 'Form 3';
+                    previewFormDisplay.className = 'preview-badge-display badge-form3-preview';
                 } else {
-                    previewForm.classList.add('badge-form3');
+                    previewFormDisplay.textContent = 'Select Form';
+                    previewFormDisplay.className = 'preview-badge-display badge-form3-preview';
                 }
             });
         }
 
-        // Flash messages
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        // Form submission
+        const form = document.getElementById('subjectForm');
+        const submitBtn = document.getElementById('submitBtn');
+        let isSubmitting = false;
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return;
+                }
+                isSubmitting = true;
+                submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Creating...';
+                submitBtn.style.opacity = '0.8';
+                submitBtn.disabled = true;
+            });
+        }
+
+        // Cancel button
+        const cancelBtn = document.getElementById('cancelBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.replace(this.href);
+            });
+        }
+
+        // Back button fix
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                const redirectPages = ['/payment_success', '/payment_failed', '/verify_email_code'];
+                if (redirectPages.some(page => window.location.pathname.includes(page))) {
+                    window.location.replace('/admin/subjects');
+                }
+            }
+        });
+
+        // Flash messages with deduplication
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 200 + 500 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
     </script>
 </body>
 </html>

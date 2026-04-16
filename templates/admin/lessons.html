@@ -1,9 +1,9 @@
-<!-- templates/admin/lessons.html - COMPLETE ENHANCED VERSION -->
+<!-- templates/admin/lessons.html - FULLY ENHANCED with Dashboard Branding -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Manage Lessons - myMSCE Admin</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +31,7 @@
             --error-red: #DC2626;
             --bg-main: #EFF6FF;
             --card-bg-glass: rgba(219, 234, 254, 0.7);
-            --card-bg-glass-solid: rgba(219, 234, 254, 0.95);
+            --card-bg-solid: #FFFFFF;
             --text-primary: #0F172A;
             --text-secondary: #475569;
             --text-tertiary: #64748B;
@@ -47,17 +47,20 @@
             background: var(--bg-main);
             color: var(--text-primary);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         @media (prefers-reduced-motion: reduce) {
             * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
 
-        /* ===== PAGE LOADER - CENTERED DOTS ===== */
+        /* ===== PAGE LOADER - DOTS ===== */
         .page-loader {
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
             background: var(--bg-main);
@@ -92,198 +95,304 @@
             to { transform: translateY(-20px); opacity: 1; }
         }
 
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: var(--primary-blue);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+        
+        .menu-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .menu-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .menu-btn i { font-size: 1.3rem; color: white; }
+
+        /* ===== SLIDE MENU ===== */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            border-right: 1px solid rgba(37, 99, 235, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-menu.open { left: 0; }
+        
+        .slide-menu::-webkit-scrollbar { width: 4px; }
+        .slide-menu::-webkit-scrollbar-track { background: var(--border-light); border-radius: 10px; }
+        .slide-menu::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        .menu-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .menu-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green)); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .menu-user-info h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+        .menu-user-info p { font-size: 0.7rem; color: var(--text-tertiary); }
+        .menu-plan-badge { background: var(--primary-light); color: var(--primary-blue); padding: 6px 12px; border-radius: 30px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+        
+        .menu-section { padding: 0 16px; margin-bottom: 24px; }
+        .menu-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 12px; font-weight: 600; }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            color: var(--text-secondary); 
+            text-decoration: none; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+            width: 100%; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            text-align: left;
+        }
+        .menu-item:hover, .menu-item:active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-item i { width: 22px; color: #94A3B8; font-size: 1rem; }
+        .menu-item:hover i { color: var(--primary-blue); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary-blue); }
+        .menu-divider { height: 1px; background: rgba(0, 0, 0, 0.08); margin: 16px 0; }
+        
+        .logout-btn { color: var(--error-red) !important; }
+        .logout-btn i { color: var(--error-red) !important; }
+        .logout-btn:hover, .logout-btn:active { background: rgba(220, 38, 38, 0.1) !important; color: var(--error-red) !important; }
+
         /* ===== MAIN CONTAINER ===== */
         .app {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 24px;
-            min-height: 100vh;
-        }
-
-        /* ===== TOAST ===== */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 0;
-            right: 0;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
-            padding: 0 16px;
-        }
-
-        .toast {
-            background: #1E293B;
-            border-left: 4px solid var(--primary-blue);
-            padding: 14px 20px;
-            border-radius: 16px;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
             width: 100%;
-            max-width: 380px;
-            animation: toastIn 0.3s ease;
-            pointer-events: auto;
-            font-weight: 500;
-            box-shadow: var(--shadow-lg);
+            overflow-x: hidden;
         }
-        .toast.error { border-left-color: var(--error-red); }
-        .toast.success { border-left-color: var(--secondary-green); }
-        .toast.warning { border-left-color: var(--accent-orange); }
-        .toast button {
-            background: transparent;
-            border: none;
-            color: rgba(255,255,255,0.5);
-            margin-left: auto;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        @media (min-width: 768px) {
+            .app { padding: 24px; }
         }
 
         /* ===== PAGE HEADER ===== */
         .page-header {
             background: var(--card-bg-glass);
             backdrop-filter: blur(20px);
-            border-radius: 32px;
-            padding: 30px;
-            margin-bottom: 30px;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 24px;
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
         }
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        
+        @media (min-width: 768px) {
+            .page-header { padding: 28px; margin-bottom: 28px; border-radius: 28px; }
         }
-        .page-header::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            left: -10%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(22, 163, 74, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+        
         .header-content {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .header-title {
             display: flex;
             align-items: center;
             gap: 16px;
+            flex-wrap: wrap;
+            justify-content: space-between;
         }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        
         .header-icon {
-            width: 64px;
-            height: 64px;
+            width: 52px;
+            height: 52px;
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(22, 163, 74, 0.08));
             backdrop-filter: blur(4px);
-            border-radius: 20px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid var(--border-light);
+            flex-shrink: 0;
         }
-        .header-icon i { font-size: 2rem; color: var(--primary-blue); }
+        
+        @media (min-width: 768px) {
+            .header-icon { width: 64px; height: 64px; border-radius: 20px; }
+        }
+        
+        .header-icon i { font-size: 1.6rem; color: var(--primary-blue); }
+        @media (min-width: 768px) {
+            .header-icon i { font-size: 2rem; }
+        }
+        
         .header-text h1 {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -0.5px;
         }
+        
+        @media (min-width: 768px) {
+            .header-text h1 { font-size: 1.6rem; }
+        }
+        
         .header-text p {
             color: var(--text-tertiary);
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
+            margin-top: 4px;
         }
+        
+        @media (min-width: 768px) {
+            .header-text p { font-size: 0.85rem; margin-top: 6px; }
+        }
+        
         .btn-create {
             background: var(--accent-orange);
             color: white;
-            padding: 14px 28px;
+            padding: 12px 20px;
             border-radius: 50px;
             font-weight: 600;
+            font-size: 0.85rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.2s;
             border: none;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
-        .btn-create:hover {
-            background: var(--accent-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.3);
+        
+        @media (min-width: 768px) {
+            .btn-create { padding: 14px 28px; font-size: 0.9rem; }
         }
-        .btn-create:active { transform: scale(0.98); }
+        
+        .btn-create:active { transform: scale(0.97); }
 
         /* ===== STATS GRID ===== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
         }
-        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        
+        @media (min-width: 640px) {
+            .stats-grid { gap: 16px; }
+        }
+        
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+        }
+        
         .stat-card {
             background: var(--card-bg-glass);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 24px;
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 14px;
             border: 1px solid var(--border-light);
             transition: all 0.2s ease;
         }
-        .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary-blue);
-            box-shadow: var(--shadow-md);
+        
+        @media (min-width: 768px) {
+            .stat-card { padding: 20px; border-radius: 24px; }
         }
+        
+        .stat-card:active { transform: scale(0.98); }
+        
         .stat-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+        
         .stat-info h6 {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 500;
             color: var(--text-tertiary);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        
+        @media (min-width: 768px) {
+            .stat-info h6 { font-size: 0.75rem; margin-bottom: 8px; }
+        }
+        
         .stat-info h3 {
-            font-size: 2rem;
+            font-size: 1.4rem;
             font-weight: 700;
             margin: 0;
             color: var(--text-primary);
         }
-        .stat-icon i { font-size: 2.5rem; opacity: 0.4; }
+        
+        @media (min-width: 768px) {
+            .stat-info h3 { font-size: 1.8rem; }
+        }
+        
+        .stat-icon i { 
+            font-size: 1.6rem; 
+            opacity: 0.4; 
+        }
+        
+        @media (min-width: 768px) {
+            .stat-icon i { font-size: 2rem; }
+        }
+        
         .stat-card.video .stat-icon i { color: #3b82f6; }
         .stat-card.audio .stat-icon i { color: #10b981; }
         .stat-card.document .stat-icon i { color: #f59e0b; }
@@ -292,197 +401,258 @@
         /* ===== FILTERS ===== */
         .filters-card {
             background: var(--card-bg-glass);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 30px;
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 24px;
             border: 1px solid var(--border-light);
         }
-        .filters-grid {
-            display: grid;
-            grid-template-columns: 1fr auto auto auto auto;
-            gap: 12px;
-            align-items: center;
+        
+        @media (min-width: 768px) {
+            .filters-card { padding: 20px; margin-bottom: 28px; border-radius: 24px; }
         }
-        @media (max-width: 992px) { .filters-grid { grid-template-columns: 1fr; } }
-        .filter-group { position: relative; }
+        
+        .filters-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        @media (min-width: 768px) {
+            .filters-grid { flex-direction: row; gap: 12px; align-items: center; }
+        }
+        
+        .filter-group {
+            flex: 2;
+            position: relative;
+        }
+        
         .filter-icon {
             position: absolute;
-            left: 16px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-tertiary);
             z-index: 2;
+            font-size: 0.9rem;
         }
+        
         .filter-input {
             width: 100%;
-            padding: 14px 16px 14px 44px;
+            padding: 12px 14px 12px 40px;
             background: rgba(255, 255, 255, 0.4);
             border: 1px solid var(--border-light);
-            border-radius: 50px;
+            border-radius: 40px;
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
+        
+        @media (min-width: 768px) {
+            .filter-input { padding: 14px 16px 14px 44px; font-size: 0.9rem; }
+        }
+        
         .filter-input:focus {
             outline: none;
             border-color: var(--primary-blue);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
             background: rgba(255, 255, 255, 0.6);
         }
+        
         .filter-select {
-            padding: 14px 32px 14px 16px;
+            padding: 12px 32px 12px 14px;
             background: rgba(255, 255, 255, 0.4);
             border: 1px solid var(--border-light);
-            border-radius: 50px;
+            border-radius: 40px;
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
-            min-width: 140px;
+            min-width: 120px;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
         }
+        
+        @media (min-width: 768px) {
+            .filter-select { padding: 14px 32px 14px 16px; font-size: 0.9rem; }
+        }
+        
         .filter-select:focus { outline: none; border-color: var(--primary-blue); }
+        
         .btn-reset {
             background: rgba(37, 99, 235, 0.1);
             border: 1px solid var(--border-light);
-            border-radius: 50px;
-            padding: 14px 24px;
+            border-radius: 40px;
+            padding: 12px 16px;
             color: var(--primary-blue);
             font-weight: 500;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-reset:hover {
-            background: rgba(37, 99, 235, 0.2);
-            color: var(--primary-dark);
+        
+        @media (min-width: 768px) {
+            .btn-reset { padding: 14px 24px; }
         }
+        
+        .btn-reset:active { transform: scale(0.97); background: rgba(37, 99, 235, 0.2); }
 
         /* ===== LESSONS GRID ===== */
         .lessons-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 24px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
         }
+        
+        @media (min-width: 500px) {
+            .lessons-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        }
+        
+        @media (min-width: 1000px) {
+            .lessons-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        }
+        
         .lesson-card {
             background: var(--card-bg-glass);
-            backdrop-filter: blur(10px);
-            border-radius: 28px;
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
             border: 1px solid var(--border-light);
             overflow: hidden;
             transition: all 0.2s ease;
         }
-        .lesson-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary-blue);
-            box-shadow: var(--shadow-lg);
+        
+        @media (min-width: 768px) {
+            .lesson-card { border-radius: 24px; }
         }
+        
+        .lesson-card:active { transform: scale(0.99); }
+        
         .lesson-card-header {
-            padding: 20px;
+            padding: 14px;
             background: rgba(37, 99, 235, 0.04);
             border-bottom: 1px solid var(--border-light);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
+        
+        @media (min-width: 768px) {
+            .lesson-card-header { padding: 18px; gap: 14px; }
+        }
+        
         .lesson-type-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
         }
+        
+        @media (min-width: 768px) {
+            .lesson-type-icon { width: 48px; height: 48px; border-radius: 16px; font-size: 1.5rem; }
+        }
+        
         .lesson-type-icon.video { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
         .lesson-type-icon.audio { background: rgba(16, 185, 129, 0.15); color: #10b981; }
         .lesson-type-icon.document { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
         .lesson-type-icon.youtube { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        
         .lesson-card-title { flex: 1; min-width: 0; }
         .lesson-card-title h3 {
             color: var(--text-primary);
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             line-height: 1.4;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        
+        @media (min-width: 768px) {
+            .lesson-card-title h3 { font-size: 1rem; margin-bottom: 6px; }
+        }
+        
         .lesson-card-meta {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 0.7rem;
+            gap: 8px;
+            font-size: 0.65rem;
             color: var(--text-tertiary);
             flex-wrap: wrap;
         }
-        .lesson-card-meta i { color: var(--primary-blue); margin-right: 4px; }
-        .lesson-card-body { padding: 16px 20px; }
+        
+        .lesson-card-meta i { color: var(--primary-blue); margin-right: 3px; }
+        
+        .lesson-card-body { padding: 12px 14px; }
+        @media (min-width: 768px) { .lesson-card-body { padding: 16px 18px; } }
+        
         .lesson-info-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .lesson-info-row:last-child { border-bottom: none; }
+        
         .info-label {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             color: var(--text-secondary);
-            font-size: 0.8rem;
-        }
-        .info-label i { color: var(--primary-blue); }
-        .info-value {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.85rem;
-        }
-        .subject-badge {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary-blue);
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        .form-badge {
-            background: rgba(22, 163, 74, 0.1);
-            color: var(--secondary-green);
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        .badge-type {
-            padding: 4px 12px;
-            border-radius: 30px;
             font-size: 0.7rem;
+        }
+        
+        @media (min-width: 768px) {
+            .info-label { gap: 6px; font-size: 0.75rem; }
+        }
+        
+        .info-label i { color: var(--primary-blue); font-size: 0.7rem; }
+        .info-value { font-weight: 600; color: var(--text-primary); font-size: 0.75rem; }
+        @media (min-width: 768px) { .info-value { font-size: 0.8rem; } }
+        
+        .subject-badge, .form-badge {
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        
+        .subject-badge { background: rgba(37, 99, 235, 0.1); color: var(--primary-blue); }
+        .form-badge { background: rgba(22, 163, 74, 0.1); color: var(--secondary-green); }
+        
+        .badge-type {
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         .badge-type.video { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
         .badge-type.audio { background: rgba(16, 185, 129, 0.15); color: #10b981; }
         .badge-type.document { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
         .badge-type.youtube { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        
         .sample-badge {
             background: var(--accent-orange);
             color: white;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
@@ -491,81 +661,78 @@
         .premium-badge {
             background: rgba(100, 116, 139, 0.15);
             color: #64748B;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
+        
         .file-status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
+            gap: 4px;
+            padding: 3px 10px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
         }
-        .file-uploaded {
-            background: rgba(22, 163, 74, 0.1);
-            color: var(--secondary-green);
-        }
-        .file-missing {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--accent-orange);
-        }
+        .file-uploaded { background: rgba(22, 163, 74, 0.1); color: var(--secondary-green); }
+        .file-missing { background: rgba(245, 158, 11, 0.1); color: var(--accent-orange); }
+        
         .lesson-card-footer {
-            padding: 16px 20px;
+            padding: 12px 14px;
             background: rgba(37, 99, 235, 0.04);
             border-top: 1px solid var(--border-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
         }
+        
+        @media (min-width: 768px) {
+            .lesson-card-footer { padding: 14px 18px; }
+        }
+        
         .lesson-date {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             color: var(--text-tertiary);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
         .lesson-date i { color: var(--primary-blue); }
-        .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-        /* Action Buttons */
+        
+        .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        
         .btn-action {
-            padding: 6px 14px;
+            padding: 5px 10px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 500;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             transition: all 0.2s;
             cursor: pointer;
             border: none;
         }
         .btn-action:active { transform: scale(0.97); }
+        
         .btn-watch-video { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-        .btn-watch-video:hover { background: #3b82f6; color: white; transform: translateY(-2px); }
         .btn-listen-audio { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .btn-listen-audio:hover { background: #10b981; color: white; transform: translateY(-2px); }
         .btn-view-document { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .btn-view-document:hover { background: #f59e0b; color: white; transform: translateY(-2px); }
         .btn-watch-youtube { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .btn-watch-youtube:hover { background: #ef4444; color: white; transform: translateY(-2px); }
         .btn-upload { background: rgba(37, 99, 235, 0.1); color: var(--primary-blue); border: 1px solid var(--border-light); }
-        .btn-upload:hover { background: var(--primary-blue); color: white; transform: translateY(-2px); }
-
+        
         .icon-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
             border: 1px solid var(--border-light);
             background: rgba(255, 255, 255, 0.4);
             color: var(--text-secondary);
@@ -575,58 +742,52 @@
             cursor: pointer;
             transition: all 0.2s;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
-        .icon-btn:hover { transform: translateY(-2px); }
-        .icon-btn.preview:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .icon-btn.edit:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
-        .icon-btn.sample:hover { background: var(--accent-orange); color: white; border-color: var(--accent-orange); }
-        .icon-btn.delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
+        @media (min-width: 768px) {
+            .icon-btn { width: 34px; height: 34px; border-radius: 12px; font-size: 0.9rem; }
+        }
+        .icon-btn:active { transform: scale(0.95); }
 
-        /* Empty State */
+        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             background: var(--card-bg-glass);
-            backdrop-filter: blur(10px);
-            border-radius: 32px;
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
             border: 1px solid var(--border-light);
         }
-        .empty-state i {
-            font-size: 4rem;
-            color: var(--text-tertiary);
-            opacity: 0.3;
-            margin-bottom: 16px;
-        }
-        .empty-state h3 { color: var(--text-primary); font-size: 1.3rem; margin-bottom: 8px; }
-        .empty-state p { color: var(--text-tertiary); margin-bottom: 24px; }
+        
+        .empty-state i { font-size: 3rem; color: var(--text-tertiary); opacity: 0.3; margin-bottom: 12px; }
+        .empty-state h3 { color: var(--text-primary); font-size: 1.1rem; margin-bottom: 6px; }
+        .empty-state p { color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 16px; }
 
-        /* Footer */
+        /* ===== FOOTER ===== */
         .table-footer {
             background: var(--card-bg-glass);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 16px 24px;
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 12px 16px;
             border: 1px solid var(--border-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
             color: var(--text-tertiary);
-            font-size: 0.85rem;
+            font-size: 0.7rem;
         }
-        .legend-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            margin-right: 6px;
+        
+        @media (min-width: 768px) {
+            .table-footer { padding: 14px 24px; font-size: 0.8rem; }
         }
+        
+        .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 4px; margin-right: 5px; }
         .dot-success { background: #10b981; }
         .dot-primary { background: #3b82f6; }
 
-        /* Modal */
+        /* ===== MODAL ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -639,126 +800,237 @@
             display: none;
             align-items: center;
             justify-content: center;
+            padding: 16px;
         }
         .modal-overlay.active { display: flex; }
+        
         .modal-container {
-            max-width: 450px;
-            width: 90%;
-            background: var(--card-bg-glass-solid);
+            max-width: 400px;
+            width: 100%;
+            background: var(--card-bg-glass);
             backdrop-filter: blur(20px);
-            border-radius: 32px;
+            border-radius: 28px;
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-xl);
             animation: modalIn 0.3s ease;
+            overflow: hidden;
         }
+        
         @keyframes modalIn {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
         }
+        
         .modal-header {
-            padding: 20px 24px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-light);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        .modal-title {
-            color: var(--text-primary);
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-tertiary);
-            font-size: 1.3rem;
-            cursor: pointer;
-        }
-        .modal-close:hover { color: var(--text-primary); }
-        .modal-body {
-            padding: 32px 24px;
-            text-align: center;
-        }
-        .modal-body i {
-            font-size: 3.5rem;
-            color: #ef4444;
-            margin-bottom: 16px;
-        }
-        .modal-body h4 { color: var(--text-primary); font-size: 1.2rem; margin-bottom: 8px; }
-        .modal-body p { color: var(--text-tertiary); }
+        .modal-title { color: var(--text-primary); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .modal-close { background: none; border: none; color: var(--text-tertiary); font-size: 1.2rem; cursor: pointer; padding: 4px; }
+        
+        .modal-body { padding: 24px 20px; text-align: center; }
+        .modal-body i { font-size: 3rem; color: #ef4444; margin-bottom: 12px; }
+        .modal-body h4 { color: var(--text-primary); font-size: 1.1rem; margin-bottom: 6px; word-break: break-word; }
+        .modal-body p { color: var(--text-tertiary); font-size: 0.8rem; }
+        
         .modal-footer {
-            padding: 20px 24px;
+            padding: 16px 20px;
             border-top: 1px solid var(--border-light);
             display: flex;
             gap: 12px;
         }
         .modal-btn {
             flex: 1;
-            padding: 12px;
-            border-radius: 50px;
+            padding: 10px;
+            border-radius: 40px;
             font-weight: 600;
+            font-size: 0.85rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.2s;
             border: none;
             cursor: pointer;
         }
         .modal-btn:active { transform: scale(0.97); }
-        .modal-btn-secondary {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary-blue);
-            border: 1px solid var(--border-light);
-        }
-        .modal-btn-secondary:hover { background: rgba(37, 99, 235, 0.2); }
+        .modal-btn-secondary { background: rgba(37, 99, 235, 0.1); color: var(--primary-blue); border: 1px solid var(--border-light); }
         .modal-btn-danger { background: #ef4444; color: white; }
-        .modal-btn-danger:hover { background: #dc2626; }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .app { padding: 16px; }
-            .header-content { flex-direction: column; align-items: flex-start; }
-            .header-title { width: 100%; }
-            .btn-create { width: 100%; justify-content: center; }
-            .lessons-grid { grid-template-columns: 1fr; }
-            .stats-grid { gap: 12px; }
-            .stat-card { padding: 18px; }
-            .stat-info h3 { font-size: 1.6rem; }
-            .lesson-card-footer { flex-direction: column; align-items: flex-start; }
-            .card-actions { width: 100%; justify-content: flex-end; }
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        @media (min-width: 768px) { .skeleton-stats { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
+        
+        .skeleton-stat-card {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 20px;
+            padding: 14px;
+        }
+        .skeleton-icon { width: 40px; height: 40px; background: rgba(37, 99, 235, 0.08); border-radius: 14px; margin-bottom: 10px; }
+        .skeleton-line { height: 14px; background: rgba(37, 99, 235, 0.08); border-radius: 8px; margin-bottom: 8px; }
+        
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 500px) { .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+        @media (min-width: 1000px) { .skeleton-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+        
+        .skeleton-card {
+            background: rgba(219, 234, 254, 0.5);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .skeleton-card-header { padding: 14px; background: rgba(37, 99, 235, 0.04); display: flex; gap: 10px; }
+        .skeleton-card-icon { width: 40px; height: 40px; background: rgba(37, 99, 235, 0.08); border-radius: 14px; }
+        .skeleton-card-body { padding: 12px; }
+        
+        .shimmer {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.04) 25%, rgba(37, 99, 235, 0.12) 50%, rgba(37, 99, 235, 0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
-        @supports (padding: max(0px)) {
-            .app {
-                padding-left: max(24px, env(safe-area-inset-left));
-                padding-right: max(24px, env(safe-area-inset-right));
-                padding-top: max(24px, env(safe-area-inset-top));
-                padding-bottom: max(24px, env(safe-area-inset-bottom));
-            }
-            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+        /* ===== TOAST - BRANDED ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+        
+        .toast {
+            background: #1E293B;
+            border-left: 4px solid var(--primary-blue);
+            padding: 12px 16px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 360px;
+            animation: toastIn 0.3s ease;
+            pointer-events: auto;
+            font-weight: 500;
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .toast.error { border-left-color: var(--error-red); }
+        .toast.success { border-left-color: var(--secondary-green); }
+        .toast.warning { border-left-color: var(--accent-orange); }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        .toast-brand i { font-size: 0.55rem; }
+        
+        .toast button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @view-transition { navigation: auto; }
-        ::view-transition-old(root),
-        ::view-transition-new(root) { animation-duration: 0.2s; }
-
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: var(--primary-light); border-radius: 10px; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            .app { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .slide-menu { padding-top: max(20px, env(safe-area-inset-top)); }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- PAGE LOADER - CENTERED DOTS -->
+    <!-- PAGE LOADER - DOTS -->
     <div class="page-loader" id="pageLoader">
         <div class="dots-loader">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Slide Menu -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="menu-avatar">{{ current_user.username[0]|upper if current_user else 'U' }}</div>
+                <div class="menu-user-info">
+                    <h4>{{ current_user.username if current_user else 'Admin' }}</h4>
+                    <p>Administrator</p>
+                </div>
+            </div>
+            <div class="menu-plan-badge"><i class="bi bi-shield-lock-fill"></i> Admin Access</div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Main</div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{{ url_for('admin_users') }}" class="menu-item"><i class="bi bi-people-fill"></i> Users</a>
+            <a href="{{ url_for('admin_subjects') }}" class="menu-item"><i class="bi bi-book-fill"></i> Subjects</a>
+            <a href="{{ url_for('admin_lessons') }}" class="menu-item active"><i class="bi bi-camera-reels-fill"></i> Lessons</a>
+            <a href="{{ url_for('admin_payments') }}" class="menu-item"><i class="bi bi-credit-card-fill"></i> Payments</a>
+            <a href="{{ url_for('admin_sample_lessons') }}" class="menu-item"><i class="bi bi-gift-fill"></i> Free Samples</a>
+            <a href="{{ url_for('admin_analytics') }}" class="menu-item"><i class="bi bi-graph-up"></i> Analytics</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">Account</div>
+            <a href="{{ url_for('dashboard') }}" class="menu-item"><i class="bi bi-house-fill"></i> Student View</a>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="menu-item logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
         </div>
     </div>
 
@@ -789,322 +1061,365 @@
         </div>
     </div>
 
-    <div class="app">
-        <!-- Header -->
-        <div class="page-header">
-            <div class="header-content">
-                <div class="header-title">
-                    <div class="header-icon">
-                        <i class="bi bi-camera-reels-fill"></i>
-                    </div>
-                    <div class="header-text">
-                        <h1>Lesson Management</h1>
-                        <p>
-                            <i class="bi bi-collection"></i> <span id="totalLessons">{{ lessons|length }}</span> Total Lessons
-                            <span>•</span>
-                            <span><i class="bi bi-gift-fill"></i> {{ lessons|selectattr('is_free')|list|length }} Free</span>
-                            <span>•</span>
-                            <span><i class="bi bi-lock-fill"></i> {{ lessons|selectattr('is_free', 'equalto', false)|list|length }} Premium</span>
-                        </p>
-                    </div>
-                </div>
-                <a href="{{ url_for('admin_create_lesson') }}" class="btn-create">
-                    <i class="bi bi-plus-circle"></i> Create New Lesson
-                </a>
-            </div>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">myMSCE</div>
+        <div class="menu-btn" id="menuBtn">
+            <i class="bi bi-list"></i>
         </div>
+    </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card video">
-                <div class="stat-content">
-                    <div class="stat-info">
-                        <h6>Video Lessons</h6>
-                        <h3>{{ lessons|selectattr('content_type', 'equalto', 'video')|list|length }}</h3>
+    <!-- Real Content -->
+    <div id="realContent" style="display: none;">
+        <div class="app">
+            <!-- Header -->
+            <div class="page-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <div class="header-icon">
+                            <i class="bi bi-camera-reels-fill"></i>
+                        </div>
+                        <div class="header-text">
+                            <h1>Lesson Management</h1>
+                            <p>
+                                <i class="bi bi-collection"></i> <span id="totalLessons">{{ lessons|length }}</span> Total Lessons
+                                <span>•</span>
+                                <span><i class="bi bi-gift-fill"></i> {{ lessons|selectattr('is_free')|list|length }} Free</span>
+                                <span>•</span>
+                                <span><i class="bi bi-lock-fill"></i> {{ lessons|selectattr('is_free', 'equalto', false)|list|length }} Premium</span>
+                            </p>
+                        </div>
                     </div>
-                    <div class="stat-icon"><i class="bi bi-camera-reel-fill"></i></div>
+                    <a href="{{ url_for('admin_create_lesson') }}" class="btn-create">
+                        <i class="bi bi-plus-circle"></i> Create New Lesson
+                    </a>
                 </div>
             </div>
-            <div class="stat-card audio">
-                <div class="stat-content">
-                    <div class="stat-info">
-                        <h6>Audio Lessons</h6>
-                        <h3>{{ lessons|selectattr('content_type', 'equalto', 'audio')|list|length }}</h3>
-                    </div>
-                    <div class="stat-icon"><i class="bi bi-mic-fill"></i></div>
-                </div>
-            </div>
-            <div class="stat-card document">
-                <div class="stat-content">
-                    <div class="stat-info">
-                        <h6>Documents</h6>
-                        <h3>{{ lessons|selectattr('content_type', 'equalto', 'document')|list|length }}</h3>
-                    </div>
-                    <div class="stat-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                </div>
-            </div>
-            <div class="stat-card youtube">
-                <div class="stat-content">
-                    <div class="stat-info">
-                        <h6>YouTube Videos</h6>
-                        <h3>{{ lessons|selectattr('content_type', 'equalto', 'youtube')|list|length }}</h3>
-                    </div>
-                    <div class="stat-icon"><i class="bi bi-youtube"></i></div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Filters -->
-        <div class="filters-card">
-            <div class="filters-grid">
-                <div class="filter-group">
-                    <i class="bi bi-search filter-icon"></i>
-                    <input type="text" class="filter-input" id="lessonSearch" placeholder="Search lessons...">
-                </div>
-                <select class="filter-select" id="formFilter">
-                    <option value="all">All Forms</option>
-                    <option value="3">Form 3</option>
-                    <option value="4">Form 4</option>
-                </select>
-                <select class="filter-select" id="typeFilter">
-                    <option value="all">All Types</option>
-                    <option value="video">Video</option>
-                    <option value="audio">Audio</option>
-                    <option value="document">Document</option>
-                    <option value="youtube">YouTube</option>
-                </select>
-                <select class="filter-select" id="sampleFilter">
-                    <option value="all">All Lessons</option>
-                    <option value="free">Free Samples</option>
-                    <option value="premium">Premium Only</option>
-                </select>
-                <button class="btn-reset" onclick="resetFilters()">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
-                </button>
-            </div>
-        </div>
-
-        <!-- Lessons Grid -->
-        {% if lessons %}
-        <div class="lessons-grid" id="lessonsGrid">
-            {% for lesson in lessons %}
-            <div class="lesson-card"
-                 data-title="{{ lesson.title|lower }}"
-                 data-subject="{{ lesson.subject.name|lower }}"
-                 data-form="{{ lesson.form }}"
-                 data-type="{{ lesson.content_type }}"
-                 data-sample="{% if lesson.is_free %}free{% else %}premium{% endif %}">
-
-                <!-- Card Header -->
-                <div class="lesson-card-header">
-                    <div class="lesson-type-icon {{ lesson.content_type }}">
-                        <i class="bi
-                            {% if lesson.content_type == 'video' %}bi-camera-reel-fill
-                            {% elif lesson.content_type == 'audio' %}bi-mic-fill
-                            {% elif lesson.content_type == 'document' %}bi-file-earmark-text-fill
-                            {% elif lesson.content_type == 'youtube' %}bi-youtube
-                            {% endif %}">
-                        </i>
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card video">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Video Lessons</h6>
+                            <h3>{{ lessons|selectattr('content_type', 'equalto', 'video')|list|length }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-camera-reel-fill"></i></div>
                     </div>
-                    <div class="lesson-card-title">
-                        <h3 title="{{ lesson.title }}">{{ lesson.title|truncate(40) }}</h3>
-                        <div class="lesson-card-meta">
-                            <span><i class="bi bi-clock"></i> {{ lesson.duration }} min</span>
-                            {% if lesson.file_name %}
-                            <span><i class="bi bi-file-earmark"></i> {{ lesson.file_name|truncate(15) }}</span>
+                </div>
+                <div class="stat-card audio">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Audio Lessons</h6>
+                            <h3>{{ lessons|selectattr('content_type', 'equalto', 'audio')|list|length }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-mic-fill"></i></div>
+                    </div>
+                </div>
+                <div class="stat-card document">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>Documents</h6>
+                            <h3>{{ lessons|selectattr('content_type', 'equalto', 'document')|list|length }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                    </div>
+                </div>
+                <div class="stat-card youtube">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <h6>YouTube Videos</h6>
+                            <h3>{{ lessons|selectattr('content_type', 'equalto', 'youtube')|list|length }}</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-youtube"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-card">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <i class="bi bi-search filter-icon"></i>
+                        <input type="text" class="filter-input" id="lessonSearch" placeholder="Search lessons...">
+                    </div>
+                    <select class="filter-select" id="formFilter">
+                        <option value="all">All Forms</option>
+                        <option value="3">Form 3</option>
+                        <option value="4">Form 4</option>
+                    </select>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="all">All Types</option>
+                        <option value="video">Video</option>
+                        <option value="audio">Audio</option>
+                        <option value="document">Document</option>
+                        <option value="youtube">YouTube</option>
+                    </select>
+                    <select class="filter-select" id="sampleFilter">
+                        <option value="all">All Lessons</option>
+                        <option value="free">Free Samples</option>
+                        <option value="premium">Premium Only</option>
+                    </select>
+                    <button class="btn-reset" onclick="resetFilters()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lessons Grid -->
+            {% if lessons %}
+            <div class="lessons-grid" id="lessonsGrid">
+                {% for lesson in lessons %}
+                <div class="lesson-card"
+                     data-title="{{ lesson.title|lower }}"
+                     data-subject="{{ lesson.subject.name|lower }}"
+                     data-form="{{ lesson.form }}"
+                     data-type="{{ lesson.content_type }}"
+                     data-sample="{% if lesson.is_free %}free{% else %}premium{% endif %}">
+
+                    <!-- Card Header -->
+                    <div class="lesson-card-header">
+                        <div class="lesson-type-icon {{ lesson.content_type }}">
+                            <i class="bi
+                                {% if lesson.content_type == 'video' %}bi-camera-reel-fill
+                                {% elif lesson.content_type == 'audio' %}bi-mic-fill
+                                {% elif lesson.content_type == 'document' %}bi-file-earmark-text-fill
+                                {% elif lesson.content_type == 'youtube' %}bi-youtube
+                                {% endif %}">
+                            </i>
+                        </div>
+                        <div class="lesson-card-title">
+                            <h3 title="{{ lesson.title }}">{{ lesson.title|truncate(40) }}</h3>
+                            <div class="lesson-card-meta">
+                                <span><i class="bi bi-clock"></i> {{ lesson.duration }} min</span>
+                                {% if lesson.file_name %}
+                                <span><i class="bi bi-file-earmark"></i> {{ lesson.file_name|truncate(15) }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="lesson-card-body">
+                        <div class="lesson-info-row">
+                            <span class="info-label"><i class="bi bi-book"></i> Subject</span>
+                            <span class="info-value subject-badge">{{ lesson.subject.name }}</span>
+                        </div>
+
+                        <div class="lesson-info-row">
+                            <span class="info-label"><i class="bi bi-layers"></i> Form</span>
+                            <span class="info-value form-badge">Form {{ lesson.form }}</span>
+                        </div>
+
+                        <div class="lesson-info-row">
+                            <span class="info-label"><i class="bi bi-card-text"></i> Content Type</span>
+                            <span class="info-value">
+                                {% if lesson.content_type == 'video' %}
+                                    <span class="badge-type video"><i class="bi bi-camera-reel-fill"></i> Video</span>
+                                {% elif lesson.content_type == 'audio' %}
+                                    <span class="badge-type audio"><i class="bi bi-mic-fill"></i> Audio</span>
+                                {% elif lesson.content_type == 'document' %}
+                                    <span class="badge-type document"><i class="bi bi-file-text-fill"></i> Document</span>
+                                {% elif lesson.content_type == 'youtube' %}
+                                    <span class="badge-type youtube"><i class="bi bi-youtube"></i> YouTube</span>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="lesson-info-row">
+                            <span class="info-label">
+                                {% if lesson.content_type == 'youtube' %}<i class="bi bi-youtube"></i> YouTube Status
+                                {% else %}<i class="bi bi-file-earmark"></i> File Status{% endif %}
+                            </span>
+                            <span class="info-value">
+                                {% if lesson.content_type == 'youtube' %}
+                                    {% if lesson.video_url %}
+                                        <span class="file-status-badge file-uploaded"><i class="bi bi-check-circle-fill"></i> URL Set</span>
+                                    {% else %}
+                                        <span class="file-status-badge file-missing"><i class="bi bi-exclamation-triangle-fill"></i> No URL</span>
+                                    {% endif %}
+                                {% else %}
+                                    {% if lesson.cloudinary_public_id %}
+                                        <span class="file-status-badge file-uploaded"><i class="bi bi-check-circle-fill"></i> File Uploaded</span>
+                                    {% else %}
+                                        <span class="file-status-badge file-missing"><i class="bi bi-exclamation-triangle-fill"></i> No File</span>
+                                    {% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="lesson-info-row">
+                            <span class="info-label"><i class="bi bi-gift"></i> Access</span>
+                            <span>
+                                {% if lesson.is_free %}
+                                    <span class="sample-badge"><i class="bi bi-gift-fill"></i> FREE Sample</span>
+                                {% else %}
+                                    <span class="premium-badge"><i class="bi bi-lock-fill"></i> Premium</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="lesson-card-footer">
+                        <div class="lesson-date">
+                            <i class="bi bi-calendar3"></i>
+                            {{ lesson.created_at.strftime('%d %b %Y') if lesson.created_at else 'N/A' }}
+                        </div>
+                        <div class="card-actions">
+                            <!-- Content Type Specific Action Button -->
+                            {% if lesson.content_type == 'video' %}
+                                {% if lesson.cloudinary_public_id %}
+                                    <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="btn-action btn-watch-video" target="_blank">
+                                        <i class="bi bi-play-fill"></i> Watch
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('admin_upload_video_page', lesson_id=lesson.id) }}" class="btn-action btn-upload">
+                                        <i class="bi bi-cloud-upload"></i> Upload
+                                    </a>
+                                {% endif %}
+                            {% elif lesson.content_type == 'audio' %}
+                                {% if lesson.cloudinary_public_id %}
+                                    <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="btn-action btn-listen-audio" target="_blank">
+                                        <i class="bi bi-headphones"></i> Listen
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('admin_upload_video_page', lesson_id=lesson.id) }}" class="btn-action btn-upload">
+                                        <i class="bi bi-cloud-upload"></i> Upload
+                                    </a>
+                                {% endif %}
+                            {% elif lesson.content_type == 'document' %}
+                                {% if lesson.cloudinary_public_id %}
+                                    <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="btn-action btn-view-document" target="_blank">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('admin_upload_video_page', lesson_id=lesson.id) }}" class="btn-action btn-upload">
+                                        <i class="bi bi-cloud-upload"></i> Upload
+                                    </a>
+                                {% endif %}
+                            {% elif lesson.content_type == 'youtube' %}
+                                {% if lesson.video_url %}
+                                    <a href="{{ lesson.video_url }}" class="btn-action btn-watch-youtube" target="_blank">
+                                        <i class="bi bi-youtube"></i> Watch
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('admin_edit_lesson', lesson_id=lesson.id) }}" class="btn-action btn-upload">
+                                        <i class="bi bi-pencil"></i> Add URL
+                                    </a>
+                                {% endif %}
                             {% endif %}
+
+                            <!-- Icon Buttons -->
+                            <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="icon-btn" target="_blank" title="Preview">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('admin_edit_lesson', lesson_id=lesson.id) }}" class="icon-btn" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="icon-btn" onclick="toggleSample({{ lesson.id }}, {{ 'true' if lesson.is_free else 'false' }})" title="{% if lesson.is_free %}Remove from samples{% else %}Make sample{% endif %}">
+                                <i class="bi bi-gift-fill"></i>
+                            </button>
+                            <button class="icon-btn" onclick="deleteLesson({{ lesson.id }}, '{{ lesson.title|replace("'", "\\'")|safe }}')" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <i class="bi bi-camera-reels"></i>
+                <h3>No Lessons Yet</h3>
+                <p>Get started by creating your first lesson</p>
+                <a href="{{ url_for('admin_create_lesson') }}" class="btn-create" style="display: inline-block;">
+                    <i class="bi bi-plus-circle"></i> Create First Lesson
+                </a>
+            </div>
+            {% endif %}
 
-                <!-- Card Body -->
-                <div class="lesson-card-body">
-                    <div class="lesson-info-row">
-                        <span class="info-label"><i class="bi bi-book"></i> Subject</span>
-                        <span class="info-value subject-badge">{{ lesson.subject.name }}</span>
-                    </div>
-
-                    <div class="lesson-info-row">
-                        <span class="info-label"><i class="bi bi-layers"></i> Form</span>
-                        <span class="info-value form-badge">Form {{ lesson.form }}</span>
-                    </div>
-
-                    <!-- CONTENT TYPE ROW -->
-                    <div class="lesson-info-row">
-                        <span class="info-label"><i class="bi bi-card-text"></i> Content Type</span>
-                        <span class="info-value">
-                            {% if lesson.content_type == 'video' %}
-                                <span class="badge-type video"><i class="bi bi-camera-reel-fill"></i> Video</span>
-                            {% elif lesson.content_type == 'audio' %}
-                                <span class="badge-type audio"><i class="bi bi-mic-fill"></i> Audio</span>
-                            {% elif lesson.content_type == 'document' %}
-                                <span class="badge-type document"><i class="bi bi-file-text-fill"></i> Document</span>
-                            {% elif lesson.content_type == 'youtube' %}
-                                <span class="badge-type youtube"><i class="bi bi-youtube"></i> YouTube</span>
-                            {% else %}
-                                <span class="badge-type"><i class="bi bi-question-circle"></i> Unknown</span>
-                            {% endif %}
-                        </span>
-                    </div>
-
-                    <!-- FILE STATUS ROW - Dynamic based on content type -->
-                    <div class="lesson-info-row">
-                        <span class="info-label">
-                            {% if lesson.content_type == 'video' %}
-                                <i class="bi bi-camera-reel"></i> Video Status
-                            {% elif lesson.content_type == 'audio' %}
-                                <i class="bi bi-mic"></i> Audio Status
-                            {% elif lesson.content_type == 'document' %}
-                                <i class="bi bi-file-earmark-text"></i> Document Status
-                            {% elif lesson.content_type == 'youtube' %}
-                                <i class="bi bi-youtube"></i> YouTube Status
-                            {% else %}
-                                <i class="bi bi-file-earmark"></i> File Status
-                            {% endif %}
-                        </span>
-                        <span class="info-value">
-                            {% if lesson.content_type == 'youtube' %}
-                                {% if lesson.video_url %}
-                                    <span class="file-status-badge file-uploaded">
-                                        <i class="bi bi-check-circle-fill"></i> URL Set
-                                    </span>
-                                {% else %}
-                                    <span class="file-status-badge file-missing">
-                                        <i class="bi bi-exclamation-triangle-fill"></i> No URL
-                                    </span>
-                                {% endif %}
-                            {% else %}
-                                {% if lesson.cloudinary_public_id %}
-                                    <span class="file-status-badge file-uploaded">
-                                        <i class="bi bi-check-circle-fill"></i> File Uploaded
-                                    </span>
-                                {% else %}
-                                    <span class="file-status-badge file-missing">
-                                        <i class="bi bi-exclamation-triangle-fill"></i> No File
-                                    </span>
-                                {% endif %}
-                            {% endif %}
-                        </span>
-                    </div>
-
-                    <div class="lesson-info-row">
-                        <span class="info-label"><i class="bi bi-gift"></i> Access</span>
-                        <span>
-                            {% if lesson.is_free %}
-                                <span class="sample-badge"><i class="bi bi-gift-fill"></i> FREE Sample</span>
-                            {% else %}
-                                <span class="premium-badge"><i class="bi bi-lock-fill"></i> Premium</span>
-                            {% endif %}
-                        </span>
-                    </div>
+            <!-- Footer -->
+            <div class="table-footer">
+                <div>
+                    <i class="bi bi-info-circle"></i>
+                    Showing <span id="visibleCount">{{ lessons|length }}</span> of {{ lessons|length }} lessons
                 </div>
-
-                <!-- Card Footer -->
-                <div class="lesson-card-footer">
-                    <div class="lesson-date">
-                        <i class="bi bi-calendar3"></i>
-                        {{ lesson.created_at.strftime('%d %b %Y') }}
-                    </div>
-                    <div class="card-actions">
-                        <!-- Content Type Specific Action Button -->
-                        {% if lesson.content_type == 'video' %}
-                            {% if lesson.cloudinary_public_id %}
-                                <a href="{{ url_for('watch_lesson', lesson_id=lesson.id) }}" class="btn-action btn-watch-video" target="_blank">
-                                    <i class="bi bi-play-fill"></i> Watch Video
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('admin_upload_video_page', lesson_id=lesson.id) }}" class="btn-action btn-upload">
-                                    <i class="bi bi-cloud-upload"></i> Upload Video
-                                </a>
-                            {% endif %}
-                        {% elif lesson.content_type == 'audio' %}
-                            {% if lesson.cloudinary_public_id %}
-                                <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="btn-action btn-listen-audio" target="_blank">
-                                    <i class="bi bi-headphones"></i> Listen to Audio
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('admin_upload_video_page', lesson_id=lesson.id) }}" class="btn-action btn-upload">
-                                    <i class="bi bi-cloud-upload"></i> Upload Audio
-                                </a>
-                            {% endif %}
-                        {% elif lesson.content_type == 'document' %}
-                            {% if lesson.cloudinary_public_id %}
-                                <a href="{{ url_for('stream_lesson', lesson_id=lesson.id) }}" class="btn-action btn-view-document" target="_blank">
-                                    <i class="bi bi-eye"></i> View Document
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('admin_upload_video_page', lesson_id=lesson.id) }}" class="btn-action btn-upload">
-                                    <i class="bi bi-cloud-upload"></i> Upload Document
-                                </a>
-                            {% endif %}
-                        {% elif lesson.content_type == 'youtube' %}
-                            {% if lesson.video_url %}
-                                <a href="{{ lesson.video_url }}" class="btn-action btn-watch-youtube" target="_blank">
-                                    <i class="bi bi-youtube"></i> Watch on YouTube
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('admin_edit_lesson', lesson_id=lesson.id) }}" class="btn-action btn-upload">
-                                    <i class="bi bi-pencil"></i> Add YouTube URL
-                                </a>
-                            {% endif %}
-                        {% endif %}
-
-                        <!-- Icon Buttons -->
-                        <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="icon-btn preview" target="_blank" title="Preview">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a href="{{ url_for('admin_edit_lesson', lesson_id=lesson.id) }}" class="icon-btn edit" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button class="icon-btn sample" onclick="toggleSample({{ lesson.id }}, {{ 'true' if lesson.is_free else 'false' }})" title="{% if lesson.is_free %}Remove from samples{% else %}Make sample{% endif %}">
-                            <i class="bi bi-gift-fill"></i>
-                        </button>
-                        <button class="icon-btn delete" onclick="deleteLesson({{ lesson.id }}, '{{ lesson.title|replace("'", "\\'")|safe }}')" title="Delete">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
+                <div>
+                    <span class="me-2"><span class="legend-dot dot-success"></span> File Uploaded</span>
+                    <span><span class="legend-dot dot-primary"></span> No File</span>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <!-- Empty State -->
-        <div class="empty-state">
-            <i class="bi bi-camera-reels"></i>
-            <h3>No Lessons Yet</h3>
-            <p>Get started by creating your first lesson</p>
-            <a href="{{ url_for('admin_create_lesson') }}" class="btn-create" style="display: inline-block;">
-                <i class="bi bi-plus-circle"></i> Create First Lesson
-            </a>
-        </div>
-        {% endif %}
+    </div>
 
-        <!-- Footer -->
-        <div class="table-footer">
-            <div>
-                <i class="bi bi-info-circle"></i>
-                Showing <span id="visibleCount">{{ lessons|length }}</span> of {{ lessons|length }} lessons
+    <!-- Skeleton Loading -->
+    <div id="skeletonContent">
+        <div class="app">
+            <div class="skeleton-stats">
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
+                <div class="skeleton-stat-card shimmer"><div class="skeleton-icon shimmer"></div><div class="skeleton-line" style="width: 60%;"></div><div class="skeleton-line" style="width: 40%;"></div></div>
             </div>
-            <div>
-                <span class="me-3"><span class="legend-dot dot-success"></span> File Uploaded</span>
-                <span><span class="legend-dot dot-primary"></span> No File</span>
+            <div class="skeleton-grid">
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-card-header"><div class="skeleton-card-icon shimmer"></div><div style="flex:1"><div class="skeleton-line" style="width: 70%;"></div><div class="skeleton-line" style="width: 50%;"></div></div></div>
+                    <div class="skeleton-card-body"><div class="skeleton-line" style="width: 100%;"></div><div class="skeleton-line" style="width: 80%;"></div><div class="skeleton-line" style="width: 60%;"></div></div>
+                </div>
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-card-header"><div class="skeleton-card-icon shimmer"></div><div style="flex:1"><div class="skeleton-line" style="width: 70%;"></div><div class="skeleton-line" style="width: 50%;"></div></div></div>
+                    <div class="skeleton-card-body"><div class="skeleton-line" style="width: 100%;"></div><div class="skeleton-line" style="width: 80%;"></div><div class="skeleton-line" style="width: 60%;"></div></div>
+                </div>
+                <div class="skeleton-card shimmer">
+                    <div class="skeleton-card-header"><div class="skeleton-card-icon shimmer"></div><div style="flex:1"><div class="skeleton-line" style="width: 70%;"></div><div class="skeleton-line" style="width: 50%;"></div></div></div>
+                    <div class="skeleton-card-body"><div class="skeleton-line" style="width: 100%;"></div><div class="skeleton-line" style="width: 80%;"></div><div class="skeleton-line" style="width: 60%;"></div></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function showToast(message, type = 'info', duration = 5000) {
+        // Track shown toasts for duplicate prevention
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
+        function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
             if (container.children.length >= 3) container.children[0].remove();
+            
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            let icon = type === 'success' ? 'check-circle-fill' :
-                      type === 'error' ? 'exclamation-circle-fill' :
-                      type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
-            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const icon = icons[type] || icons.info;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Admin
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => { if (toast.parentElement) toast.remove(); }, duration);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
         }
 
         function escapeHtml(text) {
@@ -1113,7 +1428,19 @@
             return div.innerHTML;
         }
 
-        // Loading
+        // Menu functionality
+        const menu = document.getElementById('slideMenu');
+        const overlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+
+        function openMenu() { menu.classList.add('open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu(); });
+
+        // Loading animation
         window.addEventListener('load', function() {
             setTimeout(() => {
                 const skeleton = document.getElementById('skeletonContent');
@@ -1121,12 +1448,14 @@
                 if(skeleton) skeleton.style.display = 'none';
                 if(real) real.style.display = 'block';
             }, 800);
+            
             setTimeout(() => {
                 const loader = document.getElementById('pageLoader');
                 if(loader) loader.classList.add('hidden');
             }, 1200);
         });
 
+        // Filter functions
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -1166,18 +1495,24 @@
                 if (visibleCount) visibleCount.textContent = visible;
             }
 
-            searchInput.addEventListener('input', debounce(filterLessons, 300));
-            formFilter.addEventListener('change', filterLessons);
-            typeFilter.addEventListener('change', filterLessons);
-            sampleFilter.addEventListener('change', filterLessons);
+            if(searchInput) searchInput.addEventListener('input', debounce(filterLessons, 300));
+            if(formFilter) formFilter.addEventListener('change', filterLessons);
+            if(typeFilter) typeFilter.addEventListener('change', filterLessons);
+            if(sampleFilter) sampleFilter.addEventListener('change', filterLessons);
         });
 
         function resetFilters() {
-            document.getElementById('lessonSearch').value = '';
-            document.getElementById('formFilter').value = 'all';
-            document.getElementById('typeFilter').value = 'all';
-            document.getElementById('sampleFilter').value = 'all';
-            document.getElementById('formFilter').dispatchEvent(new Event('change'));
+            const searchInput = document.getElementById('lessonSearch');
+            const formFilter = document.getElementById('formFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const sampleFilter = document.getElementById('sampleFilter');
+            
+            if(searchInput) searchInput.value = '';
+            if(formFilter) formFilter.value = 'all';
+            if(typeFilter) typeFilter.value = 'all';
+            if(sampleFilter) sampleFilter.value = 'all';
+            
+            if(formFilter) formFilter.dispatchEvent(new Event('change'));
             showToast('Filters reset', 'info');
         }
 
@@ -1212,8 +1547,10 @@
         }
 
         window.addEventListener('click', function(e) {
-            if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+            const modal = document.getElementById('deleteModal');
+            if (e.target === modal) closeDeleteModal();
         });
+        
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeDeleteModal();
         });
@@ -1228,14 +1565,27 @@
             }
         });
 
-        // Flash messages
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 1000 }});
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        // Flash messages with deduplication
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 200 + 500 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
     </script>
 </body>
 </html>

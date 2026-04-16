@@ -1,4 +1,4 @@
-<!-- templates/watch.html - COMPLETE REDESIGN with Blue/Green/Orange Theme -->
+<!-- templates/watch.html - COMPLETELY RENOVATED with Dashboard Branding & Dark Theme -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,7 +52,7 @@
             --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.2);
         }
 
-        /* ===== PAGE LOADER (Matching Dashboard) ===== */
+        /* ===== PAGE LOADER - DOTS (MATCHING DASHBOARD) ===== */
         .page-loader {
             position: fixed;
             top: 0;
@@ -72,57 +72,35 @@
             visibility: hidden;
         }
         
-        .glass-loader {
-            position: relative;
-            width: 80px;
-            height: 80px;
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
-            background: rgba(37, 99, 235, 0.08);
-            backdrop-filter: blur(10px);
-            animation: pulseGlow 2s ease-in-out infinite;
+            animation: bounce 0.6s ease-in-out infinite alternate;
         }
         
-        .glass-loader::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
-            animation: spin 1.5s linear infinite;
-        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
         
-        .glass-loader::after {
-            content: '';
-            position: absolute;
-            inset: 8px;
-            background: #0A0F1A;
-            border-radius: 50%;
-        }
-        
-        .glass-loader .inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2563EB, #16A34A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
         }
 
         /* ===== HEADER ===== */
         .navbar {
             background: rgba(10, 15, 26, 0.95);
             backdrop-filter: blur(20px);
-            padding: 12px 24px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -147,7 +125,7 @@
             gap: 8px;
             background: rgba(37, 99, 235, 0.12);
             border: 1px solid rgba(37, 99, 235, 0.25);
-            padding: 8px 20px;
+            padding: 8px 18px;
             border-radius: 40px;
             color: #2563EB;
             text-decoration: none;
@@ -158,6 +136,12 @@
         
         .back-btn:active { transform: scale(0.97); background: rgba(37, 99, 235, 0.2); }
         .back-btn i { font-size: 0.9rem; }
+
+        @media (max-width: 640px) {
+            .navbar { padding: 10px 16px; }
+            .logo { font-size: 1.1rem; }
+            .back-btn { padding: 6px 14px; font-size: 0.75rem; }
+        }
 
         /* ===== MAIN CONTENT ===== */
         .main-content {
@@ -208,17 +192,26 @@
             border: 1px solid var(--border-light);
         }
         
+        @media (max-width: 640px) {
+            .lesson-info-card { padding: 18px; }
+        }
+        
         .lesson-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 12px;
             letter-spacing: -0.3px;
+            word-break: break-word;
+        }
+        
+        @media (max-width: 640px) {
+            .lesson-title { font-size: 1.2rem; }
         }
         
         .lesson-meta {
             display: flex;
-            gap: 24px;
+            gap: 20px;
             flex-wrap: wrap;
             margin-bottom: 16px;
             padding-bottom: 16px;
@@ -339,7 +332,7 @@
         
         @media (max-width: 640px) {
             .nav-buttons { flex-direction: column; }
-            .nav-btn { width: 100%; }
+            .nav-btn { width: 100%; min-width: auto; }
         }
         
         /* ===== SPEED CONTROL ===== */
@@ -373,7 +366,8 @@
         }
         
         @media (max-width: 640px) {
-            .speed-control { bottom: 80px; right: 16px; }
+            .speed-control { bottom: 80px; right: 16px; padding: 6px 14px; }
+            .speed-control select { font-size: 0.75rem; }
         }
         
         /* ===== SKELETON LOADING ===== */
@@ -433,7 +427,7 @@
             100% { background-position: -200% 0; }
         }
         
-        /* ===== TOAST ===== */
+        /* ===== TOAST - BRANDED (Matches Dashboard) ===== */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -450,24 +444,38 @@
         .toast {
             background: #1E293B;
             border-left: 4px solid #2563EB;
-            padding: 14px 20px;
+            padding: 12px 16px;
             border-radius: 16px;
             color: white;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 8px;
             width: 100%;
-            max-width: 380px;
+            max-width: 360px;
             animation: toastIn 0.3s ease;
             pointer-events: auto;
             font-weight: 500;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-lg);
         }
         
         .toast.error { border-left-color: #DC2626; }
         .toast.success { border-left-color: #16A34A; }
         .toast.warning { border-left-color: #F59E0B; }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6rem;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i { font-size: 0.55rem; }
         
         .toast button {
             background: transparent;
@@ -475,7 +483,8 @@
             color: rgba(255,255,255,0.5);
             margin-left: auto;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            padding: 4px;
         }
         
         @keyframes toastIn {
@@ -484,16 +493,32 @@
         }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #1E293B; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
+
+        /* Safe Areas */
+        @supports (padding: max(0px)) {
+            .main-content { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+            .toast-container { top: max(20px, env(safe-area-inset-top)); }
+            .speed-control {
+                bottom: max(24px, env(safe-area-inset-bottom));
+                right: max(24px, env(safe-area-inset-right));
+            }
+        }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.2s; }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- PAGE LOADER - DOTS (MATCHING DASHBOARD) -->
     <div class="page-loader" id="pageLoader">
-        <div class="glass-loader">
-            <div class="inner">M</div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
 
@@ -598,17 +623,51 @@
 
     <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
     <script>
-        // Toast function
+        // Track shown toasts for duplicate prevention
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding =====
         function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
+            
+            const toastKey = `${message}-${type}`;
+            if (shownToasts.has(toastKey)) return;
+            
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            if (container.children.length >= 3) container.children[0].remove();
+            
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+            const icons = { success: 'check-circle-fill', error: 'exclamation-triangle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
             const icon = icons[type] || icons.info;
-            toast.innerHTML = `<i class="bi bi-${icon}-fill"></i><span>${message}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Video player variables
@@ -789,14 +848,27 @@
             if (saveInterval) clearInterval(saveInterval);
         });
         
-        // Flash messages from server
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        // Flash messages with deduplication
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 200 + 500 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
     </script>
 </body>
 </html>
