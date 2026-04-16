@@ -2210,6 +2210,41 @@ def auto_verify_payment(payment_id):
         }), 400
 
 
+@app.route('/sitemap.xml')
+def sitemap():
+    """Generate XML sitemap for search engines"""
+    pages = []
+    
+    # Static pages
+    static_pages = ['/', '/login', '/register', '/pricing']
+    for page in static_pages:
+        pages.append({'loc': page, 'priority': '0.8'})
+    
+    # Dynamic pages (subjects and lessons)
+    subjects = Subject.query.all()
+    for subject in subjects:
+        pages.append({'loc': f'/subject/{subject.id}', 'priority': '0.7'})
+        lessons = Lesson.query.filter_by(subject_id=subject.id).all()
+        for lesson in lessons:
+            pages.append({'loc': f'/lesson/{lesson.id}', 'priority': '0.6'})
+    
+    # Build XML
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    site_url = app.config.get('SITE_URL', 'https://mymsce.dpdns.org')
+    
+    for page in pages:
+        xml += '  <url>\n'
+        xml += f'    <loc>{site_url}{page["loc"]}</loc>\n'
+        xml += f'    <priority>{page["priority"]}</priority>\n'
+        xml += '  </url>\n'
+    
+    xml += '</urlset>'
+    
+    return xml, 200, {'Content-Type': 'application/xml'}
+
+
 @app.route('/paychangu-webhook', methods=['POST'])
 @app.route('/paychangu-webhook/', methods=['POST'])
 def paychangu_webhook():
