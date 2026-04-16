@@ -789,6 +789,21 @@
             .toast.success { border-left-color: var(--secondary-green); }
             .toast.warning { border-left-color: var(--accent-orange); }
 
+            .toast-brand {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.7rem;
+                margin-top: 6px;
+                padding-top: 6px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                color: rgba(255,255,255,0.5);
+            }
+
+            .toast-brand i {
+                font-size: 0.65rem;
+            }
+
             .toast button {
                 background: transparent;
                 border: none;
@@ -1062,11 +1077,28 @@
     </div>
 
     <script>
-        // ===== TOAST FUNCTION =====
+        // Track shown toast messages to prevent duplicates
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding and duplicate prevention =====
         function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
             
+            // Create a unique key for this message to prevent duplicates
+            const toastKey = `${message}-${type}`;
+            
+            // Check if this exact toast was shown recently (within last 2 seconds)
+            if (shownToasts.has(toastKey)) {
+                console.log('Duplicate toast prevented:', message);
+                return;
+            }
+            
+            // Add to shown set and remove after 2 seconds
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            // Limit to 3 toasts max
             if (container.children.length >= 3) {
                 container.children[0].remove();
             }
@@ -1075,9 +1107,26 @@
             toast.className = `toast ${type}`;
             const icons = { success: 'check-circle-fill', error: 'exclamation-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
             const icon = icons[type] || icons.info;
-            toast.innerHTML = `<i class="bi bi-${icon}"></i><span>${escapeHtml(message)}</span><button onclick="this.parentElement.remove()">✕</button>`;
+            
+            // Add branding to the toast
+            toast.innerHTML = `
+                <i class="bi bi-${icon}"></i>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Learning Platform
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
+            setTimeout(() => { 
+                if (toast.parentElement) {
+                    toast.style.opacity = '0'; 
+                    toast.style.transform = 'translateY(-20px)'; 
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
         }
 
         function escapeHtml(text) {
@@ -1169,14 +1218,33 @@
             }
         });
 
-        // ===== FLASH MESSAGES =====
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        // ===== FLASH MESSAGES with deduplication =====
+        // Clear any existing flash messages that might be duplicated
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    // Create a Set to track unique messages at the Python level
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        // Only show if not a duplicate payment message pattern
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            {% if 'payment' in message.lower() or 'subscription' in message.lower() or 'upgrade' in message.lower() %}
+                                // For payment messages, add extra delay and ensure single display
+                                setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 300 + 800 }});
+                            {% else %}
+                                setTimeout(() => showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}"), {{ loop.index0 * 200 + 500 }});
+                            {% endif %}
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
     </script>
 </body>
 </html>

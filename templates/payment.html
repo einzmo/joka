@@ -53,7 +53,7 @@
             --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ===== PAGE LOADER (Matching Dashboard) ===== */
+        /* ===== PAGE LOADER (Matching Dashboard Dots Style) ===== */
         .page-loader {
             position: fixed;
             top: 0;
@@ -73,50 +73,28 @@
             visibility: hidden;
         }
         
-        .glass-loader {
-            position: relative;
-            width: 80px;
-            height: 80px;
+        .dots-loader {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dot {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
             border-radius: 50%;
-            background: rgba(37, 99, 235, 0.08);
-            backdrop-filter: blur(10px);
-            animation: pulseGlow 2s ease-in-out infinite;
+            animation: bounce 0.6s ease-in-out infinite alternate;
         }
         
-        .glass-loader::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, #2563EB, #16A34A, transparent);
-            animation: spin 1.5s linear infinite;
-        }
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.15s; }
+        .dot:nth-child(3) { animation-delay: 0.3s; }
         
-        .glass-loader::after {
-            content: '';
-            position: absolute;
-            inset: 8px;
-            background: #EFF6FF;
-            border-radius: 50%;
-        }
-        
-        .glass-loader .inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2563EB, #16A34A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2); }
+        @keyframes bounce {
+            from { transform: translateY(0); opacity: 0.4; }
+            to { transform: translateY(-20px); opacity: 1; }
         }
 
         /* ===== NAVBAR ===== */
@@ -538,6 +516,10 @@
         .pay-btn.loading i {
             animation: spin 1s linear infinite;
         }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
         /* ===== INSTRUCTIONS CARD ===== */
         .instructions-card {
@@ -596,6 +578,10 @@
         }
 
         /* ===== SKELETON LOADING ===== */
+        .skeleton-container {
+            width: 100%;
+        }
+        
         .skeleton-card {
             background: rgba(219, 234, 254, 0.5);
             backdrop-filter: blur(8px);
@@ -623,6 +609,7 @@
         .skeleton-line.amount {
             width: 50%;
             height: 48px;
+            border-radius: 12px;
         }
         
         .skeleton-line.method {
@@ -650,7 +637,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* ===== TOAST ===== */
+        /* ===== TOAST (Matching Dashboard with Branding) ===== */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -679,12 +666,27 @@
             animation: toastIn 0.3s ease;
             pointer-events: auto;
             font-weight: 500;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-lg);
         }
         
         .toast.error { border-left-color: #DC2626; }
         .toast.success { border-left-color: #16A34A; }
         .toast.warning { border-left-color: #F59E0B; }
+        
+        .toast-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .toast-brand i {
+            font-size: 0.65rem;
+        }
         
         .toast button {
             background: transparent;
@@ -700,17 +702,37 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Safe area support */
+        @supports (padding: max(0px)) {
+            .container {
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+            }
+            .toast-container {
+                top: max(20px, env(safe-area-inset-top));
+            }
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #E2E8F0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2563EB; border-radius: 10px; }
+
+        /* View Transitions */
+        @view-transition { navigation: auto; }
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.2s;
+        }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
+    <!-- Page Loader (Dots style matching dashboard) -->
     <div class="page-loader" id="pageLoader">
-        <div class="glass-loader">
-            <div class="inner">M</div>
+        <div class="dots-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
 
@@ -880,7 +902,7 @@
         </div>
 
         <!-- Skeleton Container (visible initially) -->
-        <div id="skeletonContent">
+        <div id="skeletonContent" class="skeleton-container">
             <div class="payment-layout">
                 <div class="payment-main">
                     <!-- Skeleton Order Summary -->
@@ -925,11 +947,28 @@
     </div>
 
     <script>
-        // Toast notification function
+        // Track shown toast messages to prevent duplicates
+        let shownToasts = new Set();
+
+        // ===== TOAST FUNCTION with branding and duplicate prevention (Matching Dashboard) =====
         function showToast(message, type = 'info', duration = 5000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
+            
+            // Create a unique key for this message to prevent duplicates
+            const toastKey = `${message}-${type}`;
+            
+            // Check if this exact toast was shown recently (within last 2 seconds)
+            if (shownToasts.has(toastKey)) {
+                console.log('Duplicate toast prevented:', message);
+                return;
+            }
+            
+            // Add to shown set and remove after 2 seconds
+            shownToasts.add(toastKey);
+            setTimeout(() => shownToasts.delete(toastKey), 2000);
+            
+            // Limit to 3 toasts max
             if (container.children.length >= 3) {
                 container.children[0].remove();
             }
@@ -940,19 +979,35 @@
                       type === 'error' ? 'exclamation-triangle-fill' :
                       type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill';
 
+            // Add branding to the toast (matching dashboard)
             toast.innerHTML = `
                 <i class="bi bi-${icon}"></i>
-                <span>${message}</span>
+                <div style="flex: 1;">
+                    <span>${escapeHtml(message)}</span>
+                    <div class="toast-brand">
+                        <i class="bi bi-mortarboard-fill"></i> myMSCE Learning Platform
+                    </div>
+                </div>
                 <button onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(toast);
 
             setTimeout(() => {
-                if (toast.parentElement) toast.remove();
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }
             }, duration);
         }
 
-        // Page load simulation (matching dashboard timing)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== PAGE LOADING ANIMATION (Matching Dashboard timing) =====
         document.addEventListener('DOMContentLoaded', function() {
             // Hide loader after 800ms
             setTimeout(() => {
@@ -960,29 +1015,17 @@
                 if(loader) loader.classList.add('hidden');
             }, 800);
 
-            // Show skeleton for 1 second, then real content
+            // Show skeleton for 800ms, then real content
             setTimeout(() => {
                 const skeleton = document.getElementById('skeletonContent');
                 const real = document.getElementById('realContent');
                 if(skeleton) skeleton.style.display = 'none';
                 if(real) real.style.display = 'block';
-            }, 1000);
-
-            // Show flashed messages
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        setTimeout(() => {
-                            showToast("{{ message|safe }}", "{{ category if category in ['success', 'error', 'warning'] else 'info' }}");
-                        }, {{ (loop.index0 * 200) + 1200 }});
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            }, 800);
         });
 
-        // Main functionality
+        // ===== PAYMENT METHOD SELECTION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Payment method selection
             const methodCards = document.querySelectorAll('.method-card');
             methodCards.forEach(card => {
                 const radio = card.querySelector('input');
@@ -1046,13 +1089,37 @@
             }
         });
 
-        // Check for return parameters (for when PayChangu redirects back)
+        // ===== FLASH MESSAGES with deduplication (Matching Dashboard) =====
+        if (window.flashMessagesProcessed) {
+            console.log('Flash messages already processed, skipping');
+        } else {
+            window.flashMessagesProcessed = true;
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% set shown_messages = [] %}
+                    {% for category, message in messages %}
+                        {% set message_key = category + ':' + message %}
+                        {% if message_key not in shown_messages %}
+                            setTimeout(() => {
+                                showToast("{{ message|safe }}", "{{ category if category in ['success','error','warning'] else 'info' }}");
+                            }, {{ loop.index0 * 300 + 800 }});
+                            {% set _ = shown_messages.append(message_key) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        }
+
+        // ===== CHECK FOR PAYMENT RETURN PARAMETERS =====
         const urlParams = new URLSearchParams(window.location.search);
         const paymentStatus = urlParams.get('status');
         const chargeId = urlParams.get('charge_id');
 
         if (paymentStatus === 'success' && chargeId) {
-            showToast('Payment detected! Verifying...', 'success');
+            setTimeout(() => {
+                showToast('Payment detected! Verifying...', 'success');
+            }, 1000);
             
             fetch(`/api/find-payment-by-charge/${chargeId}`)
                 .then(response => response.json())
